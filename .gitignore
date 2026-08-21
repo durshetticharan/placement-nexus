@@ -141,3 +141,21 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Environment variables (secrets — never commit)
+.env
+.env.local
+backend/.env
+ai-service/.env
+
+# Python (for the AI service)
+ai-service/venv/
+ai-service/__pycache__/
+*.pyc
+
+# Prisma
+backend/prisma/migrations/dev.db
+
+# OS files
+.DS_Store
+Thumbs.db
