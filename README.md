@@ -39,7 +39,7 @@ See [`docs/API_CONVENTIONS.md`](docs/API_CONVENTIONS.md).
 
 ## Development Status
 
-Being built in 20 controlled phases. Currently: **Phase 0 complete** (architecture & database design).
+Being built in 20 controlled phases. Currently: **Phase 1 complete** (project foundation, frontend, backend & AI service scaffolds with health checks).
 
 ## Team
 
