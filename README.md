@@ -39,7 +39,7 @@ See [`docs/API_CONVENTIONS.md`](docs/API_CONVENTIONS.md).
 
 ## Development Status
 
-Being built in 20 controlled phases. Currently: **Phase 1 complete** (project foundation, frontend, backend & AI service scaffolds with health checks).
+Being built in 20 controlled phases. Currently: **Phase 2 complete** (Authentication with JWT, httpOnly cookies, OTP verification, Zod validation, and React auth pages).
 
 ## Team
 
