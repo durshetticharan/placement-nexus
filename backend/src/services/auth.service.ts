@@ -122,7 +122,7 @@ export async function login(email: string, password: string) {
   );
 
   const refreshToken = jwt.sign(
-    { userId: user.id },
+    { userId: user.id, jti: crypto.randomUUID() },
     getEnv('JWT_REFRESH_SECRET'),
     { expiresIn: getEnv('JWT_REFRESH_EXPIRY') as any }
   );
@@ -189,7 +189,7 @@ export async function refreshToken(oldRefreshToken: string) {
   );
 
   const newRefreshToken = jwt.sign(
-    { userId: user.id },
+    { userId: user.id, jti: crypto.randomUUID() },
     getEnv('JWT_REFRESH_SECRET'),
     { expiresIn: getEnv('JWT_REFRESH_EXPIRY') as any }
   );
