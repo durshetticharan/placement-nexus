@@ -6,7 +6,7 @@ export const registerSchema = z.object({
     .string()
     .min(8, 'Password must be at least 8 characters.')
     .regex(/\d/, 'Password must contain at least one number.'),
-  role: z.enum(['STUDENT', 'RECRUITER', 'PLACEMENT_OFFICER', 'ALUMNI'], {
+  role: z.enum(['STUDENT', 'RECRUITER', 'PLACEMENT_OFFICER', 'ALUMNI'] as const, {
     errorMap: () => ({
       message: 'Role must be one of: STUDENT, RECRUITER, PLACEMENT_OFFICER, ALUMNI.',
     }),

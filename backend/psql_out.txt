@@ -1,0 +1,4 @@
+         email          |     hash_preview     
+------------------------+----------------------
+verifytest@example.com  | $2b$10$sL04fUYTkdA5G
+(1 row)
