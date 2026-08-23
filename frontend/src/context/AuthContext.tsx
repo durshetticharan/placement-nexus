@@ -14,8 +14,10 @@ export interface RegisterPayload {
   email: string;
   password: string;
   role: string;
-  // Recruiter fields
+  // Student fields
   fullName?: string;
+  rollNumber?: string;
+  // Recruiter fields
   designation?: string;
   companyName?: string;
   // Alumni fields

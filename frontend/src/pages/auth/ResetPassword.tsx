@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
+import { getErrorMessage } from '../../utils/error';
 
 export default function ResetPassword() {
   const [resetToken, setResetToken] = useState('');
@@ -17,7 +18,7 @@ export default function ResetPassword() {
       await api.post('/auth/reset-password', { resetToken, newPassword });
       navigate('/login');
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Reset failed. Please try again.');
+      setError(getErrorMessage(err, 'Reset failed. Please try again.'));
     } finally {
       setLoading(false);
     }

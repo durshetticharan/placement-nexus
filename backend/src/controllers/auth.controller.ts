@@ -16,8 +16,10 @@ export async function register(req: Request, res: Response): Promise<void> {
       email,
       password,
       role,
-      // Recruiter fields
+      // Student fields
       fullName,
+      rollNumber,
+      // Recruiter fields
       designation,
       companyName,
       // Alumni fields
@@ -29,6 +31,7 @@ export async function register(req: Request, res: Response): Promise<void> {
 
     const result = await authService.register(email, password, role, {
       fullName,
+      rollNumber,
       designation,
       companyName,
       degree,

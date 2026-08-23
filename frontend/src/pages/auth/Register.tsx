@@ -2,6 +2,8 @@ import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
+import { getErrorMessage } from '../../utils/error';
+
 const ROLES = [
   { value: 'STUDENT',           label: 'Student' },
   { value: 'RECRUITER',         label: 'Recruiter' },
@@ -16,8 +18,10 @@ export default function Register() {
   const [email, setEmail]           = useState('');
   const [password, setPassword]     = useState('');
   const [role, setRole]             = useState('STUDENT');
-  // Recruiter fields
+  // Student & common fields
   const [fullName, setFullName]     = useState('');
+  const [rollNumber, setRollNumber] = useState('');
+  // Recruiter fields
   const [designation, setDesig]     = useState('');
   const [companyName, setCompany]   = useState('');
   // Alumni fields
@@ -40,6 +44,10 @@ export default function Register() {
         email,
         password,
         role,
+        ...(role === 'STUDENT' && {
+          fullName,
+          rollNumber,
+        }),
         ...(role === 'RECRUITER' && {
           fullName,
           designation: designation || undefined,
@@ -55,7 +63,7 @@ export default function Register() {
       });
       navigate('/verify-otp', { state: { email } });
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Registration failed. Please try again.');
+      setError(getErrorMessage(err, 'Registration failed. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -95,6 +103,23 @@ export default function Register() {
               ))}
             </select>
           </div>
+
+          {/* ── Student extra fields ────────────────────────────── */}
+          {role === 'STUDENT' && (
+            <div className="space-y-4 pt-2 border-t border-slate-700">
+              <p className="text-xs text-slate-400 uppercase tracking-wider font-medium">Student details</p>
+              <div>
+                <label className={LABEL}>Full Name <span className="text-red-400">*</span></label>
+                <input value={fullName} onChange={(e) => setFullName(e.target.value)}
+                  placeholder="John Doe" required className={INPUT} />
+              </div>
+              <div>
+                <label className={LABEL}>Roll Number <span className="text-red-400">*</span></label>
+                <input value={rollNumber} onChange={(e) => setRollNumber(e.target.value)}
+                  placeholder="23R1A0501" required className={INPUT} />
+              </div>
+            </div>
+          )}
 
           {/* ── Recruiter extra fields ────────────────────────────── */}
           {role === 'RECRUITER' && (

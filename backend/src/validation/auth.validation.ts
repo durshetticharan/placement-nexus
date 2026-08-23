@@ -10,6 +10,8 @@ export const registerSchema = z
     role: z.enum(['STUDENT', 'RECRUITER', 'PLACEMENT_OFFICER', 'ALUMNI'], {
       error: 'Role must be one of: STUDENT, RECRUITER, PLACEMENT_OFFICER, ALUMNI.',
     }),
+    // ── Student fields ──────────────────────────────────────────────────────
+    rollNumber: z.string().min(1, 'Roll number must not be empty.').optional(),
     // ── Recruiter fields ────────────────────────────────────────────────────
     fullName: z.string().min(1, 'Full name must not be empty.').optional(),
     designation: z.string().optional(),
@@ -21,6 +23,14 @@ export const registerSchema = z
     collegeName: z.string().min(1, 'College name must not be empty.').optional(),
   })
   .superRefine((data, ctx) => {
+    if (data.role === 'STUDENT') {
+      if (!data.fullName) {
+        ctx.addIssue({ code: 'custom', path: ['fullName'], message: 'fullName is required for student registration.' });
+      }
+      if (!data.rollNumber) {
+        ctx.addIssue({ code: 'custom', path: ['rollNumber'], message: 'rollNumber is required for student registration.' });
+      }
+    }
     if (data.role === 'RECRUITER') {
       if (!data.fullName) {
         ctx.addIssue({ code: 'custom', path: ['fullName'], message: 'fullName is required for recruiter registration.' });

@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth, getDashboardPath } from '../../context/AuthContext';
 import api from '../../services/api';
+import { getErrorMessage } from '../../utils/error';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -27,7 +28,7 @@ export default function Login() {
       // Navigate to the role-specific dashboard
       navigate(getDashboardPath(userData.role), { replace: true });
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Login failed. Please check your credentials.');
+      setError(getErrorMessage(err, 'Login failed. Please check your credentials.'));
     } finally {
       setLoading(false);
     }

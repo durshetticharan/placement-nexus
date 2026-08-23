@@ -8,6 +8,7 @@ import healthRoutes from './routes/health.routes';
 import authRoutes from './routes/auth.routes';
 import recruiterRoutes from './routes/recruiter.routes';
 import alumniRoutes from './routes/alumni.routes';
+import studentRoutes from './routes/student.routes';
 
 const app = express();
 
@@ -34,5 +35,6 @@ app.use('/api/v1/health', healthRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/recruiters', recruiterRoutes);
 app.use('/api/v1/alumni', alumniRoutes);
+app.use('/api/v1/students', studentRoutes);
 
 export default app;

@@ -1,13 +1,14 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { UserRole } from '@prisma/client';
+import { UserRole, PrismaClient } from '@prisma/client';
 import * as userRepo from '../repositories/user.repository';
 import * as recruiterRepo from '../repositories/recruiter.repository';
 import * as alumniRepo from '../repositories/alumni.repository';
 import { generateOtp, generateSecureToken } from '../utils/otp';
 import { sendOtpEmail, sendPasswordResetEmail } from './emailService';
 
+const prisma = new PrismaClient();
 const SALT_ROUNDS = 10;
 
 function getEnv(key: string): string {
@@ -17,6 +18,11 @@ function getEnv(key: string): string {
 }
 
 // ─── Register ────────────────────────────────────────────────────────────────
+
+export interface StudentProfileData {
+  fullName: string;
+  rollNumber: string;
+}
 
 export interface RecruiterProfileData {
   fullName: string;
@@ -36,7 +42,7 @@ export async function register(
   email: string,
   password: string,
   role: UserRole,
-  profileData?: Partial<RecruiterProfileData & AlumniProfileData>,
+  profileData?: Partial<StudentProfileData & RecruiterProfileData & AlumniProfileData>,
 ) {
   const existing = await userRepo.findUserByEmail(email);
   if (existing) {
@@ -61,6 +67,26 @@ export async function register(
   });
 
   // ── Role-specific profile creation ────────────────────────────────────────
+  if (role === 'STUDENT' && profileData?.fullName && profileData?.rollNumber) {
+    try {
+      await prisma.student.create({
+        data: {
+          userId: user.id,
+          fullName: profileData.fullName,
+          rollNumber: profileData.rollNumber,
+        },
+      });
+    } catch (err: any) {
+      if (err.code === 'P2002' && err.meta?.target?.includes('rollNumber')) {
+        throw Object.assign(new Error('A student with this roll number already exists.'), {
+          code: 'CONFLICT',
+          statusCode: 409,
+        });
+      }
+      throw err;
+    }
+  }
+
   if (role === 'RECRUITER' && profileData?.fullName && profileData?.companyName) {
     const company = await recruiterRepo.findOrCreateCompany(profileData.companyName);
     await recruiterRepo.createRecruiter({

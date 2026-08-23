@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
+import { getErrorMessage } from '../../utils/error';
 
 export default function VerifyOtp() {
   const location = useLocation();
@@ -21,7 +22,7 @@ export default function VerifyOtp() {
       setSuccess('Email verified! Redirecting to login...');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Verification failed. Please try again.');
+      setError(getErrorMessage(err, 'Verification failed. Please try again.'));
     } finally {
       setLoading(false);
     }
