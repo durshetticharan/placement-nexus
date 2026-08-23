@@ -1,8 +1,12 @@
 import { Router } from 'express';
 import * as studentController from '../controllers/student.controller';
+import * as resumeController from '../controllers/resume.controller';
+import * as profController from '../controllers/professionalProfile.controller';
+import * as codingController from '../controllers/codingProfile.controller';
 import { requireAuth } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/rbac.middleware';
 import { validate } from '../validation/auth.validation';
+import { resumeUpload } from '../config/upload.config';
 import {
   academicSchema,
   addSkillSchema,
@@ -15,6 +19,10 @@ import {
   updateCertificationSchema,
   achievementSchema,
   updateAchievementSchema,
+  professionalProfileSchema,
+  updateProfessionalProfileSchema,
+  codingProfileSchema,
+  updateCodingProfileSchema,
 } from '../validation/student.validation';
 
 const router = Router();
@@ -49,5 +57,23 @@ router.delete('/me/certifications/:id', studentController.deleteCertification);
 router.post('/me/achievements', validate(achievementSchema), studentController.addAchievement);
 router.patch('/me/achievements/:id', validate(updateAchievementSchema), studentController.updateAchievement);
 router.delete('/me/achievements/:id', studentController.deleteAchievement);
+
+// Resumes
+router.post('/me/resumes', resumeUpload.single('resume'), resumeController.uploadResume);
+router.get('/me/resumes', resumeController.listResumes);
+router.patch('/me/resumes/:id/primary', resumeController.setPrimaryResume);
+router.delete('/me/resumes/:id', resumeController.deleteResume);
+
+// Professional Profiles
+router.post('/me/professional-profiles', validate(professionalProfileSchema), profController.addProfile);
+router.get('/me/professional-profiles', profController.listProfiles);
+router.patch('/me/professional-profiles/:id', validate(updateProfessionalProfileSchema), profController.updateProfile);
+router.delete('/me/professional-profiles/:id', profController.deleteProfile);
+
+// Coding Profiles
+router.post('/me/coding-profiles', validate(codingProfileSchema), codingController.addCodingProfile);
+router.get('/me/coding-profiles', codingController.listCodingProfiles);
+router.patch('/me/coding-profiles/:id', validate(updateCodingProfileSchema), codingController.updateCodingProfile);
+router.delete('/me/coding-profiles/:id', codingController.deleteCodingProfile);
 
 export default router;

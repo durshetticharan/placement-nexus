@@ -12,6 +12,9 @@ export async function calculateCompletionPercentage(studentId: string): Promise<
       internships: { take: 1 },
       certifications: { take: 1 },
       achievements: { take: 1 },
+      resumes: { take: 1 },
+      codingProfiles: { take: 1 },
+      professionalProfiles: { take: 1 },
     },
   });
 
@@ -19,9 +22,9 @@ export async function calculateCompletionPercentage(studentId: string): Promise<
 
   let pct = 0;
 
-  // 1. Basic Info (20%): fullName & rollNumber required, bonus if phone exists
+  // 1. Basic Info (20%): fullName & rollNumber required, bonus if phone/photo exists
   if (student.fullName && student.rollNumber) {
-    pct += student.phone ? 20 : 15;
+    pct += (student.phone || student.profilePhotoUrl) ? 20 : 15;
   }
 
   // 2. Academics (20%)
@@ -29,8 +32,8 @@ export async function calculateCompletionPercentage(studentId: string): Promise<
     pct += 20;
   }
 
-  // 3. Skills (20%): at least 1 skill
-  if (student.skills.length > 0) {
+  // 3. Skills & Coding Profiles (20%): at least 1 skill OR 1 coding profile
+  if (student.skills.length > 0 || student.codingProfiles.length > 0) {
     pct += 20;
   }
 
@@ -39,8 +42,8 @@ export async function calculateCompletionPercentage(studentId: string): Promise<
     pct += 20;
   }
 
-  // 5. Credentials (20%): at least 1 certification OR 1 achievement
-  if (student.certifications.length > 0 || student.achievements.length > 0) {
+  // 5. Credentials & Artifacts (20%): at least 1 certification OR 1 achievement OR 1 resume
+  if (student.certifications.length > 0 || student.achievements.length > 0 || student.resumes.length > 0) {
     pct += 20;
   }
 

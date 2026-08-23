@@ -74,6 +74,39 @@ export interface AchievementItem {
   proofUrl?: string | null;
 }
 
+export interface ResumeItem {
+  id: string;
+  studentId: string;
+  fileUrl: string;
+  fileName: string;
+  fileSizeBytes: number;
+  isPrimary: boolean;
+  uploadedAt: string;
+}
+
+export interface ProfessionalProfileItem {
+  id: string;
+  studentId: string;
+  platform: string;
+  profileUrl: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CodingProfileItem {
+  id: string;
+  studentId: string;
+  platform: string;
+  username: string;
+  profileUrl: string;
+  statistics?: Record<string, any> | null;
+  syncStatus: string;
+  lastSyncedAt?: string | null;
+  syncError?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface StudentProfile {
   id: string;
   userId: string;
@@ -94,6 +127,9 @@ export interface StudentProfile {
   internships: InternshipItem[];
   certifications: CertificationItem[];
   achievements: AchievementItem[];
+  resumes?: ResumeItem[];
+  professionalProfiles?: ProfessionalProfileItem[];
+  codingProfiles?: CodingProfileItem[];
 }
 
 // ── API Methods ───────────────────────────────────────────────────────────────
@@ -244,4 +280,81 @@ export async function updateAchievement(id: string, data: Partial<{
 
 export async function deleteAchievement(id: string): Promise<void> {
   await api.delete(`/students/me/achievements/${id}`);
+}
+
+// ── Resumes ───────────────────────────────────────────────────────────────────
+
+export async function uploadResume(file: File): Promise<ResumeItem> {
+  const formData = new FormData();
+  formData.append('resume', file);
+  const res = await api.post('/students/me/resumes', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return res.data.data;
+}
+
+export async function listResumes(): Promise<ResumeItem[]> {
+  const res = await api.get('/students/me/resumes');
+  return res.data.data;
+}
+
+export async function setPrimaryResume(id: string): Promise<ResumeItem> {
+  const res = await api.patch(`/students/me/resumes/${id}/primary`);
+  return res.data.data;
+}
+
+export async function deleteResume(id: string): Promise<void> {
+  await api.delete(`/students/me/resumes/${id}`);
+}
+
+// ── Professional Profiles ─────────────────────────────────────────────────────
+
+export async function addProfessionalProfile(data: { platform: string; profileUrl: string }): Promise<ProfessionalProfileItem> {
+  const res = await api.post('/students/me/professional-profiles', data);
+  return res.data.data;
+}
+
+export async function listProfessionalProfiles(): Promise<ProfessionalProfileItem[]> {
+  const res = await api.get('/students/me/professional-profiles');
+  return res.data.data;
+}
+
+export async function updateProfessionalProfile(id: string, data: { profileUrl: string }): Promise<ProfessionalProfileItem> {
+  const res = await api.patch(`/students/me/professional-profiles/${id}`, data);
+  return res.data.data;
+}
+
+export async function deleteProfessionalProfile(id: string): Promise<void> {
+  await api.delete(`/students/me/professional-profiles/${id}`);
+}
+
+// ── Coding Profiles ───────────────────────────────────────────────────────────
+
+export async function addCodingProfile(data: {
+  platform: string;
+  username: string;
+  profileUrl: string;
+  statistics?: Record<string, any>;
+}): Promise<CodingProfileItem> {
+  const res = await api.post('/students/me/coding-profiles', data);
+  return res.data.data;
+}
+
+export async function listCodingProfiles(): Promise<CodingProfileItem[]> {
+  const res = await api.get('/students/me/coding-profiles');
+  return res.data.data;
+}
+
+export async function updateCodingProfile(
+  id: string,
+  data: Partial<{ username: string; profileUrl: string; statistics: Record<string, any> }>
+): Promise<CodingProfileItem> {
+  const res = await api.patch(`/students/me/coding-profiles/${id}`, data);
+  return res.data.data;
+}
+
+export async function deleteCodingProfile(id: string): Promise<void> {
+  await api.delete(`/students/me/coding-profiles/${id}`);
 }

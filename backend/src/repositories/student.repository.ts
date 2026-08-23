@@ -24,6 +24,15 @@ export async function findStudentByUserId(userId: string) {
       achievements: {
         orderBy: { createdAt: 'desc' },
       },
+      resumes: {
+        orderBy: { uploadedAt: 'desc' },
+      },
+      professionalProfiles: {
+        orderBy: { createdAt: 'desc' },
+      },
+      codingProfiles: {
+        orderBy: { createdAt: 'desc' },
+      },
     },
   });
 }

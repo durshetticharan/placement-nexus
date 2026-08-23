@@ -119,3 +119,30 @@ export const achievementSchema = z.object({
 });
 
 export const updateAchievementSchema = achievementSchema.partial();
+
+// ── 7. Professional Profile Schemas ──────────────────────────────────────────
+
+export const professionalProfileSchema = z.object({
+  platform: z.string().min(1, 'Platform is required.'),
+  profileUrl: z.string().url('Must be a valid profile URL.'),
+});
+
+export const updateProfessionalProfileSchema = z.object({
+  profileUrl: z.string().url('Must be a valid profile URL.'),
+});
+
+// ── 8. Coding Profile Schemas ────────────────────────────────────────────────
+
+export const CODING_PLATFORMS = ['GITHUB', 'LEETCODE', 'CODECHEF', 'HACKERRANK', 'CODEFORCES', 'GFG'] as const;
+
+export const codingProfileSchema = z.object({
+  platform: z.enum(['GITHUB', 'LEETCODE', 'CODECHEF', 'HACKERRANK', 'CODEFORCES', 'GFG'] as [string, ...string[]], {
+    message: 'Platform must be one of: GITHUB, LEETCODE, CODECHEF, HACKERRANK, CODEFORCES, GFG.',
+  }),
+  username: z.string().min(1, 'Username is required.'),
+  profileUrl: z.string().url('Must be a valid profile URL.'),
+  statistics: z.record(z.string(), z.any()).optional().nullable(),
+});
+
+export const updateCodingProfileSchema = codingProfileSchema.partial();
+

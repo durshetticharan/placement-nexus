@@ -11,10 +11,13 @@ import type {
   InternshipItem,
   CertificationItem,
   AchievementItem,
+  ResumeItem,
+  ProfessionalProfileItem,
+  CodingProfileItem,
   ProficiencyLevel,
 } from '../../services/studentService';
 
-type Tab = 'academics' | 'skills' | 'projects' | 'internships' | 'certifications' | 'achievements';
+type Tab = 'academics' | 'skills' | 'projects' | 'internships' | 'certifications' | 'achievements' | 'profiles';
 
 const RATING_COLORS: Record<ProficiencyLevel, string> = {
   BEGINNER: 'bg-slate-700 text-slate-300 border-slate-600',
@@ -124,7 +127,7 @@ export default function StudentDashboard() {
 
         {/* Navigation Tabs */}
         <div className="flex border-b border-slate-700 overflow-x-auto">
-          {(['academics', 'skills', 'projects', 'internships', 'certifications', 'achievements'] as Tab[]).map((tab) => {
+          {(['academics', 'skills', 'projects', 'internships', 'certifications', 'achievements', 'profiles'] as Tab[]).map((tab) => {
             const counts: Record<Tab, number> = {
               academics: profile?.academics ? 1 : 0,
               skills: profile?.skills.length || 0,
@@ -132,7 +135,9 @@ export default function StudentDashboard() {
               internships: profile?.internships.length || 0,
               certifications: profile?.certifications.length || 0,
               achievements: profile?.achievements.length || 0,
+              profiles: (profile?.resumes?.length || 0) + (profile?.professionalProfiles?.length || 0) + (profile?.codingProfiles?.length || 0),
             };
+            const label = tab === 'profiles' ? 'Resume & Profiles' : tab;
             return (
               <button
                 key={tab}
@@ -143,7 +148,7 @@ export default function StudentDashboard() {
                     : 'border-transparent text-slate-400 hover:text-slate-200'
                 }`}
               >
-                <span>{tab}</span>
+                <span>{label}</span>
                 {counts[tab] > 0 && (
                   <span className="px-2 py-0.5 text-xs rounded-full bg-slate-700 text-slate-300 font-mono">
                     {counts[tab]}
@@ -234,6 +239,25 @@ export default function StudentDashboard() {
               }}
             />
           )}
+
+          {activeTab === 'profiles' && (
+            <ProfilesAndResumesSection
+              resumes={profile?.resumes || []}
+              professionalProfiles={profile?.professionalProfiles || []}
+              codingProfiles={profile?.codingProfiles || []}
+              onRefresh={fetchProfile}
+              onAddProf={() => setModalType('addProfProfile')}
+              onEditProf={(item) => {
+                setEditItem(item);
+                setModalType('editProfProfile');
+              }}
+              onAddCoding={() => setModalType('addCodingProfile')}
+              onEditCoding={(item) => {
+                setEditItem(item);
+                setModalType('editCodingProfile');
+              }}
+            />
+          )}
         </div>
       </div>
 
@@ -295,6 +319,28 @@ export default function StudentDashboard() {
 
       {(modalType === 'addAchievement' || modalType === 'editAchievement') && (
         <AchievementModal
+          initialData={editItem}
+          onClose={closeModal}
+          onSaved={() => {
+            closeModal();
+            fetchProfile();
+          }}
+        />
+      )}
+
+      {(modalType === 'addProfProfile' || modalType === 'editProfProfile') && (
+        <ProfessionalProfileModal
+          initialData={editItem}
+          onClose={closeModal}
+          onSaved={() => {
+            closeModal();
+            fetchProfile();
+          }}
+        />
+      )}
+
+      {(modalType === 'addCodingProfile' || modalType === 'editCodingProfile') && (
+        <CodingProfileModal
           initialData={editItem}
           onClose={closeModal}
           onSaved={() => {
@@ -1209,3 +1255,612 @@ function AchievementModal({ initialData, onClose, onSaved }: { initialData?: Ach
     </ModalWrapper>
   );
 }
+
+// ─── Phase 5: Resumes & Profiles Sub-Sections & Modals ────────────────────────
+
+function ProfilesAndResumesSection({
+  resumes,
+  professionalProfiles,
+  codingProfiles,
+  onRefresh,
+  onAddProf,
+  onEditProf,
+  onAddCoding,
+  onEditCoding,
+}: {
+  resumes: ResumeItem[];
+  professionalProfiles: ProfessionalProfileItem[];
+  codingProfiles: CodingProfileItem[];
+  onRefresh: () => void;
+  onAddProf: () => void;
+  onEditProf: (item: ProfessionalProfileItem) => void;
+  onAddCoding: () => void;
+  onEditCoding: (item: CodingProfileItem) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [resumeError, setResumeError] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const handleUploadResume = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!selectedFile) {
+      setResumeError('Please select a PDF file to upload.');
+      return;
+    }
+    try {
+      setResumeError('');
+      setUploading(true);
+      await studentService.uploadResume(selectedFile);
+      setSelectedFile(null);
+      const fileInput = document.getElementById('resumeFileInput') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+      onRefresh();
+    } catch (err: any) {
+      setResumeError(getErrorMessage(err, 'Failed to upload resume.'));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSetPrimary = async (id: string) => {
+    try {
+      setResumeError('');
+      await studentService.setPrimaryResume(id);
+      onRefresh();
+    } catch (err: any) {
+      setResumeError(getErrorMessage(err, 'Failed to set primary resume.'));
+    }
+  };
+
+  const handleDeleteResume = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this resume?')) return;
+    try {
+      setResumeError('');
+      await studentService.deleteResume(id);
+      onRefresh();
+    } catch (err: any) {
+      setResumeError(getErrorMessage(err, 'Failed to delete resume.'));
+    }
+  };
+
+  const handleDeleteProf = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this professional profile?')) return;
+    try {
+      await studentService.deleteProfessionalProfile(id);
+      onRefresh();
+    } catch (err: any) {
+      alert(getErrorMessage(err, 'Failed to delete professional profile.'));
+    }
+  };
+
+  const handleDeleteCoding = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this coding profile?')) return;
+    try {
+      await studentService.deleteCodingProfile(id);
+      onRefresh();
+    } catch (err: any) {
+      alert(getErrorMessage(err, 'Failed to delete coding profile.'));
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* ── Section 1: Resumes ──────────────────────────────────── */}
+      <div className="space-y-4">
+        <div className="border-b border-slate-700 pb-3 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <span>📄</span> Resumes
+            </h2>
+            <p className="text-xs text-slate-400">Upload your PDF resumes. Maximum 5MB per file.</p>
+          </div>
+        </div>
+
+        {resumeError && (
+          <div className="p-3 bg-red-900/40 border border-red-500 rounded-lg text-red-300 text-xs flex items-center justify-between">
+            <span>{resumeError}</span>
+            <button onClick={() => setResumeError('')} className="text-red-400 hover:text-white ml-2">✕</button>
+          </div>
+        )}
+
+        {/* Upload form */}
+        <form onSubmit={handleUploadResume} className="bg-slate-700/30 p-4 rounded-xl border border-slate-700 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <input
+            id="resumeFileInput"
+            type="file"
+            accept=".pdf"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                setSelectedFile(e.target.files[0]);
+                setResumeError('');
+              }
+            }}
+            className="block w-full text-xs text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-700 file:text-indigo-300 hover:file:bg-slate-600 cursor-pointer"
+          />
+          <button
+            type="submit"
+            disabled={uploading || !selectedFile}
+            className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold text-xs rounded-lg transition-colors whitespace-nowrap flex items-center justify-center gap-2"
+          >
+            {uploading ? (
+              <>
+                <span className="animate-spin">⏳</span> Uploading…
+              </>
+            ) : (
+              'Upload Resume'
+            )}
+          </button>
+        </form>
+
+        {/* Resumes list */}
+        {resumes.length === 0 ? (
+          <div className="text-center py-6 bg-slate-800/40 rounded-xl border border-dashed border-slate-700 text-slate-400 text-xs">
+            No resumes uploaded yet. Upload a PDF resume above.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {resumes.map((r) => (
+              <div
+                key={r.id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 bg-slate-700/40 rounded-xl border border-slate-700 gap-3"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-lg bg-red-900/30 text-red-400 flex items-center justify-center font-bold text-xs shrink-0 border border-red-800/50">
+                    PDF
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-white text-sm truncate">{r.fileName}</span>
+                      {r.isPrimary && (
+                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-900/60 text-emerald-300 border border-emerald-500/60 uppercase tracking-wider">
+                          Primary
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-slate-400 block">
+                      Uploaded on {new Date(r.uploadedAt).toLocaleDateString()} • {(r.fileSizeBytes / 1024).toFixed(1)} KB
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {!r.isPrimary && (
+                    <button
+                      onClick={() => handleSetPrimary(r.id)}
+                      className="px-2.5 py-1 text-xs font-semibold bg-slate-700 hover:bg-slate-600 text-indigo-300 rounded-lg transition-colors"
+                    >
+                      Set as Primary
+                    </button>
+                  )}
+                  <a
+                    href={r.fileUrl.startsWith('http') ? r.fileUrl : `http://localhost:5000${r.fileUrl}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1 text-xs font-semibold bg-indigo-900/40 hover:bg-indigo-800/60 text-indigo-300 border border-indigo-700/60 rounded-lg transition-colors flex items-center gap-1"
+                  >
+                    View ↗
+                  </a>
+                  <button
+                    onClick={() => handleDeleteResume(r.id)}
+                    className="px-2 py-1 text-xs font-semibold bg-red-900/30 hover:bg-red-800/50 text-red-300 border border-red-700/40 rounded-lg transition-colors"
+                    title="Delete resume"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── Section 2: Professional Profiles ────────────────────── */}
+      <div className="space-y-4 pt-4 border-t border-slate-700">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <span>💼</span> Professional Profiles
+            </h2>
+            <p className="text-xs text-slate-400">Link your LinkedIn or portfolio profiles.</p>
+          </div>
+          <button
+            onClick={onAddProf}
+            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition-colors"
+          >
+            + Add Profile
+          </button>
+        </div>
+
+        {professionalProfiles.length === 0 ? (
+          <div className="text-center py-6 bg-slate-800/40 rounded-xl border border-dashed border-slate-700 text-slate-400 text-xs">
+            No professional profiles added yet.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {professionalProfiles.map((p) => (
+              <div
+                key={p.id}
+                className="flex items-center justify-between p-3.5 bg-slate-700/40 rounded-xl border border-slate-700"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-xl">💼</span>
+                  <div className="min-w-0">
+                    <span className="font-bold text-xs text-indigo-400 uppercase tracking-wider block">{p.platform}</span>
+                    <a
+                      href={p.profileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-slate-200 hover:text-white truncate block underline underline-offset-2"
+                    >
+                      {p.profileUrl}
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => onEditProf(p)}
+                    className="p-1 text-slate-300 hover:text-white transition-colors text-xs"
+                    title="Edit profile"
+                  >
+                    ✎
+                  </button>
+                  <button
+                    onClick={() => handleDeleteProf(p.id)}
+                    className="p-1 text-red-400 hover:text-red-300 transition-colors text-xs"
+                    title="Delete profile"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── Section 3: Coding Profiles ──────────────────────────── */}
+      <div className="space-y-4 pt-4 border-t border-slate-700">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <span>💻</span> Coding Profiles
+            </h2>
+            <p className="text-xs text-slate-400">Showcase your GitHub, LeetCode, or competitive coding profiles.</p>
+          </div>
+          <button
+            onClick={onAddCoding}
+            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition-colors"
+          >
+            + Add Coding Profile
+          </button>
+        </div>
+
+        {codingProfiles.length === 0 ? (
+          <div className="text-center py-6 bg-slate-800/40 rounded-xl border border-dashed border-slate-700 text-slate-400 text-xs">
+            No coding profiles added yet.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {codingProfiles.map((cp) => (
+              <div
+                key={cp.id}
+                className="p-4 bg-slate-700/40 rounded-xl border border-slate-700 space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">
+                      {cp.platform === 'GITHUB' ? '🐙' : cp.platform === 'LEETCODE' ? '🧩' : '💻'}
+                    </span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-sm text-white">{cp.platform}</span>
+                        <span className="text-xs text-indigo-300 font-mono">@{cp.username}</span>
+                        <span className="px-2 py-0.5 text-[10px] bg-slate-800 text-slate-400 rounded-full border border-slate-600">
+                          {cp.syncStatus}
+                        </span>
+                      </div>
+                      <a
+                        href={cp.profileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-slate-400 hover:text-slate-200 block truncate"
+                      >
+                        {cp.profileUrl}
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onEditCoding(cp)}
+                      className="px-2.5 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-indigo-300 rounded-lg transition-colors"
+                    >
+                      ✎ Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCoding(cp.id)}
+                      className="px-2.5 py-1 text-xs bg-red-900/30 hover:bg-red-800/50 text-red-300 rounded-lg transition-colors"
+                    >
+                      ✕ Delete
+                    </button>
+                  </div>
+                </div>
+
+                {/* Key stats pills */}
+                {cp.statistics && typeof cp.statistics === 'object' && Object.keys(cp.statistics).length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-700/60">
+                    {Object.entries(cp.statistics).map(([key, val]) => (
+                      <span
+                        key={key}
+                        className="px-2.5 py-1 bg-slate-800/80 border border-slate-600/80 rounded-lg text-xs font-mono text-slate-300"
+                      >
+                        <span className="text-indigo-400 font-semibold">{key}:</span> {String(val)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ProfessionalProfileModal({
+  initialData,
+  onClose,
+  onSaved,
+}: {
+  initialData?: ProfessionalProfileItem | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [platform, setPlatform] = useState(initialData?.platform || 'LINKEDIN');
+  const [profileUrl, setProfileUrl] = useState(initialData?.profileUrl || '');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const isEdit = !!initialData;
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    try {
+      setError('');
+      setLoading(true);
+      if (isEdit) {
+        await studentService.updateProfessionalProfile(initialData.id, { profileUrl });
+      } else {
+        await studentService.addProfessionalProfile({ platform, profileUrl });
+      }
+      onSaved();
+    } catch (err: any) {
+      setError(getErrorMessage(err, 'Failed to save professional profile.'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ModalWrapper title={isEdit ? 'Edit Professional Profile' : 'Add Professional Profile'} onClose={onClose}>
+      {error && <div className="p-3 bg-red-900/40 border border-red-500 rounded-lg text-red-300 text-xs">{error}</div>}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className={LABEL_STYLE}>Platform</label>
+          <select
+            value={platform}
+            onChange={(e) => setPlatform(e.target.value)}
+            disabled={isEdit}
+            className={INPUT_STYLE}
+          >
+            <option value="LINKEDIN">LinkedIn</option>
+            <option value="PORTFOLIO">Portfolio / Personal Website</option>
+            <option value="TWITTER">Twitter / X</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label className={LABEL_STYLE}>Profile URL *</label>
+          <input
+            type="url"
+            required
+            placeholder="https://linkedin.com/in/yourname"
+            value={profileUrl}
+            onChange={(e) => setProfileUrl(e.target.value)}
+            className={INPUT_STYLE}
+          />
+        </div>
+
+        <div className="flex gap-3 justify-end pt-2">
+          <button type="button" onClick={onClose} className="px-4 py-2 bg-slate-700 text-white rounded-lg text-xs font-medium hover:bg-slate-600">Cancel</button>
+          <button type="submit" disabled={loading} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-500 disabled:opacity-50">
+            {loading ? 'Saving…' : 'Save Profile'}
+          </button>
+        </div>
+      </form>
+    </ModalWrapper>
+  );
+}
+
+function CodingProfileModal({
+  initialData,
+  onClose,
+  onSaved,
+}: {
+  initialData?: CodingProfileItem | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [platform, setPlatform] = useState(initialData?.platform || 'GITHUB');
+  const [username, setUsername] = useState(initialData?.username || '');
+  const [profileUrl, setProfileUrl] = useState(initialData?.profileUrl || '');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const [statRows, setStatRows] = useState<Array<{ key: string; value: string }>>(() => {
+    if (initialData?.statistics && typeof initialData.statistics === 'object') {
+      const entries = Object.entries(initialData.statistics);
+      if (entries.length > 0) {
+        return entries.map(([k, v]) => ({ key: k, value: String(v) }));
+      }
+    }
+    return [{ key: '', value: '' }];
+  });
+
+  const isEdit = !!initialData;
+
+  const handleAddStatRow = () => {
+    setStatRows((prev) => [...prev, { key: '', value: '' }]);
+  };
+
+  const handleRemoveStatRow = (index: number) => {
+    setStatRows((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleStatChange = (index: number, field: 'key' | 'value', val: string) => {
+    setStatRows((prev) => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [field]: val };
+      return copy;
+    });
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    try {
+      setError('');
+      setLoading(true);
+
+      const statistics: Record<string, any> = {};
+      for (const row of statRows) {
+        const k = row.key.trim();
+        const v = row.value.trim();
+        if (k) {
+          statistics[k] = !isNaN(Number(v)) && v !== '' ? Number(v) : v;
+        }
+      }
+
+      if (isEdit) {
+        await studentService.updateCodingProfile(initialData.id, {
+          username,
+          profileUrl,
+          statistics,
+        });
+      } else {
+        await studentService.addCodingProfile({
+          platform,
+          username,
+          profileUrl,
+          statistics,
+        });
+      }
+      onSaved();
+    } catch (err: any) {
+      setError(getErrorMessage(err, 'Failed to save coding profile.'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ModalWrapper title={isEdit ? 'Edit Coding Profile' : 'Add Coding Profile'} onClose={onClose}>
+      {error && <div className="p-3 bg-red-900/40 border border-red-500 rounded-lg text-red-300 text-xs">{error}</div>}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className={LABEL_STYLE}>Platform</label>
+          <select
+            value={platform}
+            onChange={(e) => setPlatform(e.target.value)}
+            disabled={isEdit}
+            className={INPUT_STYLE}
+          >
+            <option value="GITHUB">GitHub</option>
+            <option value="LEETCODE">LeetCode</option>
+            <option value="CODECHEF">CodeChef</option>
+            <option value="HACKERRANK">HackerRank</option>
+            <option value="CODEFORCES">Codeforces</option>
+            <option value="GEEKSFORGEEKS">GeeksforGeeks</option>
+          </select>
+        </div>
+
+        <div>
+          <label className={LABEL_STYLE}>Username *</label>
+          <input
+            type="text"
+            required
+            placeholder="e.g. octocat"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className={INPUT_STYLE}
+          />
+        </div>
+
+        <div>
+          <label className={LABEL_STYLE}>Profile URL *</label>
+          <input
+            type="url"
+            required
+            placeholder="https://github.com/octocat"
+            value={profileUrl}
+            onChange={(e) => setProfileUrl(e.target.value)}
+            className={INPUT_STYLE}
+          />
+        </div>
+
+        {/* Statistics Key-Value Pairs */}
+        <div className="space-y-2 pt-2 border-t border-slate-700">
+          <div className="flex justify-between items-center">
+            <label className={LABEL_STYLE}>Statistics (Key-Value Pairs)</label>
+            <button
+              type="button"
+              onClick={handleAddStatRow}
+              className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
+            >
+              + Add Stat Row
+            </button>
+          </div>
+
+          {statRows.map((row, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Key (e.g. repos)"
+                value={row.key}
+                onChange={(e) => handleStatChange(idx, 'key', e.target.value)}
+                className={`${INPUT_STYLE} text-xs py-1.5`}
+              />
+              <input
+                type="text"
+                placeholder="Value (e.g. 42)"
+                value={row.value}
+                onChange={(e) => handleStatChange(idx, 'value', e.target.value)}
+                className={`${INPUT_STYLE} text-xs py-1.5`}
+              />
+              {statRows.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => handleRemoveStatRow(idx)}
+                  className="p-1 text-red-400 hover:text-red-300 text-xs shrink-0"
+                  title="Remove stat"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex gap-3 justify-end pt-2">
+          <button type="button" onClick={onClose} className="px-4 py-2 bg-slate-700 text-white rounded-lg text-xs font-medium hover:bg-slate-600">Cancel</button>
+          <button type="submit" disabled={loading} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-500 disabled:opacity-50">
+            {loading ? 'Saving…' : 'Save Coding Profile'}
+          </button>
+        </div>
+      </form>
+    </ModalWrapper>
+  );
+}
+
