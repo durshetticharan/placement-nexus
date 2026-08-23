@@ -125,6 +125,33 @@ export default function StudentDashboard() {
           </div>
         )}
 
+        {/* Assessment Engine Quick Access Banner */}
+        <div className="bg-gradient-to-r from-indigo-900/60 via-purple-900/40 to-slate-800 rounded-xl border border-indigo-700/60 p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center text-2xl">
+              📝
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Assessment Engine</h2>
+              <p className="text-slate-300 text-xs sm:text-sm">Take aptitude, technical, and coding tests to demonstrate your readiness</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/student/assessments/history')}
+              className="px-4 py-2 bg-slate-700/80 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap"
+            >
+              📜 Past Attempts
+            </button>
+            <button
+              onClick={() => navigate('/student/assessments')}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-colors shadow whitespace-nowrap"
+            >
+              🚀 View Assessments →
+            </button>
+          </div>
+        </div>
+
         {/* Navigation Tabs */}
         <div className="flex border-b border-slate-700 overflow-x-auto">
           {(['academics', 'skills', 'projects', 'internships', 'certifications', 'achievements', 'profiles'] as Tab[]).map((tab) => {

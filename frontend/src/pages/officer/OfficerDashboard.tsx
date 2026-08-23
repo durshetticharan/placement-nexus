@@ -39,6 +39,21 @@ export default function OfficerDashboard() {
         {/* Quick actions */}
         <div className="space-y-3">
           <p className="text-xs text-slate-400 uppercase tracking-wider font-medium">Quick Actions</p>
+          
+          <Link
+            to="/officer/assessments"
+            className="flex items-center justify-between w-full px-4 py-3 bg-indigo-700/30 hover:bg-indigo-700/50 border border-indigo-700 rounded-lg transition-colors group"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-indigo-400 text-lg">📝</span>
+              <div>
+                <p className="text-white font-medium text-sm">Assessment Engine</p>
+                <p className="text-slate-400 text-xs">Create, publish & manage assessments</p>
+              </div>
+            </div>
+            <span className="text-slate-400 group-hover:text-white transition-colors">→</span>
+          </Link>
+
           <Link
             to="/officer/pending-approvals"
             className="flex items-center justify-between w-full px-4 py-3 bg-emerald-700/30 hover:bg-emerald-700/50 border border-emerald-700 rounded-lg transition-colors group"

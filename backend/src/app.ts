@@ -10,6 +10,8 @@ import authRoutes from './routes/auth.routes';
 import recruiterRoutes from './routes/recruiter.routes';
 import alumniRoutes from './routes/alumni.routes';
 import studentRoutes from './routes/student.routes';
+import assessmentRoutes from './routes/assessment.routes';
+import attemptRoutes from './routes/attempt.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -26,7 +28,7 @@ app.use(cors({
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 1000,
 });
 app.use(limiter);
 
@@ -41,6 +43,8 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/recruiters', recruiterRoutes);
 app.use('/api/v1/alumni', alumniRoutes);
 app.use('/api/v1/students', studentRoutes);
+app.use('/api/v1/assessments', assessmentRoutes);
+app.use('/api/v1/attempts', attemptRoutes);
 
 app.use(errorHandler);
 

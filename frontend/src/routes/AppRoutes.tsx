@@ -16,6 +16,14 @@ import AlumniDashboard    from '../pages/alumni/AlumniDashboard';
 
 // Officer-specific pages
 import PendingApprovals from '../pages/officer/PendingApprovals';
+import OfficerAssessmentList from '../pages/officer/AssessmentList';
+import OfficerAssessmentBuilder from '../pages/officer/AssessmentBuilder';
+
+// Student-specific assessment pages
+import StudentAssessmentList from '../pages/student/AssessmentList';
+import StudentAssessmentHistory from '../pages/student/AssessmentHistory';
+import TakeAssessment from '../pages/student/TakeAssessment';
+import AssessmentResult from '../pages/student/AssessmentResult';
 
 // Legacy placeholder kept for backward compat
 import Dashboard from '../pages/Dashboard';
@@ -106,12 +114,70 @@ export default function AppRoutes() {
         }
       />
 
-      {/* Officer-only tools */}
+      {/* Officer-only Assessment Engine Tools */}
       <Route
         path="/officer/pending-approvals"
         element={
           <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
             <PendingApprovals />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/officer/assessments"
+        element={
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
+            <OfficerAssessmentList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/officer/assessments/new"
+        element={
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
+            <OfficerAssessmentBuilder />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/officer/assessments/:id"
+        element={
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
+            <OfficerAssessmentBuilder />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Student-only Assessment Engine Pages */}
+      <Route
+        path="/student/assessments"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <StudentAssessmentList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/assessments/history"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <StudentAssessmentHistory />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/assessments/:id/take"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <TakeAssessment />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/attempts/:id/result"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <AssessmentResult />
           </ProtectedRoute>
         }
       />
