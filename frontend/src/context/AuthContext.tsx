@@ -1,22 +1,51 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+
+export type UserRole = 'STUDENT' | 'RECRUITER' | 'PLACEMENT_OFFICER' | 'ALUMNI';
 
 interface AuthUser {
   id: string;
   email: string;
+  role: UserRole;
+}
+
+export interface RegisterPayload {
+  email: string;
+  password: string;
   role: string;
+  // Recruiter fields
+  fullName?: string;
+  designation?: string;
+  companyName?: string;
+  // Alumni fields
+  degree?: string;
+  branch?: string;
+  graduationYear?: number;
+  collegeName?: string;
 }
 
 interface AuthContextType {
   user: AuthUser | null;
   accessToken: string | null;
   loading: boolean;
-  register: (email: string, password: string, role: string) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
+/** Returns the role-specific dashboard path after login. */
+export function getDashboardPath(role: string): string {
+  switch (role) {
+    case 'STUDENT':           return '/dashboard/student';
+    case 'RECRUITER':         return '/dashboard/recruiter';
+    case 'PLACEMENT_OFFICER': return '/dashboard/officer';
+    case 'ALUMNI':            return '/dashboard/alumni';
+    default:                  return '/dashboard/student';
+  }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -30,11 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const res = await api.post('/auth/refresh-token');
         const newToken: string = res.data.data.accessToken;
         setAccessToken(newToken);
-        // Decode user info from the token (payload is base64)
         const payload = JSON.parse(atob(newToken.split('.')[1]));
-        setUser({ id: payload.userId, email: '', role: payload.role });
+        setUser({ id: payload.userId, email: '', role: payload.role as UserRole });
       } catch {
-        // No valid session — user is logged out
         setUser(null);
         setAccessToken(null);
       } finally {
@@ -55,8 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => api.interceptors.request.eject(interceptor);
   }, [accessToken]);
 
-  const register = async (email: string, password: string, role: string) => {
-    await api.post('/auth/register', { email, password, role });
+  const register = async (payload: RegisterPayload) => {
+    await api.post('/auth/register', payload);
   };
 
   const login = async (email: string, password: string) => {

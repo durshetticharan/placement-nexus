@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { UserRole } from '@prisma/client';
 import * as userRepo from '../repositories/user.repository';
+import * as recruiterRepo from '../repositories/recruiter.repository';
+import * as alumniRepo from '../repositories/alumni.repository';
 import { generateOtp, generateSecureToken } from '../utils/otp';
 import { sendOtpEmail, sendPasswordResetEmail } from './emailService';
 
@@ -16,7 +18,26 @@ function getEnv(key: string): string {
 
 // ─── Register ────────────────────────────────────────────────────────────────
 
-export async function register(email: string, password: string, role: UserRole) {
+export interface RecruiterProfileData {
+  fullName: string;
+  designation?: string;
+  companyName: string;
+}
+
+export interface AlumniProfileData {
+  fullName: string;
+  degree: string;
+  branch: string;
+  graduationYear: number;
+  collegeName: string;
+}
+
+export async function register(
+  email: string,
+  password: string,
+  role: UserRole,
+  profileData?: Partial<RecruiterProfileData & AlumniProfileData>,
+) {
   const existing = await userRepo.findUserByEmail(email);
   if (existing) {
     throw Object.assign(new Error('An account with this email already exists.'), {
@@ -39,9 +60,45 @@ export async function register(email: string, password: string, role: UserRole) 
     otpPurpose: 'EMAIL_VERIFY',
   });
 
+  // ── Role-specific profile creation ────────────────────────────────────────
+  if (role === 'RECRUITER' && profileData?.fullName && profileData?.companyName) {
+    const company = await recruiterRepo.findOrCreateCompany(profileData.companyName);
+    await recruiterRepo.createRecruiter({
+      userId: user.id,
+      companyId: company.id,
+      fullName: profileData.fullName,
+      designation: profileData.designation,
+    });
+  }
+
+  if (
+    role === 'ALUMNI' &&
+    profileData?.fullName &&
+    profileData?.degree &&
+    profileData?.branch &&
+    profileData?.graduationYear !== undefined &&
+    profileData?.collegeName
+  ) {
+    await alumniRepo.createAlumniProfileWithVerification({
+      userId: user.id,
+      fullName: profileData.fullName,
+      degree: profileData.degree,
+      branch: profileData.branch,
+      graduationYear: profileData.graduationYear,
+      collegeName: profileData.collegeName,
+    });
+  }
+
   await sendOtpEmail(email, otpCode, 'Email Verification');
 
-  return { message: 'Registration successful. Please check your email (console) for the OTP.' };
+  const pendingApprovalRoles: UserRole[] = ['RECRUITER', 'ALUMNI'];
+  const extraNote = pendingApprovalRoles.includes(role)
+    ? ' After verifying your email, your account will also require approval from a Placement Officer before you can log in.'
+    : '';
+
+  return {
+    message: `Registration successful. Please check your email (console) for the OTP.${extraNote}`,
+  };
 }
 
 // ─── Verify OTP ──────────────────────────────────────────────────────────────
@@ -70,16 +127,26 @@ export async function verifyOtp(email: string, otpCode: string) {
     });
   }
 
+  // Two-gate logic:
+  // STUDENT and PLACEMENT_OFFICER become ACTIVE immediately after email verification.
+  // RECRUITER and ALUMNI must also pass officer approval — they stay PENDING_VERIFICATION
+  // until a Placement Officer explicitly approves them (which then sets status=ACTIVE).
+  const activateOnOtp = user.role === 'STUDENT' || user.role === 'PLACEMENT_OFFICER';
+
   await userRepo.updateUser(user.id, {
     emailVerified: true,
     emailVerifiedAt: new Date(),
-    status: 'ACTIVE',
+    status: activateOnOtp ? 'ACTIVE' : 'PENDING_VERIFICATION',
     otpCode: null,
     otpExpiresAt: null,
     otpPurpose: null,
   });
 
-  return { message: 'Email verified successfully. You can now log in.' };
+  const message = activateOnOtp
+    ? 'Email verified successfully. You can now log in.'
+    : 'Email verified successfully. Your account is now pending approval by a Placement Officer.';
+
+  return { message };
 }
 
 // ─── Login ───────────────────────────────────────────────────────────────────
@@ -94,10 +161,13 @@ export async function login(email: string, password: string) {
   }
 
   if (user.status === 'PENDING_VERIFICATION') {
-    throw Object.assign(
-      new Error('Your email has not been verified. Please check your console for the OTP.'),
-      { code: 'UNAUTHORIZED', statusCode: 401 }
-    );
+    // Distinguish between "haven't verified email" vs "waiting for officer approval"
+    const awaitingOfficer =
+      user.emailVerified && (user.role === 'RECRUITER' || user.role === 'ALUMNI');
+    const msg = awaitingOfficer
+      ? 'Your account is pending approval by a Placement Officer. You will be able to log in once approved.'
+      : 'Your email has not been verified. Please check your console for the OTP.';
+    throw Object.assign(new Error(msg), { code: 'UNAUTHORIZED', statusCode: 401 });
   }
 
   if (user.status !== 'ACTIVE') {

@@ -1,27 +1,68 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, type UserRole } from '../context/AuthContext';
+
+// Auth pages
 import Register from '../pages/auth/Register';
 import VerifyOtp from '../pages/auth/VerifyOtp';
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
+
+// Role dashboards
+import StudentDashboard   from '../pages/student/StudentDashboard';
+import RecruiterDashboard from '../pages/recruiter/RecruiterDashboard';
+import OfficerDashboard   from '../pages/officer/OfficerDashboard';
+import AlumniDashboard    from '../pages/alumni/AlumniDashboard';
+
+// Officer-specific pages
+import PendingApprovals from '../pages/officer/PendingApprovals';
+
+// Legacy placeholder kept for backward compat
 import Dashboard from '../pages/Dashboard';
 
-function ProtectedRoute({ children }: { children: JSX.Element }) {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-slate-400">Loading...</div>;
-  return user ? children : <Navigate to="/login" replace />;
+// ─── ProtectedRoute ───────────────────────────────────────────────────────────
+
+interface ProtectedRouteProps {
+  children: JSX.Element;
+  /** If provided, only users whose role is in this list can render children. Others → /login */
+  allowedRoles?: UserRole[];
 }
+
+function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-slate-400">
+        Loading…
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/login" replace />;
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    // Wrong role — send to login (or could send to their own dashboard)
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
+// ─── Routes ───────────────────────────────────────────────────────────────────
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/verify-otp" element={<VerifyOtp />} />
-      <Route path="/login" element={<Login />} />
+      {/* Public */}
+      <Route path="/"                element={<Navigate to="/login" replace />} />
+      <Route path="/register"        element={<Register />} />
+      <Route path="/verify-otp"      element={<VerifyOtp />} />
+      <Route path="/login"           element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/reset-password"  element={<ResetPassword />} />
+
+      {/* Legacy generic dashboard (kept for backward compat) */}
       <Route
         path="/dashboard"
         element={
@@ -30,6 +71,53 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      {/* Role-specific dashboards */}
+      <Route
+        path="/dashboard/student"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <StudentDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/recruiter"
+        element={
+          <ProtectedRoute allowedRoles={['RECRUITER']}>
+            <RecruiterDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/officer"
+        element={
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
+            <OfficerDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/alumni"
+        element={
+          <ProtectedRoute allowedRoles={['ALUMNI']}>
+            <AlumniDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Officer-only tools */}
+      <Route
+        path="/officer/pending-approvals"
+        element={
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
+            <PendingApprovals />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Catch-all */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }

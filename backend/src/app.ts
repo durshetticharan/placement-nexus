@@ -6,6 +6,8 @@ import pinoHttp from 'pino-http';
 import cookieParser from 'cookie-parser';
 import healthRoutes from './routes/health.routes';
 import authRoutes from './routes/auth.routes';
+import recruiterRoutes from './routes/recruiter.routes';
+import alumniRoutes from './routes/alumni.routes';
 
 const app = express();
 
@@ -30,5 +32,7 @@ app.use(pinoHttp());
 
 app.use('/api/v1/health', healthRoutes);
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/recruiters', recruiterRoutes);
+app.use('/api/v1/alumni', alumniRoutes);
 
 export default app;

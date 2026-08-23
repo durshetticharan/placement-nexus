@@ -12,8 +12,30 @@ const REFRESH_COOKIE_OPTIONS = {
 
 export async function register(req: Request, res: Response): Promise<void> {
   try {
-    const { email, password, role } = req.body;
-    const result = await authService.register(email, password, role);
+    const {
+      email,
+      password,
+      role,
+      // Recruiter fields
+      fullName,
+      designation,
+      companyName,
+      // Alumni fields
+      degree,
+      branch,
+      graduationYear,
+      collegeName,
+    } = req.body;
+
+    const result = await authService.register(email, password, role, {
+      fullName,
+      designation,
+      companyName,
+      degree,
+      branch,
+      graduationYear,
+      collegeName,
+    });
     res.status(201).json({ success: true, data: result });
   } catch (err: any) {
     res.status(err.statusCode || 500).json({

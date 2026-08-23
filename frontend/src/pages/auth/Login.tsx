@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, getDashboardPath } from '../../context/AuthContext';
+import api from '../../services/api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -15,8 +16,16 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
+      // Call the API directly here so we can read the role from the response
+      // and navigate synchronously before React re-renders with the new user state.
+      const res = await api.post('/auth/login', { email, password });
+      const { accessToken: token, user: userData } = res.data.data;
+
+      // Let AuthContext update its state
       await login(email, password);
-      navigate('/dashboard');
+
+      // Navigate to the role-specific dashboard
+      navigate(getDashboardPath(userData.role), { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Login failed. Please check your credentials.');
     } finally {

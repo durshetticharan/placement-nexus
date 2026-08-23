@@ -1,17 +1,52 @@
 import { z } from 'zod';
 
-export const registerSchema = z.object({
-  email: z.string().email('Must be a valid email address.'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters.')
-    .regex(/\d/, 'Password must contain at least one number.'),
-  role: z.enum(['STUDENT', 'RECRUITER', 'PLACEMENT_OFFICER', 'ALUMNI'] as const, {
-    errorMap: () => ({
-      message: 'Role must be one of: STUDENT, RECRUITER, PLACEMENT_OFFICER, ALUMNI.',
+export const registerSchema = z
+  .object({
+    email: z.string().email('Must be a valid email address.'),
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters.')
+      .regex(/\d/, 'Password must contain at least one number.'),
+    role: z.enum(['STUDENT', 'RECRUITER', 'PLACEMENT_OFFICER', 'ALUMNI'], {
+      error: 'Role must be one of: STUDENT, RECRUITER, PLACEMENT_OFFICER, ALUMNI.',
     }),
-  }),
-});
+    // ── Recruiter fields ────────────────────────────────────────────────────
+    fullName: z.string().min(1, 'Full name must not be empty.').optional(),
+    designation: z.string().optional(),
+    companyName: z.string().min(1, 'Company name must not be empty.').optional(),
+    // ── Alumni fields ───────────────────────────────────────────────────────
+    degree: z.string().min(1, 'Degree must not be empty.').optional(),
+    branch: z.string().min(1, 'Branch must not be empty.').optional(),
+    graduationYear: z.number().int().min(1990).max(2100).optional(),
+    collegeName: z.string().min(1, 'College name must not be empty.').optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.role === 'RECRUITER') {
+      if (!data.fullName) {
+        ctx.addIssue({ code: 'custom', path: ['fullName'], message: 'fullName is required for recruiter registration.' });
+      }
+      if (!data.companyName) {
+        ctx.addIssue({ code: 'custom', path: ['companyName'], message: 'companyName is required for recruiter registration.' });
+      }
+    }
+    if (data.role === 'ALUMNI') {
+      if (!data.fullName) {
+        ctx.addIssue({ code: 'custom', path: ['fullName'], message: 'fullName is required for alumni registration.' });
+      }
+      if (!data.degree) {
+        ctx.addIssue({ code: 'custom', path: ['degree'], message: 'degree is required for alumni registration.' });
+      }
+      if (!data.branch) {
+        ctx.addIssue({ code: 'custom', path: ['branch'], message: 'branch is required for alumni registration.' });
+      }
+      if (data.graduationYear === undefined) {
+        ctx.addIssue({ code: 'custom', path: ['graduationYear'], message: 'graduationYear is required for alumni registration.' });
+      }
+      if (!data.collegeName) {
+        ctx.addIssue({ code: 'custom', path: ['collegeName'], message: 'collegeName is required for alumni registration.' });
+      }
+    }
+  });
 
 export const verifyOtpSchema = z.object({
   email: z.string().email('Must be a valid email address.'),
