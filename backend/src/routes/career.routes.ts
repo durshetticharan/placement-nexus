@@ -5,6 +5,7 @@ import * as careerPathController from '../controllers/careerPath.controller';
 import * as careerGoalController from '../controllers/careerGoal.controller';
 import * as learningResourceController from '../controllers/learningResource.controller';
 import * as skillGapController from '../controllers/skillGap.controller';
+import * as readinessController from '../controllers/readiness.controller';
 
 const router = Router();
 
@@ -20,6 +21,10 @@ router.delete('/me/goal', requireRole('STUDENT'), careerGoalController.deleteMyC
 // POST triggers computation (or re-computation); GET reads saved results.
 router.post('/me/skill-gap', requireRole('STUDENT'), skillGapController.computeSkillGap);
 router.get('/me/skill-gap', requireRole('STUDENT'), skillGapController.getSkillGap);
+
+// ── Phase 9: Placement Readiness (Student role only) ──────────────────────────
+router.post('/me/readiness', requireRole('STUDENT'), readinessController.computeReadiness);
+router.get('/me/readiness', requireRole('STUDENT'), readinessController.getReadiness);
 
 // ── Skills Catalog (Both Officer and Student) ────────────────────────────────
 router.get('/skills', requireRole('PLACEMENT_OFFICER', 'STUDENT'), careerPathController.listSkills);

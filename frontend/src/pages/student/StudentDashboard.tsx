@@ -172,6 +172,25 @@ export default function StudentDashboard() {
           </div>
         </div>
 
+        {/* Phase 9: Placement Readiness Quick Access Banner */}
+        <div className="bg-gradient-to-r from-emerald-900/60 via-teal-900/40 to-slate-800 rounded-xl border border-emerald-700/60 p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-600/30 border border-emerald-500/50 flex items-center justify-center text-2xl">
+              🌟
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Placement Readiness</h2>
+              <p className="text-slate-300 text-xs sm:text-sm">Check your overall readiness score and get personalized recommendations</p>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate('/student/readiness')}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-colors shadow whitespace-nowrap"
+          >
+            📊 Check Readiness →
+          </button>
+        </div>
+
         {/* Navigation Tabs */}
         <div className="flex border-b border-slate-700 overflow-x-auto">
           {(['academics', 'skills', 'projects', 'internships', 'certifications', 'achievements', 'profiles'] as Tab[]).map((tab) => {

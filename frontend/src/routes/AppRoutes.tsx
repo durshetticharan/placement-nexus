@@ -33,6 +33,9 @@ import CareerManagement from '../pages/officer/CareerManagement';
 // Phase 8 — Skill Gap Analysis
 import SkillGapAnalysis from '../pages/student/SkillGapAnalysis';
 
+// Phase 9 — Placement Readiness
+import PlacementReadiness from '../pages/student/PlacementReadiness';
+
 // Legacy placeholder kept for backward compat
 import Dashboard from '../pages/Dashboard';
 
@@ -214,6 +217,16 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <SkillGapAnalysis />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Phase 9 — Placement Readiness */}
+      <Route
+        path="/student/readiness"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <PlacementReadiness />
           </ProtectedRoute>
         }
       />
