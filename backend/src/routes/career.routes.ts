@@ -4,6 +4,7 @@ import { requireRole } from '../middleware/rbac.middleware';
 import * as careerPathController from '../controllers/careerPath.controller';
 import * as careerGoalController from '../controllers/careerGoal.controller';
 import * as learningResourceController from '../controllers/learningResource.controller';
+import * as skillGapController from '../controllers/skillGap.controller';
 
 const router = Router();
 
@@ -14,6 +15,11 @@ router.use(requireAuth);
 router.get('/me/goal', requireRole('STUDENT'), careerGoalController.getMyCareerGoal);
 router.put('/me/goal', requireRole('STUDENT'), careerGoalController.setMyCareerGoal);
 router.delete('/me/goal', requireRole('STUDENT'), careerGoalController.deleteMyCareerGoal);
+
+// ── Phase 8: Skill Gap Analysis (Student role only) ───────────────────────────
+// POST triggers computation (or re-computation); GET reads saved results.
+router.post('/me/skill-gap', requireRole('STUDENT'), skillGapController.computeSkillGap);
+router.get('/me/skill-gap', requireRole('STUDENT'), skillGapController.getSkillGap);
 
 // ── Skills Catalog (Both Officer and Student) ────────────────────────────────
 router.get('/skills', requireRole('PLACEMENT_OFFICER', 'STUDENT'), careerPathController.listSkills);

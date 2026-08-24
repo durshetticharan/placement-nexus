@@ -26,8 +26,12 @@ import StudentAssessmentHistory from '../pages/student/AssessmentHistory';
 import TakeAssessment from '../pages/student/TakeAssessment';
 import AssessmentResult from '../pages/student/AssessmentResult';
 
+// Phase 7 — Career Development
 import CareerDevelopment from '../pages/student/CareerDevelopment';
 import CareerManagement from '../pages/officer/CareerManagement';
+
+// Phase 8 — Skill Gap Analysis
+import SkillGapAnalysis from '../pages/student/SkillGapAnalysis';
 
 // Legacy placeholder kept for backward compat
 import Dashboard from '../pages/Dashboard';
@@ -186,7 +190,7 @@ export default function AppRoutes() {
         }
       />
 
-      {/* Phase 7 Career Development Routes */}
+      {/* Phase 7 — Career Development Routes */}
       <Route
         path="/student/career"
         element={
@@ -200,6 +204,16 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
             <CareerManagement />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Phase 8 — Skill Gap Analysis */}
+      <Route
+        path="/student/skill-gap"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <SkillGapAnalysis />
           </ProtectedRoute>
         }
       />

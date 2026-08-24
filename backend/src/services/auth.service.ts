@@ -124,6 +124,7 @@ export async function register(
 
   return {
     message: `Registration successful. Please check your email (console) for the OTP.${extraNote}`,
+    ...(process.env.NODE_ENV === 'test' && { otpCode }),
   };
 }
 

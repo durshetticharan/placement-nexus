@@ -139,7 +139,7 @@ export default function StudentDashboard() {
           </div>
           <button
             onClick={() => navigate('/student/career')}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold transition-colors shadow whitespace-nowrap"
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg tekxt-xs font-bold transition-colors shadow whitespace-nowrap"
           >
             🎯 Career Intelligence →
           </button>
@@ -189,11 +189,10 @@ export default function StudentDashboard() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px capitalize whitespace-nowrap flex items-center gap-2 ${
-                  activeTab === tab
+                className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px capitalize whitespace-nowrap flex items-center gap-2 ${activeTab === tab
                     ? 'border-indigo-500 text-indigo-400 font-semibold'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
-                }`}
+                  }`}
               >
                 <span>{label}</span>
                 {counts[tab] > 0 && (
@@ -488,9 +487,8 @@ function SkillsSection({
           {skills.map((item) => (
             <div
               key={item.id}
-              className={`flex items-center gap-3 px-3.5 py-2 rounded-xl border text-sm font-medium ${
-                RATING_COLORS[item.selfRating]
-              }`}
+              className={`flex items-center gap-3 px-3.5 py-2 rounded-xl border text-sm font-medium ${RATING_COLORS[item.selfRating]
+                }`}
             >
               <div>
                 <span className="font-semibold text-white">{item.skill.name}</span>
