@@ -55,6 +55,20 @@ export default function OfficerDashboard() {
           </Link>
 
           <Link
+            to="/officer/career"
+            className="flex items-center justify-between w-full px-4 py-3 bg-purple-700/30 hover:bg-purple-700/50 border border-purple-700 rounded-lg transition-colors group"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-purple-400 text-lg">🎯</span>
+              <div>
+                <p className="text-white font-medium text-sm">Career Management</p>
+                <p className="text-slate-400 text-xs">Configure career paths, skills & learning</p>
+              </div>
+            </div>
+            <span className="text-slate-400 group-hover:text-white transition-colors">→</span>
+          </Link>
+
+          <Link
             to="/officer/pending-approvals"
             className="flex items-center justify-between w-full px-4 py-3 bg-emerald-700/30 hover:bg-emerald-700/50 border border-emerald-700 rounded-lg transition-colors group"
           >

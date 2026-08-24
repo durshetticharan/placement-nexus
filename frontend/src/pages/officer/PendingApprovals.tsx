@@ -108,7 +108,7 @@ function RejectModal({ name, onConfirm, onCancel, loading }: RejectModalProps) {
 let toastCounter = 0;
 
 export default function PendingApprovals() {
-  const { accessToken } = useAuth();
+  useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('recruiters');
 
   const [recruiters, setRecruiters] = useState<PendingRecruiter[]>([]);

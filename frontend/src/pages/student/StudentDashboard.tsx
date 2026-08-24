@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, FormEvent } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getErrorMessage } from '../../utils/error';
@@ -124,6 +125,25 @@ export default function StudentDashboard() {
             <button onClick={() => setError('')} className="text-red-400 hover:text-white ml-4">✕</button>
           </div>
         )}
+
+        {/* Career Intelligence Quick Access Banner */}
+        <div className="bg-gradient-to-r from-purple-900/60 via-indigo-900/40 to-slate-800 rounded-xl border border-purple-700/60 p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-purple-600/30 border border-purple-500/50 flex items-center justify-center text-2xl">
+              🎯
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Career Development & Pathing</h2>
+              <p className="text-slate-300 text-xs sm:text-sm">Set your target career path, analyze required skills, and view learning resources</p>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate('/student/career')}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold transition-colors shadow whitespace-nowrap"
+          >
+            🎯 Career Intelligence →
+          </button>
+        </div>
 
         {/* Assessment Engine Quick Access Banner */}
         <div className="bg-gradient-to-r from-indigo-900/60 via-purple-900/40 to-slate-800 rounded-xl border border-indigo-700/60 p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">

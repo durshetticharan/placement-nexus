@@ -4,7 +4,7 @@
  * it joins the individual issues into a readable string.
  * Otherwise falls back to error.message, and then to fallbackMessage.
  */
-export function getErrorMessage(err: any, fallbackMessage: string): string {
+export function getErrorMessage(err: any, fallbackMessage = 'An unexpected error occurred.'): string {
   const errorData = err?.response?.data?.error;
   if (Array.isArray(errorData?.details) && errorData.details.length > 0) {
     return errorData.details

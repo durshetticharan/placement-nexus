@@ -1,4 +1,5 @@
-import { useState, FormEvent } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth, getDashboardPath } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -20,7 +21,7 @@ export default function Login() {
       // Call the API directly here so we can read the role from the response
       // and navigate synchronously before React re-renders with the new user state.
       const res = await api.post('/auth/login', { email, password });
-      const { accessToken: token, user: userData } = res.data.data;
+      const { user: userData } = res.data.data;
 
       // Let AuthContext update its state
       await login(email, password);

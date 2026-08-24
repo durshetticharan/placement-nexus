@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import api from '../services/api';
 
 export type UserRole = 'STUDENT' | 'RECRUITER' | 'PLACEMENT_OFFICER' | 'ALUMNI';

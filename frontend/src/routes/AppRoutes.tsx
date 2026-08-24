@@ -1,3 +1,4 @@
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth, type UserRole } from '../context/AuthContext';
 
@@ -25,13 +26,16 @@ import StudentAssessmentHistory from '../pages/student/AssessmentHistory';
 import TakeAssessment from '../pages/student/TakeAssessment';
 import AssessmentResult from '../pages/student/AssessmentResult';
 
+import CareerDevelopment from '../pages/student/CareerDevelopment';
+import CareerManagement from '../pages/officer/CareerManagement';
+
 // Legacy placeholder kept for backward compat
 import Dashboard from '../pages/Dashboard';
 
 // ─── ProtectedRoute ───────────────────────────────────────────────────────────
 
 interface ProtectedRouteProps {
-  children: JSX.Element;
+  children: React.ReactElement;
   /** If provided, only users whose role is in this list can render children. Others → /login */
   allowedRoles?: UserRole[];
 }
@@ -178,6 +182,24 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <AssessmentResult />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Phase 7 Career Development Routes */}
+      <Route
+        path="/student/career"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <CareerDevelopment />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/officer/career"
+        element={
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
+            <CareerManagement />
           </ProtectedRoute>
         }
       />

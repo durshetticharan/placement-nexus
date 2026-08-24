@@ -519,6 +519,7 @@ model CareerPath {
   id                String   @id @default(cuid())
   name              String   @unique // "Software Engineer", "Data Analyst", ...
   description        String?
+  isActive          Boolean  @default(true)
 
   skillRequirements  CareerSkillRequirement[]
   studentGoals        StudentCareerGoal[]
@@ -528,6 +529,7 @@ model CareerPath {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
+  @@index([isActive])
   @@map("career_paths")
 }
 
