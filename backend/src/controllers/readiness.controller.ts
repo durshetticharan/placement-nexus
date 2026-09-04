@@ -12,7 +12,7 @@ export async function computeReadiness(req: Request, res: Response) {
       return res.status(404).json({ success: false, message: 'Student profile not found.' });
     }
 
-    const careerPathId = req.body.careerPathId;
+    const careerPathId = req.body?.careerPathId || (req.query?.careerPathId as string | undefined);
     const result = await readinessService.computeAndSaveReadiness(student.id, careerPathId);
     
     res.status(200).json({ success: true, data: result });

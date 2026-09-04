@@ -208,11 +208,10 @@ export default function StudentDashboard() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px capitalize whitespace-nowrap flex items-center gap-2 ${
-                  activeTab === tab
+                className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px capitalize whitespace-nowrap flex items-center gap-2 ${activeTab === tab
                     ? 'border-indigo-500 text-indigo-400 font-semibold'
                     : 'border-transparent text-slate-400 hover:text-slate-200'
-                }`}
+                  }`}
               >
                 <span>{label}</span>
                 {counts[tab] > 0 && (
@@ -507,9 +506,8 @@ function SkillsSection({
           {skills.map((item) => (
             <div
               key={item.id}
-              className={`flex items-center gap-3 px-3.5 py-2 rounded-xl border text-sm font-medium ${
-                RATING_COLORS[item.selfRating]
-              }`}
+              className={`flex items-center gap-3 px-3.5 py-2 rounded-xl border text-sm font-medium ${RATING_COLORS[item.selfRating]
+                }`}
             >
               <div>
                 <span className="font-semibold text-white">{item.skill.name}</span>
@@ -950,7 +948,6 @@ function SkillModal({ initialData, onClose, onSaved }: { initialData?: SkillItem
       setLoading(false);
     }
   };
-
   return (
     <ModalWrapper title={initialData ? `Edit Skill: ${initialData.skill.name}` : 'Add New Skill'} onClose={onClose}>
       {error && <div className="p-3 bg-red-900/40 border border-red-500 rounded-lg text-red-300 text-xs">{error}</div>}

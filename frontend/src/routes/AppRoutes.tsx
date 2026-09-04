@@ -36,6 +36,12 @@ import SkillGapAnalysis from '../pages/student/SkillGapAnalysis';
 // Phase 9 — Placement Readiness
 import PlacementReadiness from '../pages/student/PlacementReadiness';
 
+// Phase 10 — Companies + Recruiters
+import RecruiterProfilePage from '../pages/recruiter/RecruiterProfile';
+import CompanyManagement from '../pages/recruiter/CompanyManagement';
+import CompanyDirectory from '../pages/officer/CompanyDirectory';
+import RecruiterDirectory from '../pages/officer/RecruiterDirectory';
+
 // Legacy placeholder kept for backward compat
 import Dashboard from '../pages/Dashboard';
 
@@ -227,6 +233,42 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <PlacementReadiness />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Phase 10 — Recruiter Workspace */}
+      <Route
+        path="/recruiter/profile"
+        element={
+          <ProtectedRoute allowedRoles={['RECRUITER']}>
+            <RecruiterProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/recruiter/company"
+        element={
+          <ProtectedRoute allowedRoles={['RECRUITER']}>
+            <CompanyManagement />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Phase 10 — Officer Company & Recruiter Management */}
+      <Route
+        path="/officer/companies"
+        element={
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
+            <CompanyDirectory />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/officer/recruiters"
+        element={
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
+            <RecruiterDirectory />
           </ProtectedRoute>
         }
       />

@@ -2,32 +2,47 @@ import { Router } from 'express';
 import * as recruiterController from '../controllers/recruiter.controller';
 import { requireAuth } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/rbac.middleware';
+import { validate } from '../validation/auth.validation';
+import { updateRecruiterProfileSchema } from '../validation/recruiter.validation';
+import { requestCompanyAssociationSchema, reviewActionSchema } from '../validation/company.validation';
 
 const router = Router();
 
-// All routes in this file are Officer-only.
-// requireVerifiedRecruiter is intentionally NOT applied here — Officers call these,
-// not Recruiters. Recruiter-specific protected routes in future phases will use it.
+// All routes require authentication
+router.use(requireAuth);
 
-router.get(
-  '/pending',
-  requireAuth,
-  requireRole('PLACEMENT_OFFICER'),
-  recruiterController.getPendingRecruiters,
+// ─── Recruiter Self-Service Routes (Role: RECRUITER) ──────────────────────────
+router.get('/me', requireRole('RECRUITER'), recruiterController.getMyProfile);
+router.put(
+  '/me',
+  requireRole('RECRUITER'),
+  validate(updateRecruiterProfileSchema),
+  recruiterController.updateMyProfile
 );
-
+router.get('/me/companies', requireRole('RECRUITER'), recruiterController.getMyCompanies);
 router.post(
-  '/:id/approve',
-  requireAuth,
-  requireRole('PLACEMENT_OFFICER'),
-  recruiterController.approveRecruiter,
+  '/me/company-requests',
+  requireRole('RECRUITER'),
+  validate(requestCompanyAssociationSchema),
+  recruiterController.requestCompanyAssociation
 );
 
+// ─── Placement Officer Management Routes (Role: PLACEMENT_OFFICER) ───────────
+router.get('/pending', requireRole('PLACEMENT_OFFICER'), recruiterController.getPendingRecruiters);
+router.get('/', requireRole('PLACEMENT_OFFICER'), recruiterController.listRecruiters);
+router.get('/:id', requireRole('PLACEMENT_OFFICER'), recruiterController.getRecruiterById);
+router.post('/:id/approve', requireRole('PLACEMENT_OFFICER'), recruiterController.approveRecruiter);
 router.post(
   '/:id/reject',
-  requireAuth,
   requireRole('PLACEMENT_OFFICER'),
-  recruiterController.rejectRecruiter,
+  validate(reviewActionSchema),
+  recruiterController.rejectRecruiter
+);
+router.post(
+  '/:id/suspend',
+  requireRole('PLACEMENT_OFFICER'),
+  validate(reviewActionSchema),
+  recruiterController.suspendRecruiter
 );
 
 export default router;

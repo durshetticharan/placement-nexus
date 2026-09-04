@@ -163,7 +163,13 @@ async function main() {
 
     // ---- 6. RBAC: student token should be blocked from this route ----
     const studentEmail = randomEmail('student');
-    await post('/auth/register', { email: studentEmail, password: 'Pass123456', role: 'STUDENT' });
+    await post('/auth/register', {
+      email: studentEmail,
+      password: 'Pass123456',
+      role: 'STUDENT',
+      fullName: 'Test Student',
+      rollNumber: `STU_${Date.now()}`,
+    });
     const studentOtp = runSql(`SELECT "otpCode" FROM users WHERE email = '${studentEmail}';`);
     await post('/auth/verify-otp', { email: studentEmail, otpCode: studentOtp?.trim() });
     const studentLogin = await post('/auth/login', { email: studentEmail, password: 'Pass123456' });
