@@ -32,7 +32,7 @@ interface AuthContextType {
   accessToken: string | null;
   loading: boolean;
   register: (payload: RegisterPayload) => Promise<void>;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ role: string }>;
   logout: () => Promise<void>;
 }
 
@@ -88,11 +88,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await api.post('/auth/register', payload);
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<{ role: string }> => {
     const res = await api.post('/auth/login', { email, password });
     const { accessToken: token, user: userData } = res.data.data;
     setAccessToken(token);
     setUser(userData);
+    return { role: userData.role };
   };
 
   const logout = async () => {

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth, getDashboardPath } from '../../context/AuthContext';
-import api from '../../services/api';
 import { getErrorMessage } from '../../utils/error';
 
 export default function Login() {
@@ -18,16 +17,17 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      // Call the API directly here so we can read the role from the response
-      // and navigate synchronously before React re-renders with the new user state.
-      const res = await api.post('/auth/login', { email, password });
-      const { user: userData } = res.data.data;
-
-      // Let AuthContext update its state
-      await login(email, password);
-
-      // Navigate to the role-specific dashboard
-      navigate(getDashboardPath(userData.role), { replace: true });
+      // Single login call — AuthContext.login() calls the backend once,
+      // sets accessToken + user in React state, and returns the user's role.
+      // The backend sets the httpOnly refresh cookie in the response.
+      //
+      // FIX: Previous code called api.post('/auth/login') directly AND then
+      // called login() from AuthContext (which called the same endpoint again).
+      // Two login calls = two refresh token rotations in the DB. The cookie from
+      // call 1 was immediately invalidated by call 2, causing silentRefresh to
+      // return 401 on every page reload and losing the session.
+      const { role } = await login(email, password);
+      navigate(getDashboardPath(role), { replace: true });
     } catch (err: any) {
       setError(getErrorMessage(err, 'Login failed. Please check your credentials.'));
     } finally {

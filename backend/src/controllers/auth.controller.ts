@@ -2,13 +2,17 @@ import { Request, Response } from 'express';
 import * as authService from '../services/auth.service';
 
 const REFRESH_COOKIE_NAME = 'refreshToken';
+const isDev = process.env.NODE_ENV !== 'production';
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: 'strict' as const,
+  // 'lax' allows cookies on same-site navigations and page reloads (needed with Vite proxy)
+  // 'strict' blocked cookies when Playwright CDP triggers page.goto() reloads
+  sameSite: (isDev ? 'lax' : 'strict') as 'lax' | 'strict',
   path: '/api/v1/auth',
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
-  // secure: true  // Uncomment in production (HTTPS only)
+  secure: !isDev, // true in production (HTTPS), false in dev (HTTP)
 };
+
 
 export async function register(req: Request, res: Response): Promise<void> {
   try {

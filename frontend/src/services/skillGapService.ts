@@ -106,11 +106,8 @@ export interface GetGapResponse {
 }
 
 // ── API Functions ─────────────────────────────────────────────────────────────
-
-function getAuthHeader() {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
+// NOTE: Authorization header is injected automatically by the Axios interceptor
+// in AuthContext.tsx — do NOT pass manual headers here.
 
 /**
  * Trigger (or re-trigger) skill gap computation.
@@ -123,7 +120,6 @@ export async function triggerSkillGapAnalysis(careerPathId?: string): Promise<Co
     '/career/me/skill-gap',
     {},
     {
-      headers: getAuthHeader(),
       params: careerPathId ? { careerPathId } : {},
     },
   );
@@ -138,7 +134,6 @@ export async function triggerSkillGapAnalysis(careerPathId?: string): Promise<Co
  */
 export async function getSkillGapAnalysis(careerPathId?: string): Promise<GetGapResponse> {
   const res = await api.get('/career/me/skill-gap', {
-    headers: getAuthHeader(),
     params: careerPathId ? { careerPathId } : {},
   });
   return res.data.data as GetGapResponse;
