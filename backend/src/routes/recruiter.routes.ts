@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as recruiterController from '../controllers/recruiter.controller';
+import * as driveController from '../controllers/drive.controller';
 import { requireAuth } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/rbac.middleware';
 import { validate } from '../validation/auth.validation';
@@ -12,6 +13,14 @@ const router = Router();
 router.use(requireAuth);
 
 // ─── Recruiter Self-Service Routes (Role: RECRUITER) ──────────────────────────
+router.get('/drives', requireRole('RECRUITER'), driveController.listRecruiterDrives);
+router.post('/drives', requireRole('RECRUITER'), driveController.createDrive);
+router.put('/drives/:id', requireRole('RECRUITER'), driveController.updateDrive);
+router.put('/drives/:id/requirements', requireRole('RECRUITER'), driveController.updateDriveRequirements);
+router.post('/drives/:id/submit', requireRole('RECRUITER'), driveController.submitDrive);
+router.post('/drives/:id/close', requireRole('RECRUITER'), driveController.closeDriveRecruiter);
+router.post('/drives/:id/cancel', requireRole('RECRUITER'), driveController.cancelDriveRecruiter);
+
 router.get('/me', requireRole('RECRUITER'), recruiterController.getMyProfile);
 router.put(
   '/me',

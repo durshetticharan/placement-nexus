@@ -38,40 +38,40 @@ enum AccountStatus {
 }
 
 model User {
-  id                  String        @id @default(cuid())
-  email               String        @unique
-  passwordHash        String
-  role                UserRole
-  status              AccountStatus @default(PENDING_VERIFICATION)
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String
+  role         UserRole
+  status       AccountStatus @default(PENDING_VERIFICATION)
 
-  emailVerified       Boolean       @default(false)
-  emailVerifiedAt     DateTime?
+  emailVerified   Boolean   @default(false)
+  emailVerifiedAt DateTime?
 
   // OTP-based verification (per project methodology requirement)
-  otpCode             String?
-  otpExpiresAt        DateTime?
-  otpPurpose          String?       // "EMAIL_VERIFY" | "PASSWORD_RESET" | "LOGIN_2FA"
+  otpCode      String?
+  otpExpiresAt DateTime?
+  otpPurpose   String? // "EMAIL_VERIFY" | "PASSWORD_RESET" | "LOGIN_2FA"
 
-  refreshTokenHash    String?       // current valid refresh token (hashed), rotated on use
-  refreshTokenExpiry  DateTime?
+  refreshTokenHash   String? // current valid refresh token (hashed), rotated on use
+  refreshTokenExpiry DateTime?
 
   passwordResetToken       String?
   passwordResetTokenExpiry DateTime?
 
-  lastLoginAt         DateTime?
+  lastLoginAt DateTime?
 
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // One-to-one profile per role — only the matching profile is ever populated
-  student             Student?
-  recruiter           Recruiter?
-  placementOfficer    PlacementOfficer?
-  alumniProfile       AlumniProfile?
+  student          Student?
+  recruiter        Recruiter?
+  placementOfficer PlacementOfficer?
+  alumniProfile    AlumniProfile?
 
-  notifications       Notification[]
-  notificationPrefs   NotificationPreference?
-  auditLogsActed      AuditLog[]    @relation("AuditActor")
+  notifications     Notification[]
+  notificationPrefs NotificationPreference?
+  auditLogsActed    AuditLog[]              @relation("AuditActor")
 
   @@index([role])
   @@index([status])
@@ -79,17 +79,17 @@ model User {
 }
 
 model PlacementOfficer {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   fullName    String
   designation String?
   department  String?
   phone       String?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("placement_officers")
 }
@@ -99,41 +99,41 @@ model PlacementOfficer {
 // ============================================================================
 
 model Student {
-  id                    String    @id @default(cuid())
-  userId                String    @unique
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  fullName              String
-  rollNumber            String    @unique
-  phone                 String?
-  dateOfBirth           DateTime?
-  gender                String?
-  address               String?
-  profilePhotoUrl       String?
+  fullName        String
+  rollNumber      String    @unique
+  phone           String?
+  dateOfBirth     DateTime?
+  gender          String?
+  address         String?
+  profilePhotoUrl String?
 
-  profileCompletionPct  Int       @default(0)
-  placementStatus       PlacementStatus @default(NOT_PLACED)
+  profileCompletionPct Int             @default(0)
+  placementStatus      PlacementStatus @default(NOT_PLACED)
 
-  academics             StudentAcademic?
-  skills                StudentSkill[]
-  projects              Project[]
-  internships           Internship[]
-  certifications        Certification[]
-  achievements          Achievement[]
-  codingProfiles        CodingProfile[]
-  professionalProfiles  ProfessionalProfile[]
-  resumes               Resume[]
+  academics            StudentAcademic?
+  skills               StudentSkill[]
+  projects             Project[]
+  internships          Internship[]
+  certifications       Certification[]
+  achievements         Achievement[]
+  codingProfiles       CodingProfile[]
+  professionalProfiles ProfessionalProfile[]
+  resumes              Resume[]
 
-  assessmentAttempts    AssessmentAttempt[]
-  careerGoals           StudentCareerGoal[]
-  skillGaps             SkillGap[]
-  learningProgress      LearningProgress[]
-  readinessScores       ReadinessScore[]
+  assessmentAttempts AssessmentAttempt[]
+  careerGoals        StudentCareerGoal[]
+  skillGaps          SkillGap[]
+  learningProgress   LearningProgress[]
+  readinessScores    ReadinessScore[]
 
-  applications          Application[]
-  referralRequests      ReferralRequest[]
-  mentorshipRequests    MentorshipRequest[]
-  mockInterviews        MockInterview[]
+  applications       Application[]
+  referralRequests   ReferralRequest[]
+  mentorshipRequests MentorshipRequest[]
+  mockInterviews     MockInterview[]
 
   resumeAnalyses        ResumeAnalysis[]
   careerRecommendations CareerRecommendation[]
@@ -141,10 +141,10 @@ model Student {
   // Alumni linkage: when a student graduates and becomes an alumnus, the
   // AlumniProfile references back to this record for provenance — never delete
   // the historical student record when an alumni account is created.
-  alumniProfile         AlumniProfile?
+  alumniProfile AlumniProfile?
 
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([placementStatus])
   @@map("students")
@@ -158,21 +158,21 @@ enum PlacementStatus {
 }
 
 model StudentAcademic {
-  id                String   @id @default(cuid())
-  studentId         String   @unique
-  student           Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  studentId String  @unique
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  degree            String   // e.g. "B.Tech"
-  branch            String   // e.g. "CSE"
+  degree            String // e.g. "B.Tech"
+  branch            String // e.g. "CSE"
   collegeName       String
   graduationYear    Int
   cgpa              Decimal  @db.Decimal(4, 2)
   backlogs          Int      @default(0)
-  tenthPercentage    Decimal? @db.Decimal(5, 2)
-  twelfthPercentage  Decimal? @db.Decimal(5, 2)
+  tenthPercentage   Decimal? @db.Decimal(5, 2)
+  twelfthPercentage Decimal? @db.Decimal(5, 2)
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([branch, graduationYear])
   @@map("student_academics")
@@ -180,19 +180,19 @@ model StudentAcademic {
 
 // Master skill catalog — shared across students, career paths, drives
 model Skill {
-  id            String   @id @default(cuid())
-  name          String   @unique
-  category      String?  // e.g. "Programming Language", "Framework", "Soft Skill"
+  id       String  @id @default(cuid())
+  name     String  @unique
+  category String? // e.g. "Programming Language", "Framework", "Soft Skill"
 
-  studentSkills          StudentSkill[]
-  careerRequirements     CareerSkillRequirement[]
-  driveRequiredSkills    DriveRequirement[] @relation("RequiredSkill")
-  drivePreferredSkills   DriveRequirement[] @relation("PreferredSkill")
-  skillGaps              SkillGap[]
-  learningResources      LearningResourceSkill[]
+  studentSkills        StudentSkill[]
+  careerRequirements   CareerSkillRequirement[]
+  driveRequiredSkills  DriveRequirement[]       @relation("RequiredSkill")
+  drivePreferredSkills DriveRequirement[]       @relation("PreferredSkill")
+  skillGaps            SkillGap[]
+  learningResources    LearningResourceSkill[]
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("skills")
 }
@@ -205,96 +205,96 @@ enum ProficiencyLevel {
 }
 
 model StudentSkill {
-  id            String           @id @default(cuid())
-  studentId     String
-  student       Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  skillId       String
-  skill         Skill            @relation(fields: [skillId], references: [id], onDelete: Restrict)
+  id        String  @id @default(cuid())
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  skillId   String
+  skill     Skill   @relation(fields: [skillId], references: [id], onDelete: Restrict)
 
   selfRating    ProficiencyLevel
   // Evidence-backed, system-computed confidence (0-100), distinct from self-rating.
   // Populated by skill-gap engine using assessments + coding + projects.
   evidenceScore Int?
 
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([studentId, skillId])
   @@map("student_skills")
 }
 
 model Project {
-  id            String   @id @default(cuid())
-  studentId     String
-  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  title         String
-  description   String
-  techStack     String[] // simple text array; not normalized — low query need
-  repoUrl       String?
-  liveUrl       String?
-  startDate     DateTime?
-  endDate       DateTime?
+  title       String
+  description String
+  techStack   String[] // simple text array; not normalized — low query need
+  repoUrl     String?
+  liveUrl     String?
+  startDate   DateTime?
+  endDate     DateTime?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([studentId])
   @@map("projects")
 }
 
 model Internship {
-  id            String   @id @default(cuid())
-  studentId     String
-  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  companyName   String
-  role          String
-  description   String?
-  startDate     DateTime
-  endDate       DateTime?
-  isOngoing     Boolean  @default(false)
+  companyName    String
+  role           String
+  description    String?
+  startDate      DateTime
+  endDate        DateTime?
+  isOngoing      Boolean   @default(false)
   certificateUrl String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([studentId])
   @@map("internships")
 }
 
 model Certification {
-  id              String   @id @default(cuid())
-  studentId       String
-  student         Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  title           String
-  issuingOrg      String
-  issueDate       DateTime
-  expiryDate      DateTime?
-  credentialUrl   String?
-  fileUrl         String?  // uploaded PDF/image, via file storage abstraction
+  title         String
+  issuingOrg    String
+  issueDate     DateTime
+  expiryDate    DateTime?
+  credentialUrl String?
+  fileUrl       String? // uploaded PDF/image, via file storage abstraction
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([studentId])
   @@map("certifications")
 }
 
 model Achievement {
-  id            String   @id @default(cuid())
-  studentId     String
-  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  title         String
-  description   String?
-  category      String?  // e.g. "Hackathon", "Publication", "Award"
-  date          DateTime?
-  proofUrl      String?
+  title       String
+  description String?
+  category    String? // e.g. "Hackathon", "Publication", "Award"
+  date        DateTime?
+  proofUrl    String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([studentId])
   @@map("achievements")
@@ -312,54 +312,54 @@ enum SyncStatus {
 // CodeChef, HackerRank, Codeforces, GeeksforGeeks, and future platforms
 // without schema changes. See master spec Section 5.
 model CodingProfile {
-  id            String     @id @default(cuid())
-  studentId     String
-  student       Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  platform      String     // "GITHUB" | "LEETCODE" | "CODECHEF" | "HACKERRANK" | "CODEFORCES" | "GFG" | ...
-  username      String
-  profileUrl    String
+  platform   String // "GITHUB" | "LEETCODE" | "CODECHEF" | "HACKERRANK" | "CODEFORCES" | "GFG" | ...
+  username   String
+  profileUrl String
 
-  statistics    Json?      // platform-specific shape, e.g. {"problemsSolved": 320, "rating": 1650}
-  syncStatus    SyncStatus @default(NOT_SYNCED)
-  lastSyncedAt  DateTime?
-  syncError     String?
+  statistics   Json? // platform-specific shape, e.g. {"problemsSolved": 320, "rating": 1650}
+  syncStatus   SyncStatus @default(NOT_SYNCED)
+  lastSyncedAt DateTime?
+  syncError    String?
 
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([studentId, platform])
   @@map("coding_profiles")
 }
 
 model ProfessionalProfile {
-  id          String   @id @default(cuid())
-  studentId   String
-  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  platform    String   // "LINKEDIN" | future platforms
-  profileUrl  String
+  platform   String // "LINKEDIN" | future platforms
+  profileUrl String
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([studentId, platform])
   @@map("professional_profiles")
 }
 
 model Resume {
-  id            String    @id @default(cuid())
-  studentId     String
-  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  fileUrl       String    // storage reference, not the binary itself
+  fileUrl       String // storage reference, not the binary itself
   fileName      String
   fileSizeBytes Int
-  isPrimary     Boolean   @default(false)
+  isPrimary     Boolean @default(false)
 
-  analyses      ResumeAnalysis[]
+  analyses ResumeAnalysis[]
 
-  uploadedAt    DateTime  @default(now())
+  uploadedAt DateTime @default(now())
 
   @@index([studentId])
   @@map("resumes")
@@ -382,22 +382,22 @@ enum AssessmentStatus {
 }
 
 model Assessment {
-  id            String             @id @default(cuid())
-  title         String
-  description   String?
-  category      AssessmentCategory
-  topic         String             // e.g. "DBMS", "DSA", "Quantitative Ability" — configurable, not enum
-  difficulty    String?            // "EASY" | "MEDIUM" | "HARD" — free text to stay configurable
-  durationMins  Int
+  id             String             @id @default(cuid())
+  title          String
+  description    String?
+  category       AssessmentCategory
+  topic          String // e.g. "DBMS", "DSA", "Quantitative Ability" — configurable, not enum
+  difficulty     String? // "EASY" | "MEDIUM" | "HARD" — free text to stay configurable
+  durationMins   Int
   passPercentage Int?
-  status        AssessmentStatus   @default(DRAFT)
+  status         AssessmentStatus   @default(DRAFT)
 
-  createdById   String             // Placement Officer who created it
-  questions     Question[]
-  attempts      AssessmentAttempt[]
+  createdById String // Placement Officer who created it
+  questions   Question[]
+  attempts    AssessmentAttempt[]
 
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([category, topic])
   @@map("assessments")
@@ -411,39 +411,39 @@ enum QuestionType {
 }
 
 model Question {
-  id            String       @id @default(cuid())
-  assessmentId  String
-  assessment    Assessment   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  id           String     @id @default(cuid())
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
 
-  type          QuestionType
-  text          String
-  topic         String?      // topic-level tagging for topic-wise performance analytics
-  difficulty    String?
-  marks         Int          @default(1)
+  type       QuestionType
+  text       String
+  topic      String? // topic-level tagging for topic-wise performance analytics
+  difficulty String?
+  marks      Int          @default(1)
 
   // For CODING type only:
-  starterCode    String?
-  testCases      Json?       // [{input, expectedOutput, isHidden}]
+  starterCode String?
+  testCases   Json? // [{input, expectedOutput, isHidden}]
 
-  options        QuestionOption[]
-  answers        Answer[]
+  options QuestionOption[]
+  answers Answer[]
 
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([assessmentId])
   @@map("questions")
 }
 
 model QuestionOption {
-  id          String   @id @default(cuid())
-  questionId  String
-  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
-  text        String
-  isCorrect   Boolean  @default(false)
+  text      String
+  isCorrect Boolean @default(false)
 
-  answers     Answer[] @relation("SelectedOption")
+  answers Answer[] @relation("SelectedOption")
 
   @@index([questionId])
   @@map("question_options")
@@ -457,19 +457,19 @@ enum AttemptStatus {
 }
 
 model AssessmentAttempt {
-  id            String        @id @default(cuid())
-  assessmentId  String
-  assessment    Assessment    @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  studentId     String
-  student       Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id           String     @id @default(cuid())
+  assessmentId String
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   status        AttemptStatus @default(IN_PROGRESS)
   startedAt     DateTime      @default(now())
   submittedAt   DateTime?
   timeTakenSecs Int?
 
-  answers       Answer[]
-  result        AssessmentResult?
+  answers Answer[]
+  result  AssessmentResult?
 
   @@index([studentId])
   @@index([assessmentId])
@@ -477,36 +477,36 @@ model AssessmentAttempt {
 }
 
 model Answer {
-  id                 String              @id @default(cuid())
-  attemptId          String
-  attempt            AssessmentAttempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-  questionId         String
-  question           Question            @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  id         String            @id @default(cuid())
+  attemptId  String
+  attempt    AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question          @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
-  selectedOptionId   String?
-  selectedOption     QuestionOption?     @relation("SelectedOption", fields: [selectedOptionId], references: [id])
-  freeTextAnswer     String?             // for DESCRIPTIVE / CODING submissions
-  isCorrect          Boolean?
-  marksAwarded       Int?
+  selectedOptionId String?
+  selectedOption   QuestionOption? @relation("SelectedOption", fields: [selectedOptionId], references: [id])
+  freeTextAnswer   String? // for DESCRIPTIVE / CODING submissions
+  isCorrect        Boolean?
+  marksAwarded     Int?
 
-  createdAt          DateTime            @default(now())
+  createdAt DateTime @default(now())
 
   @@unique([attemptId, questionId])
   @@map("answers")
 }
 
 model AssessmentResult {
-  id                String            @id @default(cuid())
-  attemptId         String            @unique
-  attempt           AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  id        String            @id @default(cuid())
+  attemptId String            @unique
+  attempt   AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
 
-  totalMarks        Int
-  scoredMarks       Int
-  percentage        Decimal           @db.Decimal(5, 2)
-  percentile        Decimal?          @db.Decimal(5, 2)
-  topicBreakdown     Json              // {"Graphs": 40, "Trees": 60, "DP": 30} — % per topic
+  totalMarks     Int
+  scoredMarks    Int
+  percentage     Decimal  @db.Decimal(5, 2)
+  percentile     Decimal? @db.Decimal(5, 2)
+  topicBreakdown Json // {"Graphs": 40, "Trees": 60, "DP": 30} — % per topic
 
-  createdAt         DateTime          @default(now())
+  createdAt DateTime @default(now())
 
   @@map("assessment_results")
 }
@@ -516,18 +516,18 @@ model AssessmentResult {
 // ============================================================================
 
 model CareerPath {
-  id                String   @id @default(cuid())
-  name              String   @unique // "Software Engineer", "Data Analyst", ...
-  description        String?
-  isActive          Boolean  @default(true)
+  id          String  @id @default(cuid())
+  name        String  @unique // "Software Engineer", "Data Analyst", ...
+  description String?
+  isActive    Boolean @default(true)
 
-  skillRequirements  CareerSkillRequirement[]
-  studentGoals        StudentCareerGoal[]
-  readinessScores      ReadinessScore[]
+  skillRequirements     CareerSkillRequirement[]
+  studentGoals          StudentCareerGoal[]
+  readinessScores       ReadinessScore[]
   careerRecommendations CareerRecommendation[]
 
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([isActive])
   @@map("career_paths")
@@ -541,11 +541,11 @@ enum RequirementPriority {
 }
 
 model CareerSkillRequirement {
-  id            String              @id @default(cuid())
-  careerPathId  String
-  careerPath    CareerPath          @relation(fields: [careerPathId], references: [id], onDelete: Cascade)
-  skillId       String
-  skill         Skill               @relation(fields: [skillId], references: [id], onDelete: Restrict)
+  id           String     @id @default(cuid())
+  careerPathId String
+  careerPath   CareerPath @relation(fields: [careerPathId], references: [id], onDelete: Cascade)
+  skillId      String
+  skill        Skill      @relation(fields: [skillId], references: [id], onDelete: Restrict)
 
   requiredLevel ProficiencyLevel
   priority      RequirementPriority @default(MEDIUM)
@@ -555,15 +555,15 @@ model CareerSkillRequirement {
 }
 
 model StudentCareerGoal {
-  id            String     @id @default(cuid())
-  studentId     String
-  student       Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  careerPathId  String
-  careerPath    CareerPath @relation(fields: [careerPathId], references: [id], onDelete: Cascade)
+  id           String     @id @default(cuid())
+  studentId    String
+  student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  careerPathId String
+  careerPath   CareerPath @relation(fields: [careerPathId], references: [id], onDelete: Cascade)
 
-  isPrimary     Boolean    @default(false)
+  isPrimary Boolean @default(false)
 
-  createdAt     DateTime   @default(now())
+  createdAt DateTime @default(now())
 
   @@unique([studentId, careerPathId])
   @@map("student_career_goals")
@@ -579,18 +579,18 @@ enum GapLevel {
 // Skill Gap is intentionally evidence-carrying, not just a label — see
 // master spec Section 8: "DSA = 48%, weak topics = Graphs/Trees/DP" pattern.
 model SkillGap {
-  id                String    @id @default(cuid())
-  studentId         String
-  student           Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  skillId           String
-  skill             Skill     @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  skillId   String
+  skill     Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
-  gapLevel          GapLevel
-  evidenceScore     Int       // 0-100, computed from assessments + coding + projects
-  priority          RequirementPriority
-  contributingFactors Json    // {"assessmentPct": 52, "codingActivity": "moderate", "weakTopics": ["Graphs","Trees"]}
+  gapLevel            GapLevel
+  evidenceScore       Int // 0-100, computed from assessments + coding + projects
+  priority            RequirementPriority
+  contributingFactors Json // {"assessmentPct": 52, "codingActivity": "moderate", "weakTopics": ["Graphs","Trees"]}
 
-  computedAt        DateTime  @default(now())
+  computedAt DateTime @default(now())
 
   @@unique([studentId, skillId])
   @@index([studentId, gapLevel])
@@ -598,55 +598,55 @@ model SkillGap {
 }
 
 model LearningResource {
-  id            String   @id @default(cuid())
-  title         String
-  description   String?
-  resourceType  String   // "VIDEO" | "ARTICLE" | "COURSE" | "DOCUMENTATION" | ...
-  url           String
-  provider      String?  // "YouTube", "Coursera", internal upload, etc.
+  id           String  @id @default(cuid())
+  title        String
+  description  String?
+  resourceType String // "VIDEO" | "ARTICLE" | "COURSE" | "DOCUMENTATION" | ...
+  url          String
+  provider     String? // "YouTube", "Coursera", internal upload, etc.
 
   skills        LearningResourceSkill[]
   learningPaths LearningPathResource[]
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("learning_resources")
 }
 
 model LearningResourceSkill {
-  id                  String           @id @default(cuid())
-  learningResourceId  String
-  learningResource    LearningResource @relation(fields: [learningResourceId], references: [id], onDelete: Cascade)
-  skillId             String
-  skill               Skill            @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  id                 String           @id @default(cuid())
+  learningResourceId String
+  learningResource   LearningResource @relation(fields: [learningResourceId], references: [id], onDelete: Cascade)
+  skillId            String
+  skill              Skill            @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
   @@unique([learningResourceId, skillId])
   @@map("learning_resource_skills")
 }
 
 model LearningPath {
-  id            String   @id @default(cuid())
-  studentId     String
-  title         String   // e.g. "Close my DSA gap for Software Engineer track"
+  id        String @id @default(cuid())
+  studentId String
+  title     String // e.g. "Close my DSA gap for Software Engineer track"
 
-  resources     LearningPathResource[]
-  progress      LearningProgress[]
+  resources LearningPathResource[]
+  progress  LearningProgress[]
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([studentId])
   @@map("learning_paths")
 }
 
 model LearningPathResource {
-  id                  String           @id @default(cuid())
-  learningPathId       String
-  learningPath         LearningPath     @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
-  learningResourceId   String
-  learningResource     LearningResource @relation(fields: [learningResourceId], references: [id], onDelete: Cascade)
-  orderIndex           Int
+  id                 String           @id @default(cuid())
+  learningPathId     String
+  learningPath       LearningPath     @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  learningResourceId String
+  learningResource   LearningResource @relation(fields: [learningResourceId], references: [id], onDelete: Cascade)
+  orderIndex         Int
 
   @@unique([learningPathId, learningResourceId])
   @@map("learning_path_resources")
@@ -659,18 +659,18 @@ enum ProgressStatus {
 }
 
 model LearningProgress {
-  id              String         @id @default(cuid())
-  studentId       String
-  student         Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  learningPathId  String
-  learningPath    LearningPath   @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  id             String       @id @default(cuid())
+  studentId      String
+  student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  learningPathId String
+  learningPath   LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
 
-  status          ProgressStatus @default(NOT_STARTED)
-  completionPct   Int            @default(0)
+  status        ProgressStatus @default(NOT_STARTED)
+  completionPct Int            @default(0)
 
-  startedAt       DateTime?
-  completedAt     DateTime?
-  updatedAt       DateTime       @updatedAt
+  startedAt   DateTime?
+  completedAt DateTime?
+  updatedAt   DateTime  @updatedAt
 
   @@unique([studentId, learningPathId])
   @@map("learning_progress")
@@ -679,19 +679,19 @@ model LearningProgress {
 // Readiness is deliberately separate per career path AND optionally per drive.
 // Never merged with Eligibility or JobMatch — see master spec Section 11.
 model ReadinessScore {
-  id              String      @id @default(cuid())
-  studentId       String
-  student         Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  careerPathId    String?
-  careerPath      CareerPath? @relation(fields: [careerPathId], references: [id], onDelete: Cascade)
+  id               String          @id @default(cuid())
+  studentId        String
+  student          Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  careerPathId     String?
+  careerPath       CareerPath?     @relation(fields: [careerPathId], references: [id], onDelete: Cascade)
   placementDriveId String?
-  placementDrive  PlacementDrive? @relation(fields: [placementDriveId], references: [id], onDelete: Cascade)
+  placementDrive   PlacementDrive? @relation(fields: [placementDriveId], references: [id], onDelete: Cascade)
 
   // null careerPathId + null placementDriveId = OVERALL readiness score
-  overallScore    Int         // 0-100
-  breakdown       Json        // {"strengths": [...], "weaknesses": [...], "priorities": [...]}
+  overallScore Int // 0-100
+  breakdown    Json // {"strengths": [...], "weaknesses": [...], "priorities": [...]}
 
-  computedAt      DateTime    @default(now())
+  computedAt DateTime @default(now())
 
   @@index([studentId])
   @@map("readiness_scores")
@@ -727,96 +727,96 @@ enum MembershipStatus {
 }
 
 model Company {
-  id              String   @id @default(cuid())
-  name            String
-  legalName       String?
-  website         String?
-  industry        String?
-  companyType     String?
-  description     String?
-  headquarters    String?
-  country         String?
-  state           String?
-  city            String?
-  logoUrl         String?
-  contactEmail    String?
-  contactPhone    String?
-  companySize     String?
-  foundedYear     Int?
-  status          CompanyStatus @default(ACTIVE)
+  id           String        @id @default(cuid())
+  name         String
+  legalName    String?
+  website      String?
+  industry     String?
+  companyType  String?
+  description  String?
+  headquarters String?
+  country      String?
+  state        String?
+  city         String?
+  logoUrl      String?
+  contactEmail String?
+  contactPhone String?
+  companySize  String?
+  foundedYear  Int?
+  status       CompanyStatus @default(ACTIVE)
 
   recruiters      Recruiter[]
   memberships     RecruiterCompanyMembership[]
   verification    CompanyVerification?
   placementDrives PlacementDrive[]
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status])
   @@map("companies")
 }
 
 model CompanyVerification {
-  id            String             @id @default(cuid())
-  companyId     String             @unique
-  company       Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  companyId String  @unique
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  status        VerificationStatus @default(PENDING)
-  verifiedById  String?            // Placement Officer's User.id
-  verifiedAt    DateTime?
+  status          VerificationStatus @default(PENDING)
+  verifiedById    String? // Placement Officer's User.id
+  verifiedAt      DateTime?
   rejectionReason String?
 
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("company_verifications")
 }
 
 model Recruiter {
-  id              String             @id @default(cuid())
-  userId          String             @unique
-  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyId       String
-  company         Company            @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  id        String  @id @default(cuid())
+  userId    String  @unique
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
 
-  fullName        String
-  designation     String?
-  department      String?
-  phone           String?
-  alternateEmail  String?
+  fullName       String
+  designation    String?
+  department     String?
+  phone          String?
+  alternateEmail String?
 
   verificationStatus VerificationStatus @default(PENDING)
   verifiedById       String?
   verifiedAt         DateTime?
   rejectionReason    String?
 
-  memberships        RecruiterCompanyMembership[]
-  placementDrives    PlacementDrive[]
-  interviews         Interview[]      @relation("Interviewer")
+  memberships     RecruiterCompanyMembership[]
+  placementDrives PlacementDrive[]
+  interviews      Interview[]                  @relation("Interviewer")
 
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([verificationStatus])
   @@map("recruiters")
 }
 
 model RecruiterCompanyMembership {
-  id              String             @id @default(cuid())
-  recruiterId     String
-  recruiter       Recruiter          @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
-  companyId       String
-  company         Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id          String    @id @default(cuid())
+  recruiterId String
+  recruiter   Recruiter @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+  companyId   String
+  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  role            CompanyRole        @default(RECRUITER)
-  status          MembershipStatus   @default(PENDING)
+  role            CompanyRole      @default(RECRUITER)
+  status          MembershipStatus @default(PENDING)
   approvedById    String?
   approvedAt      DateTime?
   rejectionReason String?
 
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([recruiterId, companyId])
   @@index([companyId])
@@ -831,54 +831,76 @@ model RecruiterCompanyMembership {
 
 enum DriveStatus {
   DRAFT
+  PENDING_APPROVAL
   PUBLISHED
   CLOSED
   CANCELLED
+  COMPLETED
 }
 
 model PlacementDrive {
-  id                  String      @id @default(cuid())
-  companyId           String
-  company             Company     @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  id                   String    @id @default(cuid())
+  companyId            String
+  company              Company   @relation(fields: [companyId], references: [id], onDelete: Restrict)
   createdByRecruiterId String
-  createdByRecruiter  Recruiter   @relation(fields: [createdByRecruiterId], references: [id], onDelete: Restrict)
+  createdByRecruiter   Recruiter @relation(fields: [createdByRecruiterId], references: [id], onDelete: Restrict)
 
-  role                String
-  packageMin          Decimal?    @db.Decimal(12, 2)
-  packageMax          Decimal?    @db.Decimal(12, 2)
-  jobDescription      String
-  selectionProcess    String?     // free text summary; rounds detail lives in DriveExperience/Interview
+  title          String
+  jobTitle       String
+  description    String
+  employmentType String @default("FULL_TIME") // FULL_TIME, PART_TIME, INTERNSHIP
+  jobType        String @default("TECHNICAL") // TECHNICAL, NON_TECHNICAL
+  location       String
+  workMode       String @default("ONSITE") // ONSITE, REMOTE, HYBRID
 
-  applicationDeadline DateTime
-  status              DriveStatus @default(DRAFT)
+  salaryMin      Decimal? @db.Decimal(12, 2)
+  salaryMax      Decimal? @db.Decimal(12, 2)
+  salaryCurrency String   @default("INR")
+  salaryPeriod   String   @default("YEARLY")
 
-  requirements        DriveRequirement?
-  applications        Application[]
-  readinessScores     ReadinessScore[]
-  driveExperiences    DriveExperience[]
-  driveResources      DriveResource[]
+  openingCount   Int?
+  graduationYear Int?
+
+  applicationStartAt DateTime
+  applicationEndAt   DateTime
+  driveDate          DateTime?
+
+  selectionProcess String? // free text summary; rounds detail lives in DriveExperience/Interview
+
+  status DriveStatus @default(DRAFT)
+
+  requirements          DriveRequirement?
+  applications          Application[]
+  readinessScores       ReadinessScore[]
+  driveExperiences      DriveExperience[]
+  driveResources        DriveResource[]
   referralOpportunities ReferralOpportunity[]
 
-  createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status])
   @@map("placement_drives")
 }
 
 model DriveRequirement {
-  id                String         @id @default(cuid())
-  placementDriveId  String         @unique
-  placementDrive    PlacementDrive @relation(fields: [placementDriveId], references: [id], onDelete: Cascade)
+  id               String         @id @default(cuid())
+  placementDriveId String         @unique
+  placementDrive   PlacementDrive @relation(fields: [placementDriveId], references: [id], onDelete: Cascade)
 
-  minCgpa           Decimal?       @db.Decimal(4, 2)
-  allowedBranches   String[]
-  maxBacklogs       Int?
-  minGraduationYear Int?
-  maxGraduationYear Int?
+  minCgpa            Decimal? @db.Decimal(4, 2)
+  maxCgpa            Decimal? @db.Decimal(4, 2)
+  allowedBranches    String[]
+  allowedDegrees     String[]
+  maxActiveBacklogs  Int?
+  maxHistoryBacklogs Int?
+  minGraduationYear  Int?
+  maxGraduationYear  Int?
 
-  requiredSkills    Skill[]        @relation("RequiredSkill")
-  preferredSkills   Skill[]        @relation("PreferredSkill")
+  requireInternship Boolean @default(false)
+
+  requiredSkills  Skill[] @relation("RequiredSkill")
+  preferredSkills Skill[] @relation("PreferredSkill")
 
   @@map("drive_requirements")
 }
@@ -895,23 +917,23 @@ enum ApplicationStatus {
 }
 
 model Application {
-  id                String            @id @default(cuid())
-  studentId         String
-  student           Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  placementDriveId  String
-  placementDrive    PlacementDrive    @relation(fields: [placementDriveId], references: [id], onDelete: Cascade)
+  id               String         @id @default(cuid())
+  studentId        String
+  student          Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  placementDriveId String
+  placementDrive   PlacementDrive @relation(fields: [placementDriveId], references: [id], onDelete: Cascade)
 
-  status            ApplicationStatus @default(APPLIED)
+  status          ApplicationStatus @default(APPLIED)
   // Snapshot at application time — job match/eligibility can be recomputed,
   // but the recruiter should see what was true when the student applied.
-  jobMatchPct       Int?
-  eligibleAtApply   Boolean
+  jobMatchPct     Int?
+  eligibleAtApply Boolean
 
-  interviews        Interview[]
-  selection         Selection?
+  interviews Interview[]
+  selection  Selection?
 
-  appliedAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  appliedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([studentId, placementDriveId])
   @@index([placementDriveId, status])
@@ -935,24 +957,24 @@ enum InterviewOutcome {
 }
 
 model Interview {
-  id              String           @id @default(cuid())
-  applicationId   String
-  application     Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  interviewerId   String
-  interviewer     Recruiter        @relation("Interviewer", fields: [interviewerId], references: [id], onDelete: Restrict)
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  interviewerId String
+  interviewer   Recruiter   @relation("Interviewer", fields: [interviewerId], references: [id], onDelete: Restrict)
 
-  roundNumber     Int
-  type            InterviewType
-  scheduledAt     DateTime
-  meetingLink     String?
-  location        String?
+  roundNumber Int
+  type        InterviewType
+  scheduledAt DateTime
+  meetingLink String?
+  location    String?
 
-  outcome         InterviewOutcome @default(PENDING)
-  feedback        String?
-  score           Int?
+  outcome  InterviewOutcome @default(PENDING)
+  feedback String?
+  score    Int?
 
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([applicationId])
   @@map("interviews")
@@ -964,14 +986,14 @@ enum SelectionDecision {
 }
 
 model Selection {
-  id              String            @id @default(cuid())
-  applicationId   String            @unique
-  application     Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  id            String      @id @default(cuid())
+  applicationId String      @unique
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
-  decision        SelectionDecision
-  finalPackage    Decimal?          @db.Decimal(12, 2)
-  decidedAt       DateTime          @default(now())
-  notes           String?
+  decision     SelectionDecision
+  finalPackage Decimal?          @db.Decimal(12, 2)
+  decidedAt    DateTime          @default(now())
+  notes        String?
 
   @@map("selections")
 }
@@ -981,53 +1003,53 @@ model Selection {
 // ============================================================================
 
 model AlumniProfile {
-  id                String              @id @default(cuid())
-  userId            String              @unique
-  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Provenance link back to original student record where available.
   // Nullable because some alumni may predate the platform / register directly.
-  studentId         String?             @unique
-  student           Student?            @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  studentId String?  @unique
+  student   Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
 
-  fullName          String
-  degree            String
-  branch            String
-  graduationYear    Int
-  collegeName       String
+  fullName       String
+  degree         String
+  branch         String
+  graduationYear Int
+  collegeName    String
 
-  currentCompany    String?
-  currentRole       String?
-  yearsExperience    Int?
-  skills            String[]
-  linkedinUrl       String?
+  currentCompany  String?
+  currentRole     String?
+  yearsExperience Int?
+  skills          String[]
+  linkedinUrl     String?
 
-  verification      AlumniVerification?
+  verification          AlumniVerification?
   referralOpportunities ReferralOpportunity[]
-  driveExperiences  DriveExperience[]
-  driveResources    DriveResource[]
-  mentorshipRequests MentorshipRequest[]
-  mentorshipSessions MentorshipSession[]
-  mockInterviews    MockInterview[]
+  driveExperiences      DriveExperience[]
+  driveResources        DriveResource[]
+  mentorshipRequests    MentorshipRequest[]
+  mentorshipSessions    MentorshipSession[]
+  mockInterviews        MockInterview[]
 
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("alumni_profiles")
 }
 
 model AlumniVerification {
-  id              String             @id @default(cuid())
-  alumniProfileId String             @unique
-  alumniProfile   AlumniProfile      @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
+  id              String        @id @default(cuid())
+  alumniProfileId String        @unique
+  alumniProfile   AlumniProfile @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
 
   status          VerificationStatus @default(PENDING)
-  verifiedById    String?            // Placement Officer's User.id
+  verifiedById    String? // Placement Officer's User.id
   verifiedAt      DateTime?
   rejectionReason String?
 
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("alumni_verifications")
 }
@@ -1035,26 +1057,26 @@ model AlumniVerification {
 // Only VERIFIED alumni may create these — enforced at service layer, not DB,
 // since the DB has no clean way to express "verification.status == APPROVED".
 model ReferralOpportunity {
-  id                String    @id @default(cuid())
-  alumniProfileId   String
-  alumniProfile     AlumniProfile @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
-  placementDriveId  String?   // optional link if it corresponds to an active drive
-  placementDrive    PlacementDrive? @relation(fields: [placementDriveId], references: [id], onDelete: SetNull)
+  id               String          @id @default(cuid())
+  alumniProfileId  String
+  alumniProfile    AlumniProfile   @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
+  placementDriveId String? // optional link if it corresponds to an active drive
+  placementDrive   PlacementDrive? @relation(fields: [placementDriveId], references: [id], onDelete: SetNull)
 
-  companyName       String
-  role              String
-  location          String?
-  requiredSkills    String[]
-  experienceReq     String?
-  description       String
-  deadline          DateTime?
+  companyName    String
+  role           String
+  location       String?
+  requiredSkills String[]
+  experienceReq  String?
+  description    String
+  deadline       DateTime?
 
-  isActive          Boolean   @default(true)
+  isActive Boolean @default(true)
 
-  referralRequests  ReferralRequest[]
+  referralRequests ReferralRequest[]
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([alumniProfileId])
   @@map("referral_opportunities")
@@ -1076,14 +1098,14 @@ model ReferralRequest {
   referralOpportunityId String
   referralOpportunity   ReferralOpportunity @relation(fields: [referralOpportunityId], references: [id], onDelete: Cascade)
 
-  status                ReferralStatus      @default(REQUESTED)
-  studentMessage        String?
-  alumniResponse        String?
+  status         ReferralStatus @default(REQUESTED)
+  studentMessage String?
+  alumniResponse String?
 
-  referral              Referral?
+  referral Referral?
 
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([studentId, referralOpportunityId])
   @@map("referral_requests")
@@ -1096,32 +1118,32 @@ model Referral {
   referralRequestId String          @unique
   referralRequest   ReferralRequest @relation(fields: [referralRequestId], references: [id], onDelete: Cascade)
 
-  referredAt        DateTime        @default(now())
-  proofNote         String?         // e.g. internal reference ID given by alumni
+  referredAt DateTime @default(now())
+  proofNote  String? // e.g. internal reference ID given by alumni
 
   @@map("referrals")
 }
 
 model DriveExperience {
-  id                String        @id @default(cuid())
-  alumniProfileId   String
-  alumniProfile     AlumniProfile @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
-  placementDriveId  String?
-  placementDrive    PlacementDrive? @relation(fields: [placementDriveId], references: [id], onDelete: SetNull)
+  id               String          @id @default(cuid())
+  alumniProfileId  String
+  alumniProfile    AlumniProfile   @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
+  placementDriveId String?
+  placementDrive   PlacementDrive? @relation(fields: [placementDriveId], references: [id], onDelete: SetNull)
 
-  companyName       String
-  role              String
-  driveYear         Int
-  overallTips       String?
+  companyName String
+  role        String
+  driveYear   Int
+  overallTips String?
 
-  rounds            ExperienceRound[]
+  rounds ExperienceRound[]
 
-  isModerated       Boolean       @default(false)
-  moderatedById     String?
-  moderatedAt       DateTime?
+  isModerated   Boolean   @default(false)
+  moderatedById String?
+  moderatedAt   DateTime?
 
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([companyName])
   @@map("drive_experiences")
@@ -1132,37 +1154,37 @@ model ExperienceRound {
   driveExperienceId String
   driveExperience   DriveExperience @relation(fields: [driveExperienceId], references: [id], onDelete: Cascade)
 
-  roundNumber       Int
-  roundType         InterviewType
-  topics            String[]
-  difficulty        String?
-  questionsAsked    String?
-  tips              String?
+  roundNumber    Int
+  roundType      InterviewType
+  topics         String[]
+  difficulty     String?
+  questionsAsked String?
+  tips           String?
 
   @@index([driveExperienceId])
   @@map("experience_rounds")
 }
 
 model DriveResource {
-  id                String        @id @default(cuid())
-  alumniProfileId   String
-  alumniProfile     AlumniProfile @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
-  placementDriveId  String?
-  placementDrive    PlacementDrive? @relation(fields: [placementDriveId], references: [id], onDelete: SetNull)
+  id               String          @id @default(cuid())
+  alumniProfileId  String
+  alumniProfile    AlumniProfile   @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
+  placementDriveId String?
+  placementDrive   PlacementDrive? @relation(fields: [placementDriveId], references: [id], onDelete: SetNull)
 
-  companyName       String
-  roundType         InterviewType?
-  resourceType      String        // "PDF" | "LINK" | "GUIDE"
-  title             String
-  fileUrl           String?
-  externalUrl       String?
+  companyName  String
+  roundType    InterviewType?
+  resourceType String // "PDF" | "LINK" | "GUIDE"
+  title        String
+  fileUrl      String?
+  externalUrl  String?
 
-  isModerated       Boolean       @default(false)
-  moderatedById     String?
-  moderatedAt       DateTime?
+  isModerated   Boolean   @default(false)
+  moderatedById String?
+  moderatedAt   DateTime?
 
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([companyName])
   @@map("drive_resources")
@@ -1177,19 +1199,19 @@ enum MentorshipStatus {
 }
 
 model MentorshipRequest {
-  id              String            @id @default(cuid())
+  id              String        @id @default(cuid())
   studentId       String
-  student         Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student         Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
   alumniProfileId String
-  alumniProfile   AlumniProfile     @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
+  alumniProfile   AlumniProfile @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
 
-  message         String?
-  status          MentorshipStatus  @default(REQUESTED)
+  message String?
+  status  MentorshipStatus @default(REQUESTED)
 
-  session         MentorshipSession?
+  session MentorshipSession?
 
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("mentorship_requests")
 }
@@ -1201,33 +1223,33 @@ model MentorshipSession {
   alumniProfileId     String
   alumniProfile       AlumniProfile     @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
 
-  scheduledAt         DateTime
-  meetingLink         String?
-  notes               String?
-  feedback            String?
-  completedAt         DateTime?
+  scheduledAt DateTime
+  meetingLink String?
+  notes       String?
+  feedback    String?
+  completedAt DateTime?
 
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("mentorship_sessions")
 }
 
 model MockInterview {
-  id              String    @id @default(cuid())
+  id              String        @id @default(cuid())
   studentId       String
-  student         Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student         Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
   alumniProfileId String
   alumniProfile   AlumniProfile @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
 
-  scheduledAt     DateTime
-  meetingLink     String?
-  targetRole      String?
+  scheduledAt DateTime
+  meetingLink String?
+  targetRole  String?
 
-  feedback        MockInterviewFeedback?
+  feedback MockInterviewFeedback?
 
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("mock_interviews")
 }
@@ -1237,12 +1259,12 @@ model MockInterviewFeedback {
   mockInterviewId String        @unique
   mockInterview   MockInterview @relation(fields: [mockInterviewId], references: [id], onDelete: Cascade)
 
-  strengths       String?
-  weaknesses      String?
-  overallScore    Int?
-  detailedNotes   String?
+  strengths     String?
+  weaknesses    String?
+  overallScore  Int?
+  detailedNotes String?
 
-  createdAt       DateTime      @default(now())
+  createdAt DateTime @default(now())
 
   @@map("mock_interview_feedback")
 }
@@ -1270,34 +1292,34 @@ enum NotificationChannel {
 }
 
 model Notification {
-  id          String              @id @default(cuid())
-  userId      String
-  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  type        NotificationType
-  title       String
-  message     String
-  channel     NotificationChannel @default(IN_APP)
-  isRead      Boolean             @default(false)
-  metadata    Json?               // e.g. {"applicationId": "..."} for deep-linking
+  type     NotificationType
+  title    String
+  message  String
+  channel  NotificationChannel @default(IN_APP)
+  isRead   Boolean             @default(false)
+  metadata Json? // e.g. {"applicationId": "..."} for deep-linking
 
-  createdAt   DateTime            @default(now())
+  createdAt DateTime @default(now())
 
   @@index([userId, isRead])
   @@map("notifications")
 }
 
 model NotificationPreference {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  emailEnabled    Boolean  @default(true)
-  inAppEnabled    Boolean  @default(true)
+  emailEnabled  Boolean @default(true)
+  inAppEnabled  Boolean @default(true)
   // per-type overrides stored as JSONB to avoid a column-per-type explosion
-  typeOverrides   Json?
+  typeOverrides Json?
 
-  updatedAt       DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   @@map("notification_preferences")
 }
@@ -1307,16 +1329,16 @@ model NotificationPreference {
 // ============================================================================
 
 model AuditLog {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   actorUserId String?
-  actor       User?    @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  actor       User?   @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
 
-  action      String   // e.g. "RECRUITER_APPROVED", "DRIVE_CREATED", "CANDIDATE_SELECTED"
-  entityType  String   // e.g. "Recruiter", "PlacementDrive"
-  entityId    String
-  metadata    Json?    // before/after or contextual details
+  action     String // e.g. "RECRUITER_APPROVED", "DRIVE_CREATED", "CANDIDATE_SELECTED"
+  entityType String // e.g. "Recruiter", "PlacementDrive"
+  entityId   String
+  metadata   Json? // before/after or contextual details
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([entityType, entityId])
   @@index([actorUserId])
@@ -1335,42 +1357,42 @@ enum ResumeAnalysisStatus {
 }
 
 model ResumeAnalysis {
-  id            String                @id @default(cuid())
-  resumeId      String
-  resume        Resume                @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-  studentId     String
-  student       Student               @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  resumeId  String
+  resume    Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  status        ResumeAnalysisStatus  @default(PENDING)
-  atsScore      Int?
+  status          ResumeAnalysisStatus @default(PENDING)
+  atsScore        Int?
   extractedSkills String[]
   missingSections String[]
   keywordAnalysis Json?
-  suggestions     Json?               // structured list of improvement suggestions
+  suggestions     Json? // structured list of improvement suggestions
 
   // Explicit flag so frontend can visually separate verified data from AI
   // inference — required by master spec Section 28.
-  isAiGenerated   Boolean             @default(true)
+  isAiGenerated Boolean @default(true)
 
-  requestedAt     DateTime            @default(now())
-  completedAt     DateTime?
+  requestedAt DateTime  @default(now())
+  completedAt DateTime?
 
   @@index([studentId])
   @@map("resume_analyses")
 }
 
 model CareerRecommendation {
-  id              String     @id @default(cuid())
-  studentId       String
-  student         Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  careerPathId    String
-  careerPath      CareerPath @relation(fields: [careerPathId], references: [id], onDelete: Cascade)
+  id           String     @id @default(cuid())
+  studentId    String
+  student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  careerPathId String
+  careerPath   CareerPath @relation(fields: [careerPathId], references: [id], onDelete: Cascade)
 
-  matchScore      Int        // AI-computed suitability, 0-100
-  reasoning       String?
-  isAiGenerated   Boolean    @default(true)
+  matchScore    Int // AI-computed suitability, 0-100
+  reasoning     String?
+  isAiGenerated Boolean @default(true)
 
-  createdAt       DateTime   @default(now())
+  createdAt DateTime @default(now())
 
   @@index([studentId])
   @@map("career_recommendations")

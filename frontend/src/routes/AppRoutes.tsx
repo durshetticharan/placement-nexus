@@ -42,6 +42,11 @@ import CompanyManagement from '../pages/recruiter/CompanyManagement';
 import CompanyDirectory from '../pages/officer/CompanyDirectory';
 import RecruiterDirectory from '../pages/officer/RecruiterDirectory';
 
+// Phase 11 — Placement Drives
+import RecruiterDriveManagement from '../pages/recruiter/DriveManagement';
+import OfficerDriveDirectory from '../pages/officer/DriveDirectory';
+import StudentDriveList from '../pages/student/DriveList';
+
 // Legacy placeholder kept for backward compat
 import Dashboard from '../pages/Dashboard';
 
@@ -236,6 +241,14 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/student/drives"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <StudentDriveList />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Phase 10 — Recruiter Workspace */}
       <Route
@@ -254,6 +267,14 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/recruiter/drives"
+        element={
+          <ProtectedRoute allowedRoles={['RECRUITER']}>
+            <RecruiterDriveManagement />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Phase 10 — Officer Company & Recruiter Management */}
       <Route
@@ -269,6 +290,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
             <RecruiterDirectory />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/officer/drives"
+        element={
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
+            <OfficerDriveDirectory />
           </ProtectedRoute>
         }
       />

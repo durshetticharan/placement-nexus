@@ -7,6 +7,7 @@ import { requireAuth } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/rbac.middleware';
 import { validate } from '../validation/auth.validation';
 import { resumeUpload } from '../config/upload.config';
+import * as driveController from '../controllers/drive.controller';
 import {
   academicSchema,
   addSkillSchema,
@@ -29,6 +30,11 @@ const router = Router();
 
 // Protect all routes: require student authentication
 router.use(requireAuth, requireRole('STUDENT'));
+
+// Drives & Eligibility
+router.get('/drives', driveController.listStudentDrives);
+router.get('/drives/:id', driveController.getDriveDetails);
+router.get('/drives/:id/eligibility', driveController.getStudentEligibility);
 
 router.get('/me', studentController.getProfile);
 router.put('/me/academics', validate(academicSchema), studentController.upsertAcademics);
