@@ -98,20 +98,8 @@ async function createAndActivateStudent(idx) {
 }
 
 async function createAndActivateOfficer() {
-  const email = `p8_officer_${SUFFIX}@nexus.test`;
-  const pass = 'Officer@1234';
-
-  const r1 = await post('/auth/register', {
-    email, password: pass, role: 'PLACEMENT_OFFICER',
-    fullName: 'P8 Test Officer',
-  });
-  if (r1.status !== 201) throw new Error(`Officer register failed`);
-
-  const otp = r1.body.data?.otpCode;
-  await post('/auth/verify-otp', { email, otpCode: otp });
-  const r3 = await post('/auth/login', { email, password: pass });
+  const r3 = await post('/auth/login', { email: 'officer@placementnexus.dev', password: 'Officer@2024' });
   if (r3.status !== 200) throw new Error(`Officer login failed`);
-
   return r3.body.data.accessToken;
 }
 

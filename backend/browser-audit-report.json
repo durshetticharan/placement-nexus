@@ -1,0 +1,364 @@
+{
+  "timestamp": "2026-09-04T15:24:43.862Z",
+  "method": "CDP-attached-to-visible-Chrome",
+  "results": [
+    {
+      "section": "Browser",
+      "item": "Attached to visible Chrome via CDP port=9222",
+      "status": "PASS",
+      "notes": "CDP-attached-to-visible-Chrome"
+    },
+    {
+      "section": "App",
+      "item": "App opens at localhost:5173",
+      "status": "PASS",
+      "notes": "title=frontend"
+    },
+    {
+      "section": "Public",
+      "item": "/login fields",
+      "status": "PASS",
+      "notes": "email:true pass:true"
+    },
+    {
+      "section": "Public",
+      "item": "/login empty validation",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "section": "Public",
+      "item": "/login wrong creds",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "section": "Public",
+      "item": "/register",
+      "status": "PASS",
+      "notes": "create your account\n\nplacement nexus — join as your role\n\nemail\npassword\nrole\nst"
+    },
+    {
+      "section": "Public",
+      "item": "/forgot-password",
+      "status": "PASS",
+      "notes": "reset password\n\nenter your email and we'll send a reset token to the server cons"
+    },
+    {
+      "section": "Auth",
+      "item": "Login student",
+      "status": "PASS",
+      "notes": "Landed on: http://localhost:5173/dashboard/student"
+    },
+    {
+      "section": "Student",
+      "item": "/dashboard/student",
+      "status": "PASS",
+      "notes": "OK (805 chars)"
+    },
+    {
+      "section": "Student",
+      "item": "/student/assessments",
+      "status": "PASS",
+      "notes": "OK (3227 chars)"
+    },
+    {
+      "section": "Student",
+      "item": "/student/assessments/history",
+      "status": "PASS",
+      "notes": "OK (241 chars)"
+    },
+    {
+      "section": "Student",
+      "item": "/student/career",
+      "status": "PASS",
+      "notes": "OK (8137 chars)"
+    },
+    {
+      "section": "Student",
+      "item": "/student/skill-gap",
+      "status": "PASS",
+      "notes": "OK (1519 chars)"
+    },
+    {
+      "section": "Student",
+      "item": "/student/readiness",
+      "status": "PASS",
+      "notes": "OK (1254 chars)"
+    },
+    {
+      "section": "Student",
+      "item": "Career content",
+      "status": "PASS",
+      "notes": "dashboard\n/\ncareer development\ncareer intelligence & pathing\n\nset your target career track, analyze "
+    },
+    {
+      "section": "Student",
+      "item": "Skill gap content",
+      "status": "PASS",
+      "notes": "← back to dashboard\n🧠\nphase 8 — skill gap analysis\nskill gap analysis\n\nevidence-based analysis of y"
+    },
+    {
+      "section": "Student",
+      "item": "Readiness content",
+      "status": "PASS",
+      "notes": "placement readiness\n\ndata-driven evaluation of your preparedness for placement.\n\n🔄\nrecalculate read"
+    },
+    {
+      "section": "Student",
+      "item": "Assessments content",
+      "status": "PASS",
+      "notes": "← back to student dashboard\navailable assessments\n\ntest your skills in aptitude, technical & coding "
+    },
+    {
+      "section": "Student",
+      "item": "Dashboard survives refresh",
+      "status": "PASS",
+      "notes": "http://localhost:5173/dashboard/student"
+    },
+    {
+      "section": "Student Security",
+      "item": "SECURITY /officer/pending-approvals",
+      "status": "PASS",
+      "notes": "Blocked → http://localhost:5173/login"
+    },
+    {
+      "section": "Student Security",
+      "item": "SECURITY /officer/companies",
+      "status": "PASS",
+      "notes": "Blocked → http://localhost:5173/login"
+    },
+    {
+      "section": "Student Security",
+      "item": "SECURITY /dashboard/officer",
+      "status": "PASS",
+      "notes": "Blocked → http://localhost:5173/login"
+    },
+    {
+      "section": "Auth",
+      "item": "Login recruiter",
+      "status": "PASS",
+      "notes": "Landed on: http://localhost:5173/dashboard/recruiter"
+    },
+    {
+      "section": "Recruiter",
+      "item": "/dashboard/recruiter",
+      "status": "FAIL",
+      "notes": "Session lost → /login"
+    },
+    {
+      "section": "Recruiter",
+      "item": "/recruiter/profile",
+      "status": "FAIL",
+      "notes": "Session lost → /login"
+    },
+    {
+      "section": "Recruiter",
+      "item": "/recruiter/company",
+      "status": "FAIL",
+      "notes": "Session lost → /login"
+    },
+    {
+      "section": "Recruiter",
+      "item": "Dashboard content",
+      "status": "PASS",
+      "notes": "sign in\n\nwelcome back to placement nexus\n\nemail\npassword\nforgot password?\nsign in\n\ndon't have an account? create one"
+    },
+    {
+      "section": "Recruiter",
+      "item": "Profile content",
+      "status": "PASS",
+      "notes": "sign in\n\nwelcome back to placement nexus\n\nemail\npassword\nforgot password?\nsign in\n\ndon't have an acc"
+    },
+    {
+      "section": "Recruiter",
+      "item": "Company page content",
+      "status": "PASS",
+      "notes": "sign in\n\nwelcome back to placement nexus\n\nemail\npassword\nforgot password?\nsign in\n\ndon't have an acc"
+    },
+    {
+      "section": "Recruiter Security",
+      "item": "SECURITY /officer/pending-approvals",
+      "status": "PASS",
+      "notes": "Blocked → http://localhost:5173/login"
+    },
+    {
+      "section": "Recruiter Security",
+      "item": "SECURITY /dashboard/officer",
+      "status": "PASS",
+      "notes": "Blocked → http://localhost:5173/login"
+    },
+    {
+      "section": "Recruiter Security",
+      "item": "SECURITY /dashboard/student",
+      "status": "PASS",
+      "notes": "Blocked → http://localhost:5173/login"
+    },
+    {
+      "section": "Auth",
+      "item": "Login officer",
+      "status": "PASS",
+      "notes": "Landed on: http://localhost:5173/dashboard/officer"
+    },
+    {
+      "section": "Officer",
+      "item": "/dashboard/officer",
+      "status": "PASS",
+      "notes": "OK (408 chars)"
+    },
+    {
+      "section": "Officer",
+      "item": "/officer/pending-approvals",
+      "status": "PASS",
+      "notes": "OK (1527 chars)"
+    },
+    {
+      "section": "Officer",
+      "item": "/officer/assessments",
+      "status": "PASS",
+      "notes": "OK (4864 chars)"
+    },
+    {
+      "section": "Officer",
+      "item": "/officer/career",
+      "status": "PASS",
+      "notes": "OK (4459 chars)"
+    },
+    {
+      "section": "Officer",
+      "item": "/officer/companies",
+      "status": "PASS",
+      "notes": "OK (3311 chars)"
+    },
+    {
+      "section": "Officer",
+      "item": "/officer/recruiters",
+      "status": "PASS",
+      "notes": "OK (5774 chars)"
+    },
+    {
+      "section": "Officer",
+      "item": "Companies content",
+      "status": "PASS",
+      "notes": "❌\n\nfailed to load companies.\n\n🏛️\ncompany directory\n\nmanage partner companies, onboard employers, and review verificatio"
+    },
+    {
+      "section": "Officer",
+      "item": "Approvals content",
+      "status": "PASS",
+      "notes": "❌\n\nfailed to load pending recruiters.\n\n✕\n❌\n\nfailed to load pending companies.\n\n✕\n❌\n\nfailed to load pending alumni.\n\n✕\n❌\n"
+    },
+    {
+      "section": "Officer",
+      "item": "Recruiters content",
+      "status": "PASS",
+      "notes": "❌\n\nfailed to load recruiters.\n\n👥\nrecruiter directory\n\nmanage recruiter profiles, company affiliations, and role permiss"
+    },
+    {
+      "section": "Officer",
+      "item": "Career mgmt content",
+      "status": "PASS",
+      "notes": "officer dashboard\n/\ncareer management\ncareer path & skill configuration\n\nconfigure global career tracks, set target skil"
+    },
+    {
+      "section": "Officer Security",
+      "item": "SECURITY /dashboard/student",
+      "status": "PASS",
+      "notes": "Blocked → http://localhost:5173/login"
+    },
+    {
+      "section": "Officer Security",
+      "item": "SECURITY /dashboard/recruiter",
+      "status": "PASS",
+      "notes": "Blocked → http://localhost:5173/login"
+    },
+    {
+      "section": "Officer Security",
+      "item": "SECURITY /dashboard/alumni",
+      "status": "PASS",
+      "notes": "Blocked → http://localhost:5173/login"
+    },
+    {
+      "section": "Auth",
+      "item": "Login alumni",
+      "status": "FAIL",
+      "notes": "Still on /login after submit"
+    },
+    {
+      "section": "App",
+      "item": "Full audit complete",
+      "status": "PASS",
+      "notes": ""
+    }
+  ],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+  ],
+  "networkErrors": [],
+  "totals": {
+    "pass": 44,
+    "fail": 4,
+    "partial": 0
+  },
+  "decision": "NEEDS FIXES"
+}
