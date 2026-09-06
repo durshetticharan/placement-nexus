@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import * as recruiterController from '../controllers/recruiter.controller';
 import * as driveController from '../controllers/drive.controller';
+import * as applicationController from '../controllers/application.controller';
+import * as interviewController from '../controllers/interview.controller';
+import * as selectionController from '../controllers/selection.controller';
 import { requireAuth } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/rbac.middleware';
 import { validate } from '../validation/auth.validation';
@@ -20,6 +23,13 @@ router.put('/drives/:id/requirements', requireRole('RECRUITER'), driveController
 router.post('/drives/:id/submit', requireRole('RECRUITER'), driveController.submitDrive);
 router.post('/drives/:id/close', requireRole('RECRUITER'), driveController.closeDriveRecruiter);
 router.post('/drives/:id/cancel', requireRole('RECRUITER'), driveController.cancelDriveRecruiter);
+
+// Applications & Interviews (Recruiter context)
+router.get('/me/drives/:id/applications', requireRole('RECRUITER'), applicationController.getDriveApplications);
+router.patch('/me/applications/:id/status', requireRole('RECRUITER'), applicationController.updateApplicationStatus);
+router.post('/me/applications/:appId/interviews', requireRole('RECRUITER'), interviewController.scheduleInterview);
+router.patch('/me/interviews/:id', requireRole('RECRUITER'), interviewController.updateInterviewOutcome);
+router.post('/me/applications/:appId/selection', requireRole('RECRUITER'), selectionController.recordSelection);
 
 router.get('/me', requireRole('RECRUITER'), recruiterController.getMyProfile);
 router.put(

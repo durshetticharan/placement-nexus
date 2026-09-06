@@ -8,6 +8,8 @@ import { requireRole } from '../middleware/rbac.middleware';
 import { validate } from '../validation/auth.validation';
 import { resumeUpload } from '../config/upload.config';
 import * as driveController from '../controllers/drive.controller';
+import * as applicationController from '../controllers/application.controller';
+import * as interviewController from '../controllers/interview.controller';
 import {
   academicSchema,
   addSkillSchema,
@@ -81,5 +83,11 @@ router.post('/me/coding-profiles', validate(codingProfileSchema), codingControll
 router.get('/me/coding-profiles', codingController.listCodingProfiles);
 router.patch('/me/coding-profiles/:id', validate(updateCodingProfileSchema), codingController.updateCodingProfile);
 router.delete('/me/coding-profiles/:id', codingController.deleteCodingProfile);
+
+// Applications & Interviews
+router.post('/me/applications/:driveId', applicationController.applyToDrive);
+router.get('/me/applications', applicationController.getMyApplications);
+router.delete('/me/applications/:id', applicationController.withdrawApplication);
+router.get('/me/interviews', interviewController.getMyInterviews);
 
 export default router;

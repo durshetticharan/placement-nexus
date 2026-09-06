@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as officerController from '../controllers/officer.controller';
 import * as driveController from '../controllers/drive.controller';
+import * as applicationController from '../controllers/application.controller';
 import { requireAuth } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/rbac.middleware';
 import { validate } from '../validation/auth.validation';
@@ -25,6 +26,7 @@ router.post('/drives/:id/publish', driveController.officerApproveDrive); // Maps
 router.post('/drives/:id/close', driveController.officerCloseDrive);
 router.post('/drives/:id/cancel', driveController.officerCancelDrive);
 router.post('/drives/:id/complete', driveController.officerCompleteDrive);
+router.get('/drives/:id/applications', applicationController.getDriveApplications);
 
 // ─── Company Management ───────────────────────────────────────────────────────
 router.get('/companies', officerController.listCompanies);

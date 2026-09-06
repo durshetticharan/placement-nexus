@@ -44,8 +44,12 @@ import RecruiterDirectory from '../pages/officer/RecruiterDirectory';
 
 // Phase 11 — Placement Drives
 import RecruiterDriveManagement from '../pages/recruiter/DriveManagement';
+import RecruiterDriveDetails from '../pages/recruiter/DriveDetails';
 import OfficerDriveDirectory from '../pages/officer/DriveDirectory';
+import OfficerDriveDetails from '../pages/officer/DriveDetails';
 import StudentDriveList from '../pages/student/DriveList';
+import StudentDriveDetails from '../pages/student/DriveDetails';
+import StudentMyApplications from '../pages/student/MyApplications';
 
 // Legacy placeholder kept for backward compat
 import Dashboard from '../pages/Dashboard';
@@ -249,6 +253,22 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/student/drives/:id"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <StudentDriveDetails />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/applications"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <StudentMyApplications />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Phase 10 — Recruiter Workspace */}
       <Route
@@ -275,6 +295,14 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/recruiter/drives/:id"
+        element={
+          <ProtectedRoute allowedRoles={['RECRUITER']}>
+            <RecruiterDriveDetails />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Phase 10 — Officer Company & Recruiter Management */}
       <Route
@@ -298,6 +326,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
             <OfficerDriveDirectory />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/officer/drives/:id"
+        element={
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
+            <OfficerDriveDetails />
           </ProtectedRoute>
         }
       />

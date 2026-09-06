@@ -43,6 +43,10 @@ export const recruiterDriveApi = {
     const res = await api.get('/recruiters/drives');
     return res.data.data as PlacementDrive[];
   },
+  get: async (id: string) => {
+    const res = await api.get(`/recruiters/drives/${id}`);
+    return res.data.data as PlacementDrive;
+  },
   create: async (data: any) => {
     const res = await api.post('/recruiters/drives', data);
     return res.data.data as PlacementDrive;

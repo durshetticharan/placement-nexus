@@ -191,6 +191,33 @@ export default function StudentDashboard() {
           </button>
         </div>
 
+        {/* Phase 12: Placement Drives Quick Access Banner */}
+        <div className="bg-gradient-to-r from-orange-900/60 via-amber-900/40 to-slate-800 rounded-xl border border-orange-700/60 p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-orange-600/30 border border-orange-500/50 flex items-center justify-center text-2xl">
+              💼
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Placement Drives</h2>
+              <p className="text-slate-300 text-xs sm:text-sm">Browse open placement drives, check eligibility, and submit your applications</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/student/applications')}
+              className="px-4 py-2 bg-slate-700/80 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap"
+            >
+              📋 My Applications
+            </button>
+            <button
+              onClick={() => navigate('/student/drives')}
+              className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-xs font-bold transition-colors shadow whitespace-nowrap"
+            >
+              🚀 Browse Drives →
+            </button>
+          </div>
+        </div>
+
         {/* Navigation Tabs */}
         <div className="flex border-b border-slate-700 overflow-x-auto">
           {(['academics', 'skills', 'projects', 'internships', 'certifications', 'achievements', 'profiles'] as Tab[]).map((tab) => {

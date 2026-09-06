@@ -48,7 +48,7 @@ export default function DriveList() {
             <div className="pb-3 border-b border-slate-700/50">
               <div className="flex justify-between items-start mb-2">
                 <span className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20">
-                  {drive.employmentType.replace('_', ' ')}
+                  {(drive.employmentType || '').replace(/_/g, ' ')}
                 </span>
                 {drive.salaryMin && drive.salaryMax && (
                   <span className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
