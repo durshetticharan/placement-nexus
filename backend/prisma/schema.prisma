@@ -147,8 +147,9 @@ model Student {
   // the historical student record when an alumni account is created.
   alumniProfile AlumniProfile?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  drivePreparationPlans DrivePreparationPlan[]
 
   @@index([placementStatus])
   @@map("students")
@@ -194,6 +195,7 @@ model Skill {
   drivePreferredSkills DriveRequirement[]       @relation("PreferredSkill")
   skillGaps            SkillGap[]
   learningResources    LearningResourceSkill[]
+  preparationTasks     PreparationTask[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -609,8 +611,9 @@ model LearningResource {
   url          String
   provider     String? // "YouTube", "Coursera", internal upload, etc.
 
-  skills        LearningResourceSkill[]
-  learningPaths LearningPathResource[]
+  skills           LearningResourceSkill[]
+  learningPaths    LearningPathResource[]
+  preparationTasks PreparationTask[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -636,6 +639,7 @@ model LearningPath {
 
   resources LearningPathResource[]
   progress  LearningProgress[]
+  tasks     PreparationTask[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -699,6 +703,49 @@ model ReadinessScore {
 
   @@index([studentId])
   @@map("readiness_scores")
+}
+
+model DrivePreparationPlan {
+  id               String         @id @default(cuid())
+  studentId        String
+  student          Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  placementDriveId String
+  placementDrive   PlacementDrive @relation(fields: [placementDriveId], references: [id], onDelete: Cascade)
+
+  progressPct Int               @default(0)
+  tasks       PreparationTask[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, placementDriveId])
+  @@map("drive_preparation_plans")
+}
+
+model PreparationTask {
+  id                     String                @id @default(cuid())
+  drivePreparationPlanId String?
+  drivePreparationPlan   DrivePreparationPlan? @relation(fields: [drivePreparationPlanId], references: [id], onDelete: Cascade)
+  learningPathId         String?
+  learningPath           LearningPath?         @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+
+  title    String
+  category String? // "APTITUDE", "CODING", "HR", "RESUME"
+  status   ProgressStatus @default(NOT_STARTED)
+
+  driveResourceId    String?
+  driveResource      DriveResource?    @relation(fields: [driveResourceId], references: [id], onDelete: SetNull)
+  driveExperienceId  String?
+  driveExperience    DriveExperience?  @relation(fields: [driveExperienceId], references: [id], onDelete: SetNull)
+  learningResourceId String?
+  learningResource   LearningResource? @relation(fields: [learningResourceId], references: [id], onDelete: SetNull)
+  skillId            String?
+  skill              Skill?            @relation(fields: [skillId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("preparation_tasks")
 }
 
 // ============================================================================
@@ -880,8 +927,9 @@ model PlacementDrive {
   driveResources        DriveResource[]
   referralOpportunities ReferralOpportunity[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  drivePreparationPlans DrivePreparationPlan[]
 
   @@index([status])
   @@map("placement_drives")
@@ -1031,10 +1079,17 @@ model AlumniProfile {
   skills          String[]
   linkedinUrl     String?
 
-  verification          AlumniVerification?
+  verification AlumniVerification?
+  // Mentorship (Phase 16)
+  isMentor     Boolean             @default(false)
+  mentorBio    String?
+  mentorTopics String[] // e.g., ["Mock Interviews", "Resume Review", "Career Advice"]
+  maxMentees   Int                 @default(3)
+
   referralOpportunities ReferralOpportunity[]
   driveExperiences      DriveExperience[]
   driveResources        DriveResource[]
+  referralRequests      ReferralRequest[]
   mentorshipRequests    MentorshipRequest[]
   mentorshipSessions    MentorshipSession[]
   mockInterviews        MockInterview[]
@@ -1111,8 +1166,10 @@ model ReferralRequest {
 
   referral Referral?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  alumniProfile   AlumniProfile? @relation(fields: [alumniProfileId], references: [id])
+  alumniProfileId String?
 
   @@unique([studentId, referralOpportunityId])
   @@map("referral_requests")
@@ -1190,16 +1247,17 @@ model DriveExperience {
   difficulty    ExperienceDifficulty?
   outcome       ExperienceOutcome     @default(PREFER_NOT_TO_SAY)
   isAnonymous   Boolean               @default(false) // author explicitly chose to hide identity
-  overallRating Int?                  // 1-5
+  overallRating Int? // 1-5
   overallTips   String?
-  narrative     String?               // main free-form experience write-up
+  narrative     String? // main free-form experience write-up
 
-  rounds ExperienceRound[]
+  rounds           ExperienceRound[]
+  preparationTasks PreparationTask[]
 
-  status           ExperienceStatus @default(PENDING)
-  moderatedById    String?          // Officer User.id
-  moderatedAt      DateTime?
-  rejectionReason  String?
+  status          ExperienceStatus @default(PENDING)
+  moderatedById   String? // Officer User.id
+  moderatedAt     DateTime?
+  rejectionReason String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1240,14 +1298,16 @@ model DriveResource {
   companyName  String?
   roundType    InterviewType?
   category     ResourceCategory @default(OTHER)
-  resourceType String           // "LINK" | "PDF" | "VIDEO" | "ARTICLE" | "GUIDE"
+  resourceType String // "LINK" | "PDF" | "VIDEO" | "ARTICLE" | "GUIDE"
   title        String
   description  String?
   fileUrl      String?
   externalUrl  String?
 
+  preparationTasks PreparationTask[]
+
   status          ResourceStatus @default(PENDING)
-  moderatedById   String?        // Officer User.id
+  moderatedById   String? // Officer User.id
   moderatedAt     DateTime?
   rejectionReason String?
 
@@ -1280,7 +1340,8 @@ model MentorshipRequest {
   message String?
   status  MentorshipStatus @default(REQUESTED)
 
-  session MentorshipSession?
+  session   MentorshipSession?
+  guidances MentorGuidance[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1305,6 +1366,20 @@ model MentorshipSession {
   updatedAt DateTime @updatedAt
 
   @@map("mentorship_sessions")
+}
+
+model MentorGuidance {
+  id                  String            @id @default(cuid())
+  mentorshipRequestId String
+  mentorshipRequest   MentorshipRequest @relation(fields: [mentorshipRequestId], references: [id], onDelete: Cascade)
+  authorId            String // User.id of the person who wrote it
+  content             String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([mentorshipRequestId])
+  @@map("mentor_guidance")
 }
 
 model MockInterview {

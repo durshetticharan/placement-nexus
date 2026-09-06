@@ -18,6 +18,9 @@ import careerRoutes from './routes/career.routes';
 import referralRoutes from './routes/referral.routes';
 import driveExperienceRoutes from './routes/driveExperience.routes';
 import driveResourceRoutes from './routes/driveResource.routes';
+import mentorRoutes from './routes/mentor.routes';
+import mentorshipRoutes from './routes/mentorship.routes';
+import preparationRoutes from './routes/preparation.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -58,6 +61,9 @@ app.use('/api/v1/career', careerRoutes);
 app.use('/api/v1/referrals', referralRoutes);
 app.use('/api/v1/experiences', driveExperienceRoutes);
 app.use('/api/v1/resources', driveResourceRoutes);
+app.use('/api/v1/mentors', mentorRoutes);
+app.use('/api/v1/mentorships', mentorshipRoutes);
+app.use('/api/v1/preparation', preparationRoutes);
 
 app.use(errorHandler);
 
