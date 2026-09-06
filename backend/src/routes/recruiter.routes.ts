@@ -27,6 +27,7 @@ router.post('/drives/:id/cancel', requireRole('RECRUITER'), driveController.canc
 // Applications & Interviews (Recruiter context)
 router.get('/me/drives/:id/applications', requireRole('RECRUITER'), applicationController.getDriveApplications);
 router.patch('/me/applications/:id/status', requireRole('RECRUITER'), applicationController.updateApplicationStatus);
+router.get('/me/applications/:id/match-breakdown', requireRole('RECRUITER'), applicationController.getMatchBreakdown);
 router.post('/me/applications/:appId/interviews', requireRole('RECRUITER'), interviewController.scheduleInterview);
 router.patch('/me/interviews/:id', requireRole('RECRUITER'), interviewController.updateInterviewOutcome);
 router.post('/me/applications/:appId/selection', requireRole('RECRUITER'), selectionController.recordSelection);

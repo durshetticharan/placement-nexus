@@ -49,6 +49,8 @@ export function getDashboardPath(role: string): string {
   }
 }
 
+let refreshPromise: Promise<any> | null = null;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -58,31 +60,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const silentRefresh = async () => {
       try {
-        const res = await api.post('/auth/refresh-token');
+        if (!refreshPromise) {
+          refreshPromise = api.post('/auth/refresh-token');
+        }
+        const res = await refreshPromise;
         const newToken: string = res.data.data.accessToken;
+
+        api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
         setAccessToken(newToken);
+
         const payload = JSON.parse(atob(newToken.split('.')[1]));
         setUser({ id: payload.userId, email: '', role: payload.role as UserRole });
-      } catch {
+      } catch (err) {
         setUser(null);
         setAccessToken(null);
+        delete api.defaults.headers.common['Authorization'];
       } finally {
+        refreshPromise = null;
         setLoading(false);
       }
     };
     silentRefresh();
   }, []);
-
-  // Inject access token into every request
-  useEffect(() => {
-    const interceptor = api.interceptors.request.use((config) => {
-      if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
-      }
-      return config;
-    });
-    return () => api.interceptors.request.eject(interceptor);
-  }, [accessToken]);
 
   const register = async (payload: RegisterPayload) => {
     await api.post('/auth/register', payload);
@@ -91,6 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string): Promise<{ role: string }> => {
     const res = await api.post('/auth/login', { email, password });
     const { accessToken: token, user: userData } = res.data.data;
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     setAccessToken(token);
     setUser(userData);
     return { role: userData.role };
@@ -102,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setUser(null);
       setAccessToken(null);
+      delete api.defaults.headers.common['Authorization'];
     }
   };
 

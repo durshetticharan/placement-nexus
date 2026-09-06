@@ -169,7 +169,7 @@ export default function DriveManagement() {
                 <p>Apps Start: {new Date(drive.applicationStartAt).toLocaleString()}</p>
                 <p>Apps End: {new Date(drive.applicationEndAt).toLocaleString()}</p>
               </div>
-              {drive.status === 'DRAFT' && (
+              {drive.status === 'DRAFT' ? (
                 <div className="flex space-x-3 pt-4 border-t border-slate-700 mt-4">
                   <button className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded font-medium flex justify-center items-center">
                     <Edit2 className="w-4 h-4 mr-2" /> Edit
@@ -177,6 +177,12 @@ export default function DriveManagement() {
                   <button onClick={() => handleSubmitDrive(drive.id)} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded font-medium flex justify-center items-center">
                     <CheckCircle className="w-4 h-4 mr-2" /> Submit
                   </button>
+                </div>
+              ) : (
+                <div className="flex space-x-3 pt-4 border-t border-slate-700 mt-4">
+                  <a href={`/recruiter/drives/${drive.id}`} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded font-medium flex justify-center items-center">
+                    View Details
+                  </a>
                 </div>
               )}
             </div>

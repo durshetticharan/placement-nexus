@@ -31,6 +31,9 @@ export interface Application {
   placementDriveId: string;
   status: ApplicationStatus;
   appliedAt: string;
+  jobMatchPct?: number; // Snapshot
+  dynamicJobMatch?: number; // Live score
+  eligibleAtApply?: boolean;
   student?: any; // For recruiter view
   placementDrive?: PlacementDrive;
   interviews?: Interview[];
@@ -60,6 +63,10 @@ export const applicationApi = {
   getDriveApplications: async (driveId: string) => {
     const res = await api.get(`/recruiters/me/drives/${driveId}/applications`);
     return res.data.data as Application[];
+  },
+  getMatchBreakdown: async (applicationId: string) => {
+    const res = await api.get(`/recruiters/me/applications/${applicationId}/match-breakdown`);
+    return res.data.data;
   },
   updateStatus: async (applicationId: string, status: ApplicationStatus) => {
     const res = await api.patch(`/recruiters/me/applications/${applicationId}/status`, { status });

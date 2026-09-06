@@ -1,6 +1,7 @@
 import { PrismaClient, ApplicationStatus } from '@prisma/client';
 import { logAudit } from './audit.service';
 import { EligibilityService } from './eligibility.service';
+import { JobMatchService } from './job-match.service';
 
 const prisma = new PrismaClient();
 
@@ -45,18 +46,54 @@ export async function applyToDrive(studentUserId: string, driveId: string) {
     throw new ApplicationServiceError(403, 'FORBIDDEN', 'You are not eligible for this drive: ' + eligibility.reasons.join(', '));
   }
 
+  // Calculate Job Match Snapshot
+  const jobMatch = await JobMatchService.calculateJobMatch(student.id, driveId);
+
   const application = await prisma.application.create({
     data: {
       studentId: student.id,
       placementDriveId: driveId,
       status: 'APPLIED',
-      eligibleAtApply: true
+      eligibleAtApply: true,
+      jobMatchPct: jobMatch.normalizedScore
     }
   });
 
   await logAudit({ action: 'STUDENT_APPLIED', userId: student.id, userType: 'Student', message: `Student applied to drive ${driveId}`, metadata: { applicationId: application.id } });
 
   return application;
+}
+
+export async function getApplicationMatchBreakdown(userId: string, userRole: string, applicationId: string) {
+  const application = await prisma.application.findUnique({
+    where: { id: applicationId },
+    include: {
+      placementDrive: true
+    }
+  });
+
+  if (!application) {
+    throw new ApplicationServiceError(404, 'NOT_FOUND', 'Application not found');
+  }
+
+  // IDOR / RBAC check
+  if (userRole === 'RECRUITER') {
+    const recruiter = await prisma.recruiter.findUnique({ where: { userId } });
+    if (!recruiter) throw new ApplicationServiceError(404, 'NOT_FOUND', 'Recruiter not found');
+
+    if (application.placementDrive.companyId !== recruiter.companyId) {
+      const membership = await prisma.recruiterCompanyMembership.findUnique({
+        where: { recruiterId_companyId: { recruiterId: recruiter.id, companyId: application.placementDrive.companyId } }
+      });
+      if (!membership || membership.status !== 'APPROVED') {
+        throw new ApplicationServiceError(403, 'FORBIDDEN', 'You do not have access to this application');
+      }
+    }
+  }
+
+  // Calculate the breakdown dynamically
+  const matchResult = await JobMatchService.calculateJobMatch(application.studentId, application.placementDriveId);
+  return matchResult;
 }
 
 export async function withdrawApplication(studentUserId: string, applicationId: string) {
@@ -120,7 +157,7 @@ export async function getDriveApplications(userId: string, userRole: string, dri
     }
   }
 
-  return prisma.application.findMany({
+  const applications = await prisma.application.findMany({
     where: { placementDriveId: driveId },
     include: {
       student: {
@@ -128,9 +165,10 @@ export async function getDriveApplications(userId: string, userRole: string, dri
           id: true,
           userId: true,
           rollNumber: true,
-          user: { select: { fullName: true, email: true } },
-          branch: true,
-          cgpa: true
+          fullName: true,
+          user: { select: { email: true } },
+          academics: { select: { branch: true, cgpa: true } },
+          readinessScores: { orderBy: { computedAt: 'desc' }, take: 1 }
         }
       },
       interviews: { orderBy: { roundNumber: 'asc' } },
@@ -138,6 +176,21 @@ export async function getDriveApplications(userId: string, userRole: string, dri
     },
     orderBy: { appliedAt: 'desc' }
   });
+
+  // Inject dynamic Job Match for recruiter sorting
+  const enriched = await Promise.all(applications.map(async (app) => {
+    try {
+      const match = await JobMatchService.calculateJobMatch(app.studentId, driveId);
+      return {
+        ...app,
+        dynamicJobMatch: match.normalizedScore
+      };
+    } catch (e) {
+      return { ...app, dynamicJobMatch: app.jobMatchPct }; // fallback to snapshot
+    }
+  }));
+
+  return enriched;
 }
 
 export async function updateApplicationStatus(recruiterUserId: string, applicationId: string, status: ApplicationStatus) {

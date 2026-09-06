@@ -75,3 +75,19 @@ export async function updateApplicationStatus(req: Request, res: Response) {
     return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
   }
 }
+
+export async function getMatchBreakdown(req: Request, res: Response) {
+  try {
+    const userId = req.user!.userId;
+    const userRole = req.user!.role;
+    const id = req.params.id as string;
+
+    const breakdown = await applicationService.getApplicationMatchBreakdown(userId, userRole, id);
+    return res.status(200).json({ success: true, data: breakdown });
+  } catch (error: any) {
+    if (error.name === 'ApplicationServiceError') {
+      return res.status(error.statusCode).json({ success: false, error: { code: error.code, message: error.message } });
+    }
+    return res.status(500).json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } });
+  }
+}
