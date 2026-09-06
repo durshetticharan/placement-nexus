@@ -36,9 +36,23 @@ export default function AlumniDashboard() {
           </p>
         </div>
 
-        <p className="text-slate-500 text-xs italic">
-          Full alumni features (mentorship, referrals, networking) coming in later phases.
-        </p>
+        <div className="grid grid-cols-2 gap-4">
+          <button
+            onClick={() => navigate('/alumni/profile')}
+            className="p-4 bg-slate-700/50 hover:bg-slate-700 rounded-lg border border-slate-600 transition text-left"
+          >
+            <h3 className="font-semibold text-white mb-1">My Profile</h3>
+            <p className="text-xs text-slate-400">Manage professional details and verification</p>
+          </button>
+          
+          <button
+            onClick={() => navigate('/alumni/referrals')}
+            className="p-4 bg-slate-700/50 hover:bg-slate-700 rounded-lg border border-slate-600 transition text-left"
+          >
+            <h3 className="font-semibold text-white mb-1">Referral Hub</h3>
+            <p className="text-xs text-slate-400">Manage opportunities and student requests</p>
+          </button>
+        </div>
 
         <button
           onClick={handleLogout}

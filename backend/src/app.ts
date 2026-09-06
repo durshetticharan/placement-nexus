@@ -15,6 +15,7 @@ import studentRoutes from './routes/student.routes';
 import assessmentRoutes from './routes/assessment.routes';
 import attemptRoutes from './routes/attempt.routes';
 import careerRoutes from './routes/career.routes';
+import referralRoutes from './routes/referral.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -52,6 +53,7 @@ app.use('/api/v1/students', studentRoutes);
 app.use('/api/v1/assessments', assessmentRoutes);
 app.use('/api/v1/attempts', attemptRoutes);
 app.use('/api/v1/career', careerRoutes);
+app.use('/api/v1/referrals', referralRoutes);
 
 app.use(errorHandler);
 

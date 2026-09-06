@@ -96,3 +96,83 @@ export async function rejectAlumni(
 
   return { message: 'Alumni rejected.' };
 }
+
+// ─── Profile Management & Directory ───────────────────────────────────────────
+
+export async function createOrUpdateProfile(userId: string, data: any) {
+  const existing = await alumniRepo.findAlumniProfileByUserId(userId);
+  let studentId = undefined;
+
+  if (!existing?.studentId && data.rollNumber) {
+    // Optionally link to student account (import Prisma directly to check Student or add to repo)
+    // For clean architecture, we can do it via a generic Prisma query here or add to repo.
+    // Assuming simple Prisma use here for brevity since it's a domain boundary.
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    const student = await prisma.student.findUnique({ where: { rollNumber: data.rollNumber } });
+    if (student) studentId = student.id;
+  }
+
+  const profileData = {
+    fullName: data.fullName,
+    degree: data.degree,
+    branch: data.branch,
+    graduationYear: Number(data.graduationYear),
+    collegeName: data.collegeName,
+    currentCompany: data.currentCompany || null,
+    currentRole: data.currentRole || null,
+    yearsExperience: data.yearsExperience ? Number(data.yearsExperience) : null,
+    skills: data.skills || [],
+    linkedinUrl: data.linkedinUrl || null,
+  };
+
+  if (existing) {
+    return alumniRepo.updateAlumniProfile(existing.id, profileData);
+  }
+
+  // Create new
+  const { PrismaClient } = require('@prisma/client');
+  const prisma = new PrismaClient();
+  const profile = await prisma.alumniProfile.create({
+    data: {
+      ...profileData,
+      user: { connect: { id: userId } },
+      ...(studentId ? { student: { connect: { id: studentId } } } : {}),
+      verification: { create: { status: 'PENDING' } }
+    },
+    include: { verification: true }
+  });
+
+  await createAuditLog({
+    actorUserId: userId,
+    action: 'ALUMNI_PROFILE_CREATED',
+    entityType: 'AlumniProfile',
+    entityId: profile.id
+  });
+
+  return profile;
+}
+
+export async function getProfileByUserId(userId: string) {
+  return alumniRepo.findAlumniProfileByUserId(userId);
+}
+
+export async function getDirectory(filters: { company?: string, branch?: string, graduationYear?: string }) {
+  return alumniRepo.findVerifiedAlumni({
+    company: filters.company,
+    branch: filters.branch,
+    graduationYear: filters.graduationYear ? Number(filters.graduationYear) : undefined
+  });
+}
+
+export async function getPublicProfileById(id: string) {
+  const profile = await alumniRepo.getPublicProfileById(id);
+  if (!profile || profile.verification?.status !== 'APPROVED') {
+    throw Object.assign(new Error('Alumni profile not found or not verified.'), {
+      code: 'NOT_FOUND',
+      statusCode: 404
+    });
+  }
+  return profile;
+}
+

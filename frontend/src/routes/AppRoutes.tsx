@@ -14,6 +14,8 @@ import StudentDashboard   from '../pages/student/StudentDashboard';
 import RecruiterDashboard from '../pages/recruiter/RecruiterDashboard';
 import OfficerDashboard   from '../pages/officer/OfficerDashboard';
 import AlumniDashboard    from '../pages/alumni/AlumniDashboard';
+import AlumniProfile      from '../pages/alumni/AlumniProfile';
+import ReferralManagement from '../pages/alumni/ReferralManagement';
 
 // Officer-specific pages
 import PendingApprovals from '../pages/officer/PendingApprovals';
@@ -50,6 +52,10 @@ import OfficerDriveDetails from '../pages/officer/DriveDetails';
 import StudentDriveList from '../pages/student/DriveList';
 import StudentDriveDetails from '../pages/student/DriveDetails';
 import StudentMyApplications from '../pages/student/MyApplications';
+
+// Phase 14 — Alumni & Referrals
+import AlumniDirectory    from '../pages/student/AlumniDirectory';
+import ReferralRequests   from '../pages/student/ReferralRequests';
 
 // Legacy placeholder kept for backward compat
 import Dashboard from '../pages/Dashboard';
@@ -136,6 +142,22 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['ALUMNI']}>
             <AlumniDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/alumni/profile"
+        element={
+          <ProtectedRoute allowedRoles={['ALUMNI']}>
+            <AlumniProfile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/alumni/referrals"
+        element={
+          <ProtectedRoute allowedRoles={['ALUMNI']}>
+            <ReferralManagement />
           </ProtectedRoute>
         }
       />
@@ -266,6 +288,22 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <StudentMyApplications />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/alumni"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <AlumniDirectory />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/referrals"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <ReferralRequests />
           </ProtectedRoute>
         }
       />

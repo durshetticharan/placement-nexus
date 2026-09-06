@@ -29,4 +29,32 @@ router.post(
   alumniController.rejectAlumni,
 );
 
+// ─── Profile Management & Directory ───────────────────────────────────────────
+
+router.post(
+  '/me/profile',
+  requireAuth,
+  requireRole('ALUMNI'),
+  alumniController.createOrUpdateProfile,
+);
+
+router.get(
+  '/me/profile',
+  requireAuth,
+  requireRole('ALUMNI'),
+  alumniController.getMyProfile,
+);
+
+router.get(
+  '/directory',
+  requireAuth,
+  alumniController.getDirectory, // Any authenticated user can view the directory
+);
+
+router.get(
+  '/:id',
+  requireAuth,
+  alumniController.getPublicProfile,
+);
+
 export default router;
