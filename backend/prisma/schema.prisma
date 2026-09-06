@@ -138,6 +138,10 @@ model Student {
   resumeAnalyses        ResumeAnalysis[]
   careerRecommendations CareerRecommendation[]
 
+  // Phase 15 back-relations
+  driveExperiences DriveExperience[]
+  driveResources   DriveResource[]
+
   // Alumni linkage: when a student graduates and becomes an alumnus, the
   // AlumniProfile references back to this record for provenance — never delete
   // the historical student record when an alumni account is created.
@@ -932,6 +936,9 @@ model Application {
   interviews Interview[]
   selection  Selection?
 
+  // Phase 15: an experience can optionally be linked to a specific application for provenance
+  driveExperience DriveExperience?
+
   appliedAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1124,28 +1131,83 @@ model Referral {
   @@map("referrals")
 }
 
+// Phase 15 — Experience and Resource status/category enums
+enum ExperienceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum ExperienceDifficulty {
+  EASY
+  MEDIUM
+  HARD
+  VERY_HARD
+}
+
+enum ExperienceOutcome {
+  SELECTED
+  REJECTED
+  WAITLISTED
+  PREFER_NOT_TO_SAY
+}
+
+enum ResourceCategory {
+  APTITUDE
+  CODING
+  TECHNICAL
+  HR
+  RESUME
+  COMPANY_PREP
+  DRIVE_PREP
+  OTHER
+}
+
+enum ResourceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
 model DriveExperience {
   id               String          @id @default(cuid())
-  alumniProfileId  String
-  alumniProfile    AlumniProfile   @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
+  // Author: either an alumni or a student (exactly one must be set — enforced at service layer)
+  alumniProfileId  String?
+  alumniProfile    AlumniProfile?  @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
+  studentId        String?
+  student          Student?        @relation(fields: [studentId], references: [id], onDelete: Cascade)
   placementDriveId String?
   placementDrive   PlacementDrive? @relation(fields: [placementDriveId], references: [id], onDelete: SetNull)
+  applicationId    String?         @unique // optional link to a specific application for provenance
+  application      Application?    @relation(fields: [applicationId], references: [id], onDelete: SetNull)
 
   companyName String
   role        String
   driveYear   Int
-  overallTips String?
+
+  difficulty    ExperienceDifficulty?
+  outcome       ExperienceOutcome     @default(PREFER_NOT_TO_SAY)
+  isAnonymous   Boolean               @default(false) // author explicitly chose to hide identity
+  overallRating Int?                  // 1-5
+  overallTips   String?
+  narrative     String?               // main free-form experience write-up
 
   rounds ExperienceRound[]
 
-  isModerated   Boolean   @default(false)
-  moderatedById String?
-  moderatedAt   DateTime?
+  status           ExperienceStatus @default(PENDING)
+  moderatedById    String?          // Officer User.id
+  moderatedAt      DateTime?
+  rejectionReason  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([companyName])
+  @@index([status])
+  @@index([alumniProfileId])
+  @@index([studentId])
   @@map("drive_experiences")
 }
 
@@ -1167,26 +1229,36 @@ model ExperienceRound {
 
 model DriveResource {
   id               String          @id @default(cuid())
-  alumniProfileId  String
-  alumniProfile    AlumniProfile   @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
+  // Author: either an alumni or a student (exactly one must be set — enforced at service layer)
+  alumniProfileId  String?
+  alumniProfile    AlumniProfile?  @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
+  studentId        String?
+  student          Student?        @relation(fields: [studentId], references: [id], onDelete: Cascade)
   placementDriveId String?
   placementDrive   PlacementDrive? @relation(fields: [placementDriveId], references: [id], onDelete: SetNull)
 
-  companyName  String
+  companyName  String?
   roundType    InterviewType?
-  resourceType String // "PDF" | "LINK" | "GUIDE"
+  category     ResourceCategory @default(OTHER)
+  resourceType String           // "LINK" | "PDF" | "VIDEO" | "ARTICLE" | "GUIDE"
   title        String
+  description  String?
   fileUrl      String?
   externalUrl  String?
 
-  isModerated   Boolean   @default(false)
-  moderatedById String?
-  moderatedAt   DateTime?
+  status          ResourceStatus @default(PENDING)
+  moderatedById   String?        // Officer User.id
+  moderatedAt     DateTime?
+  rejectionReason String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([companyName])
+  @@index([status])
+  @@index([category])
+  @@index([alumniProfileId])
+  @@index([studentId])
   @@map("drive_resources")
 }
 

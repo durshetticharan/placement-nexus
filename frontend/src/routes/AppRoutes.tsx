@@ -57,6 +57,12 @@ import StudentMyApplications from '../pages/student/MyApplications';
 import AlumniDirectory    from '../pages/student/AlumniDirectory';
 import ReferralRequests   from '../pages/student/ReferralRequests';
 
+// Phase 15 — Experiences & Resources
+import DriveExperiences      from '../pages/student/DriveExperiences';
+import DriveExperienceDetail from '../pages/student/DriveExperienceDetail';
+import DriveResources        from '../pages/student/DriveResources';
+import ContentModeration     from '../pages/officer/ContentModeration';
+
 // Legacy placeholder kept for backward compat
 import Dashboard from '../pages/Dashboard';
 
@@ -161,6 +167,22 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/alumni/experiences"
+        element={
+          <ProtectedRoute allowedRoles={['ALUMNI']}>
+            <DriveExperiences />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/alumni/resources"
+        element={
+          <ProtectedRoute allowedRoles={['ALUMNI']}>
+            <DriveResources />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Officer-only Assessment Engine Tools */}
       <Route
@@ -168,6 +190,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
             <PendingApprovals />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/officer/content-moderation"
+        element={
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
+            <ContentModeration />
           </ProtectedRoute>
         }
       />
@@ -304,6 +334,32 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <ReferralRequests />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Phase 15 — Experiences & Resources */}
+      <Route
+        path="/student/experiences"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <DriveExperiences />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/experiences/:id"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <DriveExperienceDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/resources"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <DriveResources />
           </ProtectedRoute>
         }
       />
