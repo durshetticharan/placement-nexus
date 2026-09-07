@@ -1,5 +1,6 @@
 import { PrismaClient, DriveStatus, Prisma } from '@prisma/client';
 import { logAudit } from './audit.service';
+import { NotificationService } from './notification.service';
 
 const prisma = new PrismaClient();
 
@@ -202,7 +203,8 @@ export async function updateDriveStatus(userId: string, driveId: string, status:
 
   const updated = await prisma.placementDrive.update({
     where: { id: driveId },
-    data: { status }
+    data: { status },
+    include: { createdByRecruiter: { select: { userId: true } } }
   });
 
   await logAudit({
@@ -212,6 +214,25 @@ export async function updateDriveStatus(userId: string, driveId: string, status:
     entityId: driveId,
     metadata: { previousStatus: drive.status, reason }
   });
+
+  // Notify recruiter
+  if (status === 'PUBLISHED') {
+    await NotificationService.sendNotification({
+      userId: updated.createdByRecruiter.userId,
+      type: 'NEW_DRIVE',
+      title: 'Drive Published',
+      message: `Your placement drive "${updated.title}" has been approved and published.`,
+      metadata: { driveId }
+    });
+  } else if (status === 'DRAFT') {
+    await NotificationService.sendNotification({
+      userId: updated.createdByRecruiter.userId,
+      type: 'SYSTEM',
+      title: 'Drive Rejected',
+      message: `Your placement drive "${updated.title}" was rejected and returned to draft status.${reason ? ' Reason: ' + reason : ''}`,
+      metadata: { driveId }
+    });
+  }
 
   return updated;
 }

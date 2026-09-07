@@ -1,5 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import NotificationCenter from '../../components/NotificationCenter';
 
 export default function OfficerDashboard() {
   const { user, logout } = useAuth();
@@ -24,12 +25,15 @@ export default function OfficerDashboard() {
               <p className="text-slate-400 text-xs">Placement Nexus — Campus Administration Panel</p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-red-400 hover:text-red-300 text-xs font-semibold rounded-lg transition-colors"
-          >
-            Log out
-          </button>
+          <div className="flex items-center gap-4">
+            <NotificationCenter />
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-red-400 hover:text-red-300 text-xs font-semibold rounded-lg transition-colors"
+            >
+              Log out
+            </button>
+          </div>
         </div>
 
         {/* Info card */}
@@ -111,6 +115,19 @@ export default function OfficerDashboard() {
               <div className="flex-1 min-w-0">
                 <p className="text-white font-medium text-sm truncate">Career Paths</p>
                 <p className="text-slate-400 text-xs truncate">Skills & roles management</p>
+              </div>
+            </Link>
+
+            <Link
+              to="/officer/analytics"
+              className="flex items-center gap-3 p-3.5 bg-slate-700/30 hover:bg-slate-700/60 border border-slate-700 hover:border-emerald-500/50 rounded-xl transition-all group sm:col-span-2"
+            >
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+                📈
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-medium text-sm truncate">System Analytics & Reports</p>
+                <p className="text-slate-400 text-xs truncate">Campus-wide placement metrics</p>
               </div>
             </Link>
           </div>

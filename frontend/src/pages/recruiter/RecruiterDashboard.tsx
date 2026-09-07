@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { companyService, type RecruiterProfile, type RecruiterCompanyMembership } from '../../services/companyService';
+import NotificationCenter from '../../components/NotificationCenter';
 
 export default function RecruiterDashboard() {
   const { user, logout } = useAuth();
@@ -61,12 +62,15 @@ export default function RecruiterDashboard() {
               </p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-red-400 hover:text-red-300 rounded-lg text-sm transition-colors"
-          >
-            Log out
-          </button>
+          <div className="flex items-center gap-4">
+            <NotificationCenter />
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-red-400 hover:text-red-300 rounded-lg text-sm transition-colors"
+            >
+              Log out
+            </button>
+          </div>
         </div>
 
         {/* Verification Status Banners */}
@@ -176,6 +180,25 @@ export default function RecruiterDashboard() {
                 </div>
                 <p className="text-slate-400 text-xs mt-1">
                   Manage company profile, contact details, branch info, and view recruitment team.
+                </p>
+              </div>
+            </Link>
+
+
+            <Link
+              to="/recruiter/analytics"
+              className="flex items-start gap-4 p-5 bg-slate-800/90 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/50 rounded-2xl transition-all group md:col-span-2"
+            >
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                📈
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-semibold text-white">Recruitment Analytics</h3>
+                  <span className="text-slate-500 group-hover:text-emerald-400 transition-colors">→</span>
+                </div>
+                <p className="text-slate-400 text-xs mt-1">
+                  View insights and application funnels across all your placement drives.
                 </p>
               </div>
             </Link>

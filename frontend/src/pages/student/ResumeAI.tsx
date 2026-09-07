@@ -1,12 +1,6 @@
 import { useState } from 'react';
 import { analyzeResume, type ResumeAnalysisResult } from '../../services/ai.service';
 
-const DIFFICULTY_COLOR: Record<string, string> = {
-  Easy: 'text-emerald-400',
-  Medium: 'text-amber-400',
-  Hard: 'text-rose-400',
-};
-
 const CONF_COLOR: Record<string, string> = {
   HIGH: 'text-emerald-400',
   MEDIUM: 'text-amber-400',

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getErrorMessage } from '../../utils/error';
 import * as studentService from '../../services/studentService';
+import NotificationCenter from '../../components/NotificationCenter';
 import type {
   StudentProfile,
   AcademicData,
@@ -110,6 +111,8 @@ export default function StudentDashboard() {
               </div>
             </div>
 
+            <NotificationCenter />
+
             <button
               onClick={handleLogout}
               className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60 border border-red-700 text-red-200 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap"
@@ -188,6 +191,25 @@ export default function StudentDashboard() {
             className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-colors shadow whitespace-nowrap"
           >
             📊 Check Readiness →
+          </button>
+        </div>
+
+        {/* Phase 18: Analytics Quick Access Banner */}
+        <div className="bg-gradient-to-r from-blue-900/60 via-cyan-900/40 to-slate-800 rounded-xl border border-blue-700/60 p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-2xl">
+              📈
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Placement Analytics</h2>
+              <p className="text-slate-300 text-xs sm:text-sm">Track your application funnel and skill gap progress</p>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate('/student/analytics')}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition-colors shadow whitespace-nowrap"
+          >
+            📊 View Analytics →
           </button>
         </div>
 

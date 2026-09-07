@@ -2,11 +2,9 @@ import { useState } from 'react';
 import {
   generateInterviewQuestions,
   evaluateAnswer,
-  listInterviewSessions,
   type InterviewQuestion,
   type InterviewSessionResult,
   type EvaluationResult,
-  type InterviewSession,
 } from '../../services/ai.service';
 
 const DIFF_COLOR: Record<string, string> = {

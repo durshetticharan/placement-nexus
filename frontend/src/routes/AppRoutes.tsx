@@ -64,13 +64,18 @@ import DriveResources        from '../pages/student/DriveResources';
 import ContentModeration     from '../pages/officer/ContentModeration';
 
 // Phase 16 — Mentorship
-import MentorDirectory      from '../pages/student/MentorDirectory';
-import MentorshipDashboard  from '../pages/student/MentorshipDashboard';
+// (Routes for mentorship not fully implemented here yet)
 
 // Phase 17 — AI Features
 import ResumeAI    from '../pages/student/ResumeAI';
 import CareerAI    from '../pages/student/CareerAI';
 import InterviewAI from '../pages/student/InterviewAI';
+
+// Phase 18 — Analytics & Notifications
+import NotificationPreferences from '../pages/NotificationPreferences';
+import StudentAnalytics from '../pages/student/StudentAnalytics';
+import RecruiterAnalytics from '../pages/recruiter/RecruiterAnalytics';
+import OfficerAnalytics from '../pages/officer/OfficerAnalytics';
 
 // Legacy placeholder kept for backward compat
 import Dashboard from '../pages/Dashboard';
@@ -463,6 +468,40 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
             <OfficerDriveDetails />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Phase 18 — Analytics & Notifications */}
+      <Route
+        path="/preferences"
+        element={
+          <ProtectedRoute>
+            <NotificationPreferences />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/analytics"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <StudentAnalytics />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/recruiter/analytics"
+        element={
+          <ProtectedRoute allowedRoles={['RECRUITER']}>
+            <RecruiterAnalytics />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/officer/analytics"
+        element={
+          <ProtectedRoute allowedRoles={['PLACEMENT_OFFICER']}>
+            <OfficerAnalytics />
           </ProtectedRoute>
         }
       />

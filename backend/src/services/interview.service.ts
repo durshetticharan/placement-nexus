@@ -1,5 +1,6 @@
 import { PrismaClient, InterviewOutcome, InterviewType } from '@prisma/client';
 import { logAudit } from './audit.service';
+import { NotificationService } from './notification.service';
 
 const prisma = new PrismaClient();
 
@@ -23,7 +24,7 @@ export async function scheduleInterview(
 ) {
   const application = await prisma.application.findUnique({
     where: { id: applicationId },
-    include: { placementDrive: true }
+    include: { placementDrive: true, student: { include: { user: true } } }
   });
   if (!application) throw new InterviewServiceError(404, 'NOT_FOUND', 'Application not found');
 
@@ -58,6 +59,15 @@ export async function scheduleInterview(
   });
 
   await logAudit({ action: 'INTERVIEW_SCHEDULED', userId: recruiter.id, userType: 'Recruiter', message: `Interview round ${data.roundNumber} scheduled for application ${applicationId}`, metadata: { interviewId: interview.id } });
+
+  // Send Notification
+  await NotificationService.sendNotification({
+    userId: application.student.userId,
+    type: 'INTERVIEW_SCHEDULED',
+    title: `Interview Scheduled`,
+    message: `Round ${data.roundNumber} interview for ${application.placementDrive.title} has been scheduled for ${new Date(data.scheduledAt).toLocaleString()}.`,
+    metadata: { interviewId: interview.id, applicationId }
+  });
 
   return interview;
 }

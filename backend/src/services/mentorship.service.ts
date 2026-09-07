@@ -1,4 +1,5 @@
 import { MentorshipStatus, PrismaClient } from '@prisma/client';
+import { NotificationService } from './notification.service';
 
 const prisma = new PrismaClient();
 
@@ -32,14 +33,29 @@ export async function requestMentorship(studentId: string, alumniProfileId: stri
       throw Object.assign(new Error('Mentor is currently at full capacity.'), { code: 'BAD_REQUEST', statusCode: 400 });
     }
 
-    return await tx.mentorshipRequest.create({
+    const request = await tx.mentorshipRequest.create({
       data: {
         studentId,
         alumniProfileId,
         message,
         status: 'REQUESTED'
+      },
+      include: {
+        alumniProfile: true,
+        student: { select: { fullName: true } }
       }
     });
+
+    // Notify Alumni
+    await NotificationService.sendNotification({
+      userId: request.alumniProfile.userId,
+      type: 'MENTORSHIP_UPDATE',
+      title: 'New Mentorship Request',
+      message: `${request.student.fullName} has requested your mentorship.`,
+      metadata: { requestId: request.id }
+    });
+
+    return request;
   });
 }
 
@@ -82,11 +98,32 @@ export async function updateRequestStatus(
     throw Object.assign(new Error('Only student can cancel.'), { code: 'FORBIDDEN', statusCode: 403 });
   }
 
-  return await prisma.mentorshipRequest.update({
+  const updated = await prisma.mentorshipRequest.update({
     where: { id: requestId },
     data: { status: newStatus },
-    include: { student: { select: { fullName: true } }, alumniProfile: { select: { fullName: true } } }
+    include: { student: { select: { userId: true, fullName: true } }, alumniProfile: { select: { userId: true, fullName: true } } }
   });
+
+  // Notify the other party
+  if (newStatus === 'ACCEPTED' || newStatus === 'REJECTED') {
+    await NotificationService.sendNotification({
+      userId: updated.student.userId,
+      type: 'MENTORSHIP_UPDATE',
+      title: `Mentorship Request ${newStatus}`,
+      message: `${updated.alumniProfile.fullName} has ${newStatus.toLowerCase()} your mentorship request.`,
+      metadata: { requestId: updated.id }
+    });
+  } else if (newStatus === 'CANCELLED') {
+    await NotificationService.sendNotification({
+      userId: updated.alumniProfile.userId,
+      type: 'MENTORSHIP_UPDATE',
+      title: 'Mentorship Request Cancelled',
+      message: `${updated.student.fullName} cancelled their mentorship request.`,
+      metadata: { requestId: updated.id }
+    });
+  }
+
+  return updated;
 }
 
 export async function addGuidance(requestId: string, content: string, actorId: string, actorRole: string) {

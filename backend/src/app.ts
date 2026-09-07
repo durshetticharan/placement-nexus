@@ -22,6 +22,8 @@ import mentorRoutes from './routes/mentor.routes';
 import mentorshipRoutes from './routes/mentorship.routes';
 import preparationRoutes from './routes/preparation.routes';
 import aiRoutes from './routes/ai.routes';
+import analyticsRoutes from './routes/analytics.routes';
+import notificationRoutes from './routes/notification.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -66,6 +68,8 @@ app.use('/api/v1/mentors', mentorRoutes);
 app.use('/api/v1/mentorships', mentorshipRoutes);
 app.use('/api/v1/preparation', preparationRoutes);
 app.use('/api/v1/ai', aiRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 app.use(errorHandler);
 

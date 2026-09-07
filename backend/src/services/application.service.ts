@@ -2,6 +2,7 @@ import { PrismaClient, ApplicationStatus } from '@prisma/client';
 import { logAudit } from './audit.service';
 import { EligibilityService } from './eligibility.service';
 import { JobMatchService } from './job-match.service';
+import { NotificationService } from './notification.service';
 
 const prisma = new PrismaClient();
 
@@ -196,7 +197,7 @@ export async function getDriveApplications(userId: string, userRole: string, dri
 export async function updateApplicationStatus(recruiterUserId: string, applicationId: string, status: ApplicationStatus) {
   const application = await prisma.application.findUnique({ 
     where: { id: applicationId },
-    include: { placementDrive: true, student: { include: { user: true } } }
+    include: { placementDrive: { include: { company: true } }, student: { include: { user: true } } }
   });
   if (!application) throw new ApplicationServiceError(404, 'NOT_FOUND', 'Application not found');
 
@@ -216,6 +217,18 @@ export async function updateApplicationStatus(recruiterUserId: string, applicati
   });
 
   await logAudit({ action: 'APPLICATION_STATUS_UPDATED', userId: recruiter.id, userType: 'Recruiter', message: `Updated application ${applicationId} to ${status}`, metadata: { applicationId, status } });
+
+  // Send Notification
+  let notifType: 'APPLICATION_STATUS' | 'SHORTLISTED' = 'APPLICATION_STATUS';
+  if (status === 'SHORTLISTED') notifType = 'SHORTLISTED';
+
+  await NotificationService.sendNotification({
+    userId: application.student.userId,
+    type: notifType,
+    title: `Application Status Updated`,
+    message: `Your application for ${application.placementDrive.title} at ${application.placementDrive.company.name || 'the company'} is now ${status}.`,
+    metadata: { applicationId, driveId: application.placementDriveId }
+  });
 
   return updated;
 }
