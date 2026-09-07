@@ -81,6 +81,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
     silentRefresh();
+
+    const handleUnauthorized = () => {
+      setUser(null);
+      setAccessToken(null);
+      delete api.defaults.headers.common['Authorization'];
+    };
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
   }, []);
 
   const register = async (payload: RegisterPayload) => {

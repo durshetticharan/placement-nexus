@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { updateMentorProfile } from '../../services/mentorship.service';
 
 const MentorSettings: React.FC = () => {

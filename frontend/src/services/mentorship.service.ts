@@ -10,6 +10,8 @@ export interface Mentor {
   currentDesignation?: string;
   mentorBio?: string;
   mentorTopics: string[];
+  isMentor?: boolean;
+  maxMentees?: number;
 }
 
 export const getMentorDirectory = async (topic?: string, company?: string) => {

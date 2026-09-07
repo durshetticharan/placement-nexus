@@ -63,6 +63,15 @@ import DriveExperienceDetail from '../pages/student/DriveExperienceDetail';
 import DriveResources        from '../pages/student/DriveResources';
 import ContentModeration     from '../pages/officer/ContentModeration';
 
+// Phase 16 — Mentorship
+import MentorDirectory      from '../pages/student/MentorDirectory';
+import MentorshipDashboard  from '../pages/student/MentorshipDashboard';
+
+// Phase 17 — AI Features
+import ResumeAI    from '../pages/student/ResumeAI';
+import CareerAI    from '../pages/student/CareerAI';
+import InterviewAI from '../pages/student/InterviewAI';
+
 // Legacy placeholder kept for backward compat
 import Dashboard from '../pages/Dashboard';
 
@@ -360,6 +369,32 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <DriveResources />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Phase 17 — AI Features */}
+      <Route
+        path="/student/ai/resume"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <ResumeAI />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/ai/career"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <CareerAI />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/ai/interview"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <InterviewAI />
           </ProtectedRoute>
         }
       />
