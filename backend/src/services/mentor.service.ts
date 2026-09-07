@@ -62,7 +62,7 @@ export async function getMentorDirectory(filters: { topic?: string; company?: st
       branch: true,
       graduationYear: true,
       currentCompany: true,
-      currentDesignation: true,
+      currentRole: true,
       mentorBio: true,
       mentorTopics: true,
       maxMentees: true,

@@ -160,8 +160,8 @@ export async function getMentorshipDetails(requestId: string, actorId: string) {
   const request = await prisma.mentorshipRequest.findUnique({
     where: { id: requestId },
     include: {
-      student: { select: { userId: true, fullName: true, rollNumber: true, branch: true } },
-      alumniProfile: { select: { userId: true, fullName: true, currentCompany: true, currentDesignation: true } },
+      student: { select: { userId: true, fullName: true, rollNumber: true, academics: { select: { branch: true } } } },
+      alumniProfile: { select: { userId: true, fullName: true, currentCompany: true, currentRole: true } },
       guidances: { orderBy: { createdAt: 'desc' } }
     }
   });
@@ -181,7 +181,7 @@ export async function listStudentMentorships(studentUserId: string) {
   return await prisma.mentorshipRequest.findMany({
     where: { student: { userId: studentUserId } },
     include: {
-      alumniProfile: { select: { fullName: true, currentCompany: true, currentDesignation: true } }
+      alumniProfile: { select: { fullName: true, currentCompany: true, currentRole: true } }
     },
     orderBy: { updatedAt: 'desc' }
   });
@@ -191,7 +191,7 @@ export async function listMentorMentees(alumniUserId: string) {
   return await prisma.mentorshipRequest.findMany({
     where: { alumniProfile: { userId: alumniUserId } },
     include: {
-      student: { select: { fullName: true, branch: true, graduationYear: true } }
+      student: { select: { fullName: true, academics: { select: { branch: true, graduationYear: true } } } }
     },
     orderBy: { updatedAt: 'desc' }
   });

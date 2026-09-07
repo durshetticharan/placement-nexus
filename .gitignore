@@ -162,3 +162,18 @@ backend/uploads/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Local audit/diff artifacts
+diff_tmp.txt
+audit-npm.txt
+audit-results.json
+audit.js
+browser-audit-report.json
+browser-audit.js
+query.sql
+phase7-backend.log
+
+# Coverage
+coverage/
+*.lcov
+.nyc_output/
