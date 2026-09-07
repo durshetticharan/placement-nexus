@@ -1,0 +1,49 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# TypeScript output
+dist/
+*.tsbuildinfo
+
+# Environment & secrets
+.env
+.env.*
+
+# Uploads (mounted as volume in production)
+uploads/
+
+# Testing/debug artifacts
+*.test.ts
+*.spec.ts
+coverage/
+phase*.js
+phase*.ts
+browser-audit*
+audit-results*
+check-*.js
+get-*.js
+reset-*.js
+seed-test*.js
+test-*.js
+verify-*.js
+verify-*.ts
+e2e-*.js
+master-*.js
+run-full-*.js
+interactive-*.js
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
