@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import AppLayout from '../../components/layout/AppLayout';
 import { PageHeader, Card, Button, Badge, ErrorState, LoadingState } from '../../components/ui';
-import { BookOpen, Plus, Search, Filter, Star, Clock, CheckCircle, UserCircle } from 'lucide-react';
+import { BookOpen, Plus, Star, Clock, CheckCircle, UserCircle } from 'lucide-react';
 
 interface Experience {
   id: string;
@@ -49,6 +49,7 @@ export default function DriveExperiences() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ company: '', difficulty: '', outcome: '', year: '' });
+  const [activeTab, setActiveTab] = useState<'ALL' | 'MINE'>('ALL');
   const [showSubmitForm, setShowSubmitForm] = useState(false);
   const [form, setForm] = useState({
     companyName: '', role: '', driveYear: new Date().getFullYear(), difficulty: '',
@@ -61,13 +62,18 @@ export default function DriveExperiences() {
   const fetchExperiences = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (filters.company) params.set('company', filters.company);
-      if (filters.difficulty) params.set('difficulty', filters.difficulty);
-      if (filters.outcome) params.set('outcome', filters.outcome);
-      if (filters.year) params.set('year', filters.year);
-      const res = await api.get(`/experiences?${params.toString()}`);
-      setExperiences(res.data.data || []);
+      if (activeTab === 'MINE') {
+        const res = await api.get('/experiences/me');
+        setExperiences(res.data.data || []);
+      } else {
+        const params = new URLSearchParams();
+        if (filters.company) params.set('company', filters.company);
+        if (filters.difficulty) params.set('difficulty', filters.difficulty);
+        if (filters.outcome) params.set('outcome', filters.outcome);
+        if (filters.year) params.set('year', filters.year);
+        const res = await api.get(`/experiences?${params.toString()}`);
+        setExperiences(res.data.data || []);
+      }
     } catch {
       setError('Failed to load experiences.');
     } finally {
@@ -75,7 +81,7 @@ export default function DriveExperiences() {
     }
   };
 
-  useEffect(() => { fetchExperiences(); }, []);
+  useEffect(() => { fetchExperiences(); }, [activeTab]);
 
   const handleFilterSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,6 +132,24 @@ export default function DriveExperiences() {
           >
             Share Experience
           </Button>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button onClick={() => setActiveTab('ALL')}
+            style={{
+              padding: '0.5rem 1rem', fontSize: '0.875rem', fontWeight: 700, borderRadius: '0.5rem',
+              border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+              background: activeTab === 'ALL' ? 'var(--brand)' : 'var(--surface-2)',
+              color: activeTab === 'ALL' ? 'white' : 'var(--text-secondary)',
+            }}>All Experiences</button>
+          <button onClick={() => setActiveTab('MINE')}
+            style={{
+              padding: '0.5rem 1rem', fontSize: '0.875rem', fontWeight: 700, borderRadius: '0.5rem',
+              border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+              background: activeTab === 'MINE' ? 'var(--brand)' : 'var(--surface-2)',
+              color: activeTab === 'MINE' ? 'white' : 'var(--text-secondary)',
+            }}>My Submissions</button>
         </div>
 
         {/* Submit Success */}
@@ -227,43 +251,43 @@ export default function DriveExperiences() {
         )}
 
         {/* Filters */}
-        <form onSubmit={handleFilterSearch} className="flex flex-col md:flex-row gap-4 p-4 rounded-xl" style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)' }}>
-          <div className="flex-1 min-w-[200px] relative">
-            <Search className="absolute top-2.5 left-3" size={16} style={{ color: 'var(--text-muted)' }} />
-            <input value={filters.company} onChange={e => setFilters(f => ({ ...f, company: e.target.value }))}
-              placeholder="Search company..." 
-              className="w-full rounded-lg text-sm focus:outline-none focus:ring-2"
-              style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.5rem 1rem 0.5rem 2.25rem', outlineColor: 'var(--brand)' }} />
-          </div>
-          
-          <select value={filters.difficulty} onChange={e => setFilters(f => ({ ...f, difficulty: e.target.value }))}
-            className="flex-1 md:max-w-[160px] rounded-lg text-sm focus:outline-none focus:ring-2"
-            style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.5rem 1rem', outlineColor: 'var(--brand)' }}>
-            <option value="">All Difficulties</option>
-            <option value="EASY">Easy</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HARD">Hard</option>
-            <option value="VERY_HARD">Very Hard</option>
-          </select>
-          
-          <select value={filters.outcome} onChange={e => setFilters(f => ({ ...f, outcome: e.target.value }))}
-            className="flex-1 md:max-w-[160px] rounded-lg text-sm focus:outline-none focus:ring-2"
-            style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.5rem 1rem', outlineColor: 'var(--brand)' }}>
-            <option value="">All Outcomes</option>
-            <option value="SELECTED">Selected</option>
-            <option value="REJECTED">Rejected</option>
-            <option value="WAITLISTED">Waitlisted</option>
-          </select>
-          
-          <input type="number" value={filters.year} onChange={e => setFilters(f => ({ ...f, year: e.target.value }))}
-            placeholder="Year" min={2000} max={2030}
-            className="w-24 rounded-lg text-sm focus:outline-none focus:ring-2"
-            style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.5rem 1rem', outlineColor: 'var(--brand)' }} />
+        <div className="flex gap-2 mb-4">
+          <button onClick={() => setActiveTab('ALL')} className={`px-4 py-2 text-sm font-bold rounded-lg transition-colors ${activeTab === 'ALL' ? 'bg-brand text-white' : 'bg-surface-2 text-text-secondary hover:bg-surface-3'}`}>All Experiences</button>
+          <button onClick={() => setActiveTab('MINE')} className={`px-4 py-2 text-sm font-bold rounded-lg transition-colors ${activeTab === 'MINE' ? 'bg-brand text-white' : 'bg-surface-2 text-text-secondary hover:bg-surface-3'}`}>My Submissions</button>
+        </div>
+
+        <Card>
+          <form onSubmit={handleFilterSearch} className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <input placeholder="Search company..." value={filters.company} onChange={e => setFilters(f => ({ ...f, company: e.target.value }))}
+              className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+              style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }} />
             
-          <Button type="submit" variant="secondary" leftIcon={<Filter size={16} />} className="justify-center">
-            Search
-          </Button>
-        </form>
+            <select value={filters.difficulty} onChange={e => setFilters(f => ({ ...f, difficulty: e.target.value }))}
+              className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+              style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}>
+              <option value="">Any Difficulty</option>
+              <option value="EASY">Easy</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HARD">Hard</option>
+              <option value="VERY_HARD">Very Hard</option>
+            </select>
+            
+            <select value={filters.outcome} onChange={e => setFilters(f => ({ ...f, outcome: e.target.value }))}
+              className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+              style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}>
+              <option value="">Any Outcome</option>
+              <option value="SELECTED">Selected</option>
+              <option value="REJECTED">Rejected</option>
+              <option value="WAITLISTED">Waitlisted</option>
+            </select>
+            
+            <input type="number" placeholder="Year" value={filters.year} onChange={e => setFilters(f => ({ ...f, year: e.target.value }))}
+              className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+              style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }} />
+
+            <Button type="submit" variant="primary" className="w-full justify-center">Filter</Button>
+          </form>
+        </Card>
 
         {/* Experiences List */}
         {loading ? (
@@ -283,6 +307,7 @@ export default function DriveExperiences() {
             {experiences.map(exp => (
               <Link key={exp.id} to={`/student/experiences/${exp.id}`} className="block group">
                 <Card className="hover:border-brand transition-colors h-full flex flex-col">
+                  {/* Top Row: Company, Role, Outcome & Status */}
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 flex-wrap mb-2">
@@ -293,10 +318,15 @@ export default function DriveExperiences() {
                         <Badge variant="default">{exp.driveYear}</Badge>
                       </div>
                       
-                      <div className="flex gap-2 flex-wrap mb-3">
+                      <div className="flex items-center gap-2 flex-wrap mb-3">
                         {exp.difficulty && (
-                          <Badge variant={DIFFICULTY_COLORS[exp.difficulty] || 'default'}>
+                          <Badge variant={DIFFICULTY_COLORS[exp.difficulty] || 'default'} className="text-[10px] uppercase">
                             {exp.difficulty.replace('_', ' ')}
+                          </Badge>
+                        )}
+                        {'status' in exp && (
+                          <Badge variant={(exp as any).status === 'APPROVED' ? 'success' : (exp as any).status === 'REJECTED' ? 'error' : 'warning'} className="text-[10px] uppercase">
+                            {(exp as any).status}
                           </Badge>
                         )}
                       </div>

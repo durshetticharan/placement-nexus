@@ -17,6 +17,7 @@ interface Resource {
   student?: { id: string; fullName: string } | null;
   placementDrive?: { id: string; title: string } | null;
   createdAt: string;
+  status?: string;
 }
 
 const CATEGORY_LABELS: Record<string, { label: string; badgeVariant: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'default' | 'brand'; icon: string }> = {
@@ -43,6 +44,7 @@ export default function DriveResources() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ category: '', company: '', resourceType: '' });
+  const [activeTab, setActiveTab] = useState<'ALL' | 'MINE'>('ALL');
   const [showSubmitForm, setShowSubmitForm] = useState(false);
   const [form, setForm] = useState({
     title: '', description: '', category: 'OTHER', resourceType: 'LINK',
@@ -55,12 +57,17 @@ export default function DriveResources() {
   const fetchResources = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (filters.category) params.set('category', filters.category);
-      if (filters.company) params.set('company', filters.company);
-      if (filters.resourceType) params.set('resourceType', filters.resourceType);
-      const res = await api.get(`/resources?${params.toString()}`);
-      setResources(res.data.data || []);
+      if (activeTab === 'MINE') {
+        const res = await api.get('/resources/me');
+        setResources(res.data.data || []);
+      } else {
+        const params = new URLSearchParams();
+        if (filters.category) params.set('category', filters.category);
+        if (filters.company) params.set('company', filters.company);
+        if (filters.resourceType) params.set('resourceType', filters.resourceType);
+        const res = await api.get(`/resources?${params.toString()}`);
+        setResources(res.data.data || []);
+      }
     } catch {
       setError('Failed to load resources.');
     } finally {
@@ -68,7 +75,7 @@ export default function DriveResources() {
     }
   };
 
-  useEffect(() => { fetchResources(); }, []);
+  useEffect(() => { fetchResources(); }, [activeTab]);
 
   const handleFilterSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,6 +128,24 @@ export default function DriveResources() {
           >
             Share Resource
           </Button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-4">
+          <button onClick={() => setActiveTab('ALL')}
+            style={{
+              padding: '0.5rem 1rem', fontSize: '0.875rem', fontWeight: 700, borderRadius: '0.5rem',
+              border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+              background: activeTab === 'ALL' ? 'var(--brand)' : 'var(--surface-2)',
+              color: activeTab === 'ALL' ? 'white' : 'var(--text-secondary)',
+            }}>All Resources</button>
+          <button onClick={() => setActiveTab('MINE')}
+            style={{
+              padding: '0.5rem 1rem', fontSize: '0.875rem', fontWeight: 700, borderRadius: '0.5rem',
+              border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+              background: activeTab === 'MINE' ? 'var(--brand)' : 'var(--surface-2)',
+              color: activeTab === 'MINE' ? 'white' : 'var(--text-secondary)',
+            }}>My Submissions</button>
         </div>
 
         {/* Submit Success */}
@@ -279,6 +304,11 @@ export default function DriveResources() {
                         {RESOURCE_TYPE_ICONS[res.resourceType] || <Library size={14} />}
                         {res.resourceType}
                       </Badge>
+                      {res.status && (
+                        <Badge variant={res.status === 'APPROVED' ? 'success' : res.status === 'REJECTED' ? 'error' : 'warning'} className="text-[10px] uppercase">
+                          {res.status}
+                        </Badge>
+                      )}
                     </div>
 
                     <div className="pt-4 border-t flex items-center justify-between" style={{ borderColor: 'var(--border-subtle)' }}>

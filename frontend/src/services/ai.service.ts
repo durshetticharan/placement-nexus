@@ -79,7 +79,7 @@ export interface InterviewSession {
   isAiGenerated: boolean;
 }
 
-const AI_BASE = '/api/v1/ai';
+const AI_BASE = '/ai';
 
 export async function analyzeResume(resumeText: string): Promise<ResumeAnalysisResult> {
   const { data } = await api.post(`${AI_BASE}/resume/analyze`, { resume_text: resumeText });

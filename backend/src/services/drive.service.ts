@@ -204,7 +204,7 @@ export async function updateDriveStatus(userId: string, driveId: string, status:
   const updated = await prisma.placementDrive.update({
     where: { id: driveId },
     data: { status },
-    include: { createdByRecruiter: { select: { userId: true } } }
+    include: { createdByRecruiter: { select: { userId: true } }, company: { select: { name: true } } }
   });
 
   await logAudit({
@@ -224,6 +224,25 @@ export async function updateDriveStatus(userId: string, driveId: string, status:
       message: `Your placement drive "${updated.title}" has been approved and published.`,
       metadata: { driveId }
     });
+
+    // Notify all approved students about the new drive
+    const students = await prisma.student.findMany({
+      where: { user: { status: 'ACTIVE' } },
+      select: { userId: true }
+    });
+    
+    if (students.length > 0) {
+      await prisma.notification.createMany({
+        data: students.map(s => ({
+          userId: s.userId,
+          type: 'NEW_DRIVE',
+          title: 'New Placement Drive',
+          message: `A new placement drive "${updated.title}" from ${updated.company?.name || 'a company'} has been published!`,
+          metadata: { driveId },
+          channel: 'IN_APP',
+        }))
+      });
+    }
   } else if (status === 'DRAFT') {
     await NotificationService.sendNotification({
       userId: updated.createdByRecruiter.userId,

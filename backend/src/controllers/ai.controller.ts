@@ -127,9 +127,7 @@ export async function careerGuidance(req: Request, res: Response): Promise<void>
     const profile = {
       current_skills: student.skills.map((s: any) => s.skill.name),
       career_goal: student.careerGoals[0]?.careerPath?.name ?? null,
-      skill_gaps: student.skillGaps
-        .filter((g: any) => g.status === 'IDENTIFIED')
-        .map((g: any) => g.skill.name),
+      skill_gaps: student.skillGaps.map((g: any) => g.skill.name),
       readiness_score: student.readinessScores[0]?.overallScore ?? null,
       cgpa: student.academics?.cgpa ? Number(student.academics.cgpa) : null,
       graduation_year: student.academics?.graduationYear ?? null,
@@ -278,7 +276,7 @@ export async function drivePreparationAdvice(req: Request, res: Response): Promi
     const requiredSkills = req_?.requiredSkills?.map((s: any) => s.name) ?? [];
     const preferredSkills = req_?.preferredSkills?.map((s: any) => s.name) ?? [];
     const studentSkills = student.skills.map((s: any) => s.skill.name);
-    const skillGaps = student.skillGaps.filter((g: any) => g.status === 'IDENTIFIED').map((g: any) => g.skill.name);
+    const skillGaps = student.skillGaps.map((g: any) => g.skill.name);
 
     const result = await aiClient.getDrivePreparationAdvice({
       student_id: student.id,
