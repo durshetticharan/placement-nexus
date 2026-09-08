@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import AppLayout from '../../components/layout/AppLayout';
+import { PageHeader, Card, Button, Badge, ErrorState, LoadingState } from '../../components/ui';
+import { Send, ArrowLeft, Building, UserCircle, MessageSquare, Briefcase } from 'lucide-react';
 
 interface ReferralRequest {
   id: string;
@@ -37,76 +40,110 @@ export default function ReferralRequests() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadgeVariant = (status: string): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'brand' => {
     switch (status) {
-      case 'REQUESTED': return <span className="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-xs rounded border border-yellow-500/20">Requested</span>;
-      case 'UNDER_REVIEW': return <span className="px-2 py-1 bg-blue-500/10 text-blue-400 text-xs rounded border border-blue-500/20">Under Review</span>;
-      case 'ACCEPTED': return <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded border border-emerald-500/20">Accepted</span>;
-      case 'REJECTED': return <span className="px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded border border-red-500/20">Rejected</span>;
-      case 'REFERRED': return <span className="px-2 py-1 bg-violet-500/10 text-violet-400 text-xs rounded border border-violet-500/20">Referred</span>;
-      default: return <span className="px-2 py-1 bg-slate-500/10 text-slate-400 text-xs rounded border border-slate-500/20">{status}</span>;
+      case 'REQUESTED': return 'warning';
+      case 'UNDER_REVIEW': return 'primary';
+      case 'ACCEPTED': return 'success';
+      case 'REJECTED': return 'error';
+      case 'REFERRED': return 'brand';
+      default: return 'default';
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    return status.replace('_', ' ');
+  };
+
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center gap-4 mb-6">
-          <button onClick={() => navigate('/student/alumni')} className="text-slate-400 hover:text-white transition">
-            ← Back to Directory
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold text-white">My Referral Requests</h1>
-            <p className="text-slate-400 text-sm">Track your referral requests to alumni.</p>
-          </div>
+    <AppLayout>
+      <div className="space-y-6 max-w-4xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <PageHeader
+            title="My Referral Requests"
+            subtitle="Track your referral requests to alumni."
+            icon={<Send size={32} style={{ color: 'var(--brand)' }} />}
+          />
+          <Button
+            onClick={() => navigate('/student/alumni')}
+            variant="outline"
+            leftIcon={<ArrowLeft size={16} />}
+          >
+            Back to Directory
+          </Button>
         </div>
 
         {loading ? (
-          <div className="text-center text-slate-400 py-10">Loading requests...</div>
+          <LoadingState message="Loading requests..." />
         ) : error ? (
-          <div className="p-4 bg-red-900/40 text-red-400 rounded-lg border border-red-800">{error}</div>
+          <ErrorState message={error} onRetry={fetchRequests} />
         ) : requests.length === 0 ? (
-          <div className="text-center bg-slate-800 rounded-xl p-10 border border-slate-700">
-            <p className="text-slate-400 mb-4">You haven't requested any referrals yet.</p>
-            <button
+          <Card style={{ padding: '4rem 2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ padding: '1rem', background: 'var(--surface-2)', borderRadius: '50%', color: 'var(--text-muted)' }}>
+              <Send size={48} />
+            </div>
+            <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>No Requests Yet</h3>
+            <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', marginBottom: '1rem' }}>
+              You haven't requested any referrals yet. Browse the alumni directory to find open referral opportunities.
+            </p>
+            <Button
               onClick={() => navigate('/student/alumni')}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-medium transition"
+              variant="primary"
+              leftIcon={<Briefcase size={16} />}
             >
               Explore Opportunities
-            </button>
-          </div>
+            </Button>
+          </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6 animate-fade-in">
             {requests.map(req => (
-              <div key={req.id} className="bg-slate-800 rounded-xl border border-slate-700 p-5 shadow-sm">
-                <div className="flex justify-between items-start mb-4">
+              <Card key={req.id}>
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 pb-6 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
                   <div>
-                    <h3 className="text-lg font-bold text-white">{req.referralOpportunity.role}</h3>
-                    <p className="text-indigo-400 text-sm font-medium">{req.referralOpportunity.companyName}</p>
-                    <p className="text-slate-500 text-xs mt-1">Alumni: {req.referralOpportunity.alumniProfile.fullName}</p>
+                    <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+                      {req.referralOpportunity.role}
+                    </h3>
+                    <div className="flex flex-col gap-2">
+                      <p className="font-bold flex items-center gap-2" style={{ color: 'var(--brand)' }}>
+                        <Building size={16} /> {req.referralOpportunity.companyName}
+                      </p>
+                      <p className="text-sm flex items-center gap-2 font-medium" style={{ color: 'var(--text-secondary)' }}>
+                        <UserCircle size={16} /> Alumni: {req.referralOpportunity.alumniProfile.fullName}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    {getStatusBadge(req.status)}
-                    <span className="text-xs text-slate-500">{new Date(req.createdAt).toLocaleDateString()}</span>
+                  <div className="flex flex-col items-start sm:items-end gap-2">
+                    <Badge variant={getStatusBadgeVariant(req.status)}>
+                      {getStatusLabel(req.status)}
+                    </Badge>
+                    <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                      {new Date(req.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
 
-                <div className="bg-slate-900 rounded p-3 text-sm text-slate-300 border border-slate-700/50 mb-3">
-                  <p className="text-xs text-slate-500 mb-1 uppercase font-semibold">Your Message:</p>
-                  <p>{req.studentMessage}</p>
-                </div>
-
-                {req.alumniResponse && (
-                  <div className="bg-indigo-900/20 rounded p-3 text-sm text-indigo-200 border border-indigo-500/20">
-                    <p className="text-xs text-indigo-400 mb-1 uppercase font-semibold">Alumni Response:</p>
-                    <p>{req.alumniResponse}</p>
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl border" style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)' }}>
+                    <p className="text-xs uppercase tracking-wider font-bold mb-2 flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                      <MessageSquare size={14} /> Your Message
+                    </p>
+                    <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>{req.studentMessage}</p>
                   </div>
-                )}
-              </div>
+
+                  {req.alumniResponse && (
+                    <div className="p-4 rounded-xl border" style={{ background: 'var(--brand-light)', borderColor: 'var(--brand)', color: 'var(--brand-dark)' }}>
+                      <p className="text-xs uppercase tracking-wider font-bold mb-2 flex items-center gap-2">
+                        <MessageSquare size={14} /> Alumni Response
+                      </p>
+                      <p className="text-sm leading-relaxed">{req.alumniResponse}</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
             ))}
           </div>
         )}
       </div>
-    </div>
+    </AppLayout>
   );
 }

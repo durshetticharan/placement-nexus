@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getErrorMessage } from '../../utils/error';
 import * as studentService from '../../services/studentService';
-import NotificationCenter from '../../components/NotificationCenter';
+import AppLayout from '../../components/layout/AppLayout';
 import type {
   StudentProfile,
   AcademicData,
@@ -33,8 +32,7 @@ const INPUT_STYLE =
 const LABEL_STYLE = 'block text-xs font-medium text-slate-300 mb-1';
 
 export default function StudentDashboard() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,11 +59,6 @@ export default function StudentDashboard() {
     fetchProfile();
   }, [fetchProfile]);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login', { replace: true });
-  };
-
   const closeModal = () => {
     setModalType(null);
     setEditItem(null);
@@ -79,46 +72,34 @@ export default function StudentDashboard() {
     );
   }
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8">
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Header bar */}
-        <div className="bg-slate-800 rounded-xl border border-slate-700 p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-2xl font-bold text-white shadow-inner">
-              🎓
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">{profile?.fullName || user?.email}</h1>
-              <p className="text-slate-400 text-sm">
-                Roll No: <span className="text-indigo-400 font-mono font-medium">{profile?.rollNumber || 'N/A'}</span> • {user?.email}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            {/* Completion Bar */}
-            <div className="w-48 bg-slate-700/60 rounded-xl p-3 border border-slate-600/50">
-              <div className="flex justify-between items-center text-xs mb-1.5">
-                <span className="text-slate-400 font-medium">Profile Completion</span>
-                <span className="text-indigo-400 font-bold font-mono">{profile?.profileCompletionPct ?? 0}%</span>
+    <AppLayout>
+      <div className="space-y-5">
+        {/* Greeting Header */}
+        <div className="card" style={{ padding: '1.25rem 1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ width: '3rem', height: '3rem', borderRadius: '50%', background: 'linear-gradient(135deg, #4F46E5, #818CF8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.125rem', fontWeight: 700, color: 'white', flexShrink: 0 }}>
+                {(profile?.fullName || user?.email || 'S').charAt(0).toUpperCase()}
               </div>
-              <div className="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
-                <div
-                  className="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full rounded-full transition-all duration-500"
-                  style={{ width: `${profile?.profileCompletionPct ?? 0}%` }}
-                />
+              <div>
+                <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginBottom: '0.125rem' }}>{greeting}</p>
+                <h1 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>{profile?.fullName || user?.email}</h1>
+                <p style={{ fontSize: '0.6875rem', color: 'var(--text-secondary)', marginTop: '0.125rem' }}>
+                  {profile?.rollNumber ? `Roll No: ${profile.rollNumber} · ` : ''}{user?.email}
+                </p>
               </div>
             </div>
-
-            <NotificationCenter />
-
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60 border border-red-700 text-red-200 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap"
-            >
-              Log out
-            </button>
+            <div style={{ minWidth: '9rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6875rem', marginBottom: '0.25rem' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Profile Completion</span>
+                <span style={{ color: 'var(--brand-light)', fontWeight: 700 }}>{profile?.profileCompletionPct ?? 0}%</span>
+              </div>
+              <div className="progress-track"><div className="progress-fill" style={{ width: `${profile?.profileCompletionPct ?? 0}%`, background: 'linear-gradient(90deg,#4F46E5,#10B981)' }} /></div>
+            </div>
           </div>
         </div>
 
@@ -128,117 +109,6 @@ export default function StudentDashboard() {
             <button onClick={() => setError('')} className="text-red-400 hover:text-white ml-4">✕</button>
           </div>
         )}
-
-        {/* Career Intelligence Quick Access Banner */}
-        <div className="bg-gradient-to-r from-purple-900/60 via-indigo-900/40 to-slate-800 rounded-xl border border-purple-700/60 p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-purple-600/30 border border-purple-500/50 flex items-center justify-center text-2xl">
-              🎯
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Career Development & Pathing</h2>
-              <p className="text-slate-300 text-xs sm:text-sm">Set your target career path, analyze required skills, and view learning resources</p>
-            </div>
-          </div>
-          <button
-            onClick={() => navigate('/student/career')}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold transition-colors shadow whitespace-nowrap"
-          >
-            🎯 Career Intelligence →
-          </button>
-        </div>
-
-        {/* Assessment Engine Quick Access Banner */}
-        <div className="bg-gradient-to-r from-indigo-900/60 via-purple-900/40 to-slate-800 rounded-xl border border-indigo-700/60 p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center text-2xl">
-              📝
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Assessment Engine</h2>
-              <p className="text-slate-300 text-xs sm:text-sm">Take aptitude, technical, and coding tests to demonstrate your readiness</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/student/assessments/history')}
-              className="px-4 py-2 bg-slate-700/80 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap"
-            >
-              📜 Past Attempts
-            </button>
-            <button
-              onClick={() => navigate('/student/assessments')}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-colors shadow whitespace-nowrap"
-            >
-              🚀 View Assessments →
-            </button>
-          </div>
-        </div>
-
-        {/* Phase 9: Placement Readiness Quick Access Banner */}
-        <div className="bg-gradient-to-r from-emerald-900/60 via-teal-900/40 to-slate-800 rounded-xl border border-emerald-700/60 p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-600/30 border border-emerald-500/50 flex items-center justify-center text-2xl">
-              🌟
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Placement Readiness</h2>
-              <p className="text-slate-300 text-xs sm:text-sm">Check your overall readiness score and get personalized recommendations</p>
-            </div>
-          </div>
-          <button
-            onClick={() => navigate('/student/readiness')}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-colors shadow whitespace-nowrap"
-          >
-            📊 Check Readiness →
-          </button>
-        </div>
-
-        {/* Phase 18: Analytics Quick Access Banner */}
-        <div className="bg-gradient-to-r from-blue-900/60 via-cyan-900/40 to-slate-800 rounded-xl border border-blue-700/60 p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-2xl">
-              📈
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Placement Analytics</h2>
-              <p className="text-slate-300 text-xs sm:text-sm">Track your application funnel and skill gap progress</p>
-            </div>
-          </div>
-          <button
-            onClick={() => navigate('/student/analytics')}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition-colors shadow whitespace-nowrap"
-          >
-            📊 View Analytics →
-          </button>
-        </div>
-
-        {/* Phase 12: Placement Drives Quick Access Banner */}
-        <div className="bg-gradient-to-r from-orange-900/60 via-amber-900/40 to-slate-800 rounded-xl border border-orange-700/60 p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-orange-600/30 border border-orange-500/50 flex items-center justify-center text-2xl">
-              💼
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Placement Drives</h2>
-              <p className="text-slate-300 text-xs sm:text-sm">Browse open placement drives, check eligibility, and submit your applications</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/student/applications')}
-              className="px-4 py-2 bg-slate-700/80 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap"
-            >
-              📋 My Applications
-            </button>
-            <button
-              onClick={() => navigate('/student/drives')}
-              className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-xs font-bold transition-colors shadow whitespace-nowrap"
-            >
-              🚀 Browse Drives →
-            </button>
-          </div>
-        </div>
 
         {/* Navigation Tabs */}
         <div className="flex border-b border-slate-700 overflow-x-auto">
@@ -463,7 +333,7 @@ export default function StudentDashboard() {
           }}
         />
       )}
-    </div>
+    </AppLayout>
   );
 }
 

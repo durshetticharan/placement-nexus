@@ -1,50 +1,96 @@
 import React, { useEffect, useState } from 'react';
 import { getMentorDirectory } from '../../services/mentorship.service';
+import AppLayout from '../../components/layout/AppLayout';
+import { PageHeader, LoadingState, ErrorState, Card, Badge, EmptyState, Button } from '../../components/ui';
+import { Users, Briefcase, ChevronRight } from 'lucide-react';
 
 const MentorDirectory: React.FC = () => {
   const [mentors, setMentors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadMentors();
   }, []);
 
   const loadMentors = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const data = await getMentorDirectory();
       setMentors(data.mentors || []);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setError(err.message || 'Failed to load mentors');
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div>Loading mentors...</div>;
+  if (loading) {
+    return (
+      <AppLayout>
+        <LoadingState message="Loading Mentor Directory…" />
+      </AppLayout>
+    );
+  }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Mentor Directory</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mentors.map(mentor => (
-          <div key={mentor.id} className="bg-white p-4 rounded shadow">
-            <h2 className="text-xl font-semibold">{mentor.fullName}</h2>
-            <p className="text-gray-600">{mentor.currentDesignation} at {mentor.currentCompany}</p>
-            <p className="text-sm mt-2">{mentor.mentorBio}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {mentor.mentorTopics?.map((topic: string) => (
-                <span key={topic} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                  {topic}
-                </span>
-              ))}
-            </div>
-            <button className="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-              Request Mentorship
-            </button>
+    <AppLayout>
+      <div className="space-y-6">
+        <PageHeader
+          title="Mentor Directory"
+          subtitle="Connect with alumni for guidance, resume reviews, and career advice."
+        />
+
+        {error && <ErrorState message={error} onRetry={loadMentors} />}
+
+        {!loading && !error && mentors.length === 0 ? (
+          <Card style={{ padding: '4rem 2rem', textAlign: 'center' }}>
+            <EmptyState
+              icon={<Users size={48} style={{ color: 'var(--text-muted)' }} />}
+              title="No Mentors Available"
+              description="There are currently no mentors available in the directory."
+            />
+          </Card>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+            {mentors.map(mentor => (
+              <Card key={mentor.id} className="group hover:-translate-y-1 hover:shadow-lg transition-all" style={{ display: 'flex', flexDirection: 'column' }}>
+                <div className="flex-1">
+                  <div className="flex justify-between items-start mb-3">
+                    <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{mentor.fullName}</h2>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mb-4" style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                    <Briefcase size={16} style={{ color: 'var(--text-muted)' }} />
+                    <span>{mentor.currentDesignation} at <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{mentor.currentCompany}</span></span>
+                  </div>
+                  
+                  <p className="text-sm line-clamp-3 mb-4" style={{ color: 'var(--text-secondary)' }}>
+                    {mentor.mentorBio}
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {mentor.mentorTopics?.map((topic: string) => (
+                      <Badge key={topic} variant="brand">
+                        {topic}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="pt-4 mt-auto" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                  <Button variant="primary" style={{ width: '100%', justifyContent: 'center' }} rightIcon={<ChevronRight size={16} />}>
+                    Request Mentorship
+                  </Button>
+                </div>
+              </Card>
+            ))}
           </div>
-        ))}
+        )}
       </div>
-    </div>
+    </AppLayout>
   );
 };
 

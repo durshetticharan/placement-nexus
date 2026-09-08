@@ -6,19 +6,22 @@ import {
   type InterviewSessionResult,
   type EvaluationResult,
 } from '../../services/ai.service';
+import AppLayout from '../../components/layout/AppLayout';
+import { PageHeader, Card, Button, Badge, InfoBanner, ErrorState } from '../../components/ui';
+import { Mic, Sparkles, AlertTriangle, Settings, Send, ChevronLeft, ChevronRight, Eye, EyeOff, CheckCircle, Lightbulb } from 'lucide-react';
 
-const DIFF_COLOR: Record<string, string> = {
-  Easy: 'bg-emerald-900/40 text-emerald-300 border-emerald-700/50',
-  Medium: 'bg-amber-900/40 text-amber-300 border-amber-700/50',
-  Hard: 'bg-rose-900/40 text-rose-300 border-rose-700/50',
+const DIFF_COLOR: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
+  Easy: 'success',
+  Medium: 'warning',
+  Hard: 'error',
 };
 
-const TOPIC_COLOR: Record<string, string> = {
-  Technical: 'bg-blue-900/40 text-blue-300 border-blue-700/50',
-  Behavioral: 'bg-purple-900/40 text-purple-300 border-purple-700/50',
-  HR: 'bg-pink-900/40 text-pink-300 border-pink-700/50',
-  Aptitude: 'bg-orange-900/40 text-orange-300 border-orange-700/50',
-  General: 'bg-slate-800 text-slate-400 border-slate-600',
+const TOPIC_COLOR: Record<string, 'brand' | 'primary' | 'secondary' | 'default'> = {
+  Technical: 'brand',
+  Behavioral: 'primary',
+  HR: 'secondary',
+  Aptitude: 'default',
+  General: 'default',
 };
 
 export default function InterviewAI() {
@@ -93,43 +96,63 @@ export default function InterviewAI() {
   const currentQuestion: InterviewQuestion | undefined = session?.questions[currentQ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-orange-600 flex items-center justify-center text-xl">🎤</div>
-          <div>
-            <h1 className="text-2xl font-bold text-white">AI Interview Practice</h1>
-            <p className="text-sm text-slate-400">Practice questions and get AI feedback — advisory only, not a real interview</p>
-          </div>
-        </div>
+    <AppLayout>
+      <div className="space-y-6 max-w-5xl mx-auto">
+        <PageHeader
+          title="AI Interview Practice"
+          subtitle="Practice questions and get AI feedback — advisory only, not a real interview"
+          icon={<Mic size={32} style={{ color: 'var(--brand)' }} />}
+        />
 
-        {/* Disclaimer */}
-        <div className="bg-rose-900/20 border border-rose-700/40 rounded-xl p-4 text-sm text-rose-300 flex gap-2">
-          <span>⚠️</span>
-          <span><strong>Practice Only:</strong> AI-generated questions are for preparation. These are not actual company interview questions. AI feedback is advisory and not a professional hiring assessment.</span>
-        </div>
+        <InfoBanner
+          type="warning"
+          title="Practice Only"
+          message="AI-generated questions are for preparation. These are not actual company interview questions. AI feedback is advisory and not a professional hiring assessment."
+          icon={<AlertTriangle size={20} />}
+        />
 
         {/* Config */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold text-white">Configure Practice Session</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <div className="flex items-center gap-2 mb-4 pb-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+            <Settings size={20} style={{ color: 'var(--brand)' }} />
+            <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Configure Practice Session</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div className="md:col-span-2">
-              <label className="block text-xs text-slate-400 mb-1">Target Role *</label>
+              <label className="block text-sm font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+                Target Role <span style={{ color: 'var(--error)' }}>*</span>
+              </label>
               <input
                 id="interview-role-input"
                 value={role}
                 onChange={e => setRole(e.target.value)}
                 placeholder="e.g. Software Engineer, Data Analyst"
-                className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-rose-500"
+                className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                style={{
+                  background: 'var(--surface-1)',
+                  border: '1px solid var(--border-subtle)',
+                  color: 'var(--text-primary)',
+                  padding: '0.75rem 1rem',
+                  outlineColor: 'var(--brand)'
+                }}
               />
             </div>
             <div>
-              <label className="block text-xs text-slate-400 mb-1">Interview Type</label>
+              <label className="block text-sm font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+                Interview Type
+              </label>
               <select
                 value={interviewType}
                 onChange={e => setInterviewType(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-rose-500"
+                className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                style={{
+                  background: 'var(--surface-1)',
+                  border: '1px solid var(--border-subtle)',
+                  color: 'var(--text-primary)',
+                  padding: '0.75rem 1rem',
+                  outlineColor: 'var(--brand)'
+                }}
               >
                 {['Mixed', 'Technical', 'Behavioral', 'HR', 'Aptitude'].map(t => (
                   <option key={t} value={t}>{t}</option>
@@ -137,93 +160,166 @@ export default function InterviewAI() {
               </select>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">Questions: {count}</label>
-              <input type="range" min={1} max={10} value={count} onChange={e => setCount(Number(e.target.value))} className="w-32 accent-rose-500" />
+          
+          <div className="flex flex-col sm:flex-row items-center gap-6 p-4 rounded-xl" style={{ background: 'var(--surface-2)' }}>
+            <div className="flex-1 w-full">
+              <div className="flex justify-between mb-2">
+                <label className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Questions Count</label>
+                <span className="text-sm font-mono font-bold" style={{ color: 'var(--brand)' }}>{count}</span>
+              </div>
+              <input 
+                type="range" 
+                min={1} 
+                max={10} 
+                value={count} 
+                onChange={e => setCount(Number(e.target.value))} 
+                className="w-full"
+                style={{ accentColor: 'var(--brand)' }}
+              />
             </div>
-            <button
+            <Button
               id="generate-questions-btn"
               onClick={handleGenerate}
               disabled={generating}
-              className="ml-auto px-6 py-2.5 bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-500 hover:to-orange-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-semibold text-white transition-all"
+              variant="primary"
+              leftIcon={<Sparkles size={16} />}
+              isLoading={generating}
+              loadingText="Generating…"
+              className="w-full sm:w-auto"
             >
-              {generating ? '⏳ Generating…' : '🚀 Start Session'}
-            </button>
+              Start Session
+            </Button>
           </div>
-          {genError && <p className="text-sm text-red-400">{genError}</p>}
-        </div>
+          {genError && <div className="mt-4"><ErrorState message={genError} /></div>}
+        </Card>
 
         {/* Session */}
         {session && currentQuestion && (
-          <div className="space-y-4">
+          <div className="space-y-6 animate-fade-in">
             {/* Progress */}
-            <div className="flex items-center justify-between text-sm text-slate-400">
-              <span>Question {currentQ + 1} of {session.questions.length}</span>
-              <div className="flex gap-1">
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-bold whitespace-nowrap" style={{ color: 'var(--text-secondary)' }}>
+                Question {currentQ + 1} of {session.questions.length}
+              </span>
+              <div className="flex-1 flex gap-1 h-2">
                 {session.questions.map((_, i) => (
-                  <div key={i} className={`w-2 h-2 rounded-full ${i === currentQ ? 'bg-rose-500' : i < currentQ ? 'bg-emerald-500' : 'bg-slate-600'}`} />
+                  <div 
+                    key={i} 
+                    className="flex-1 rounded-full transition-all"
+                    style={{ 
+                      background: i === currentQ ? 'var(--brand)' : i < currentQ ? 'var(--success)' : 'var(--surface-2)' 
+                    }} 
+                  />
                 ))}
               </div>
             </div>
 
             {/* Question Card */}
-            <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="flex gap-2 shrink-0 flex-wrap">
-                  <span className={`px-2 py-0.5 border rounded text-xs font-medium ${TOPIC_COLOR[currentQuestion.topic] || TOPIC_COLOR.General}`}>
+            <Card style={{ padding: '2rem' }}>
+              <div className="flex items-start justify-between gap-4 mb-6">
+                <div className="flex gap-2 flex-wrap">
+                  <Badge variant={TOPIC_COLOR[currentQuestion.topic] || 'default'}>
                     {currentQuestion.topic}
-                  </span>
-                  <span className={`px-2 py-0.5 border rounded text-xs font-medium ${DIFF_COLOR[currentQuestion.difficulty] || ''}`}>
+                  </Badge>
+                  <Badge variant={DIFF_COLOR[currentQuestion.difficulty] || 'default'}>
                     {currentQuestion.difficulty}
-                  </span>
+                  </Badge>
                 </div>
               </div>
-              <p className="text-white font-medium leading-relaxed">{currentQuestion.question}</p>
+              
+              <p className="text-xl font-bold leading-relaxed mb-6" style={{ color: 'var(--text-primary)' }}>
+                {currentQuestion.question}
+              </p>
+              
               {currentQuestion.hint && (
-                <div>
-                  <button onClick={() => setShowHint(!showHint)} className="text-xs text-slate-500 hover:text-slate-300">
-                    {showHint ? '🙈 Hide hint' : '💡 Show hint'}
+                <div className="mb-6">
+                  <button 
+                    onClick={() => setShowHint(!showHint)} 
+                    className="text-sm font-medium flex items-center gap-2 hover:opacity-80 transition-opacity"
+                    style={{ color: 'var(--brand)' }}
+                  >
+                    {showHint ? <><EyeOff size={16} /> Hide hint</> : <><Eye size={16} /> Show hint</>}
                   </button>
-                  {showHint && <p className="mt-2 text-sm text-slate-400 italic">{currentQuestion.hint}</p>}
+                  {showHint && (
+                    <div className="mt-3 p-4 rounded-xl border animate-fade-in text-sm leading-relaxed" style={{ background: 'var(--brand-light)', borderColor: 'var(--brand)', color: 'var(--text-primary)' }}>
+                      <strong>💡 Hint: </strong> {currentQuestion.hint}
+                    </div>
+                  )}
                 </div>
               )}
 
-              <textarea
-                id="answer-input"
-                value={answer}
-                onChange={e => setAnswer(e.target.value)}
-                rows={5}
-                placeholder="Type your answer here…"
-                className="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-rose-500 resize-none"
-              />
+              <div className="space-y-3 mb-6">
+                <label className="block text-sm font-bold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Your Answer</label>
+                <textarea
+                  id="answer-input"
+                  value={answer}
+                  onChange={e => setAnswer(e.target.value)}
+                  rows={6}
+                  placeholder="Type your answer here…"
+                  className="w-full rounded-xl text-base focus:outline-none focus:ring-2 transition-all"
+                  style={{
+                    background: 'var(--surface-1)',
+                    border: '1px solid var(--border-subtle)',
+                    color: 'var(--text-primary)',
+                    padding: '1rem',
+                    outlineColor: 'var(--brand)'
+                  }}
+                />
+              </div>
 
-              <div className="flex gap-3">
-                <button onClick={handlePrev} disabled={currentQ === 0} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 rounded-lg text-sm text-slate-300 transition-all">← Prev</button>
-                <button
+              <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+                <Button 
+                  onClick={handlePrev} 
+                  disabled={currentQ === 0} 
+                  variant="outline"
+                  leftIcon={<ChevronLeft size={16} />}
+                  className="flex-1 sm:flex-none justify-center"
+                >
+                  Prev
+                </Button>
+                <Button
                   id="evaluate-answer-btn"
                   onClick={handleEvaluate}
                   disabled={evaluating || !answer.trim()}
-                  className="flex-1 py-2 bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-500 hover:to-orange-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-semibold text-white transition-all"
+                  variant="primary"
+                  leftIcon={<Send size={16} />}
+                  isLoading={evaluating}
+                  loadingText="Evaluating…"
+                  className="flex-1 justify-center"
                 >
-                  {evaluating ? '⏳ Evaluating…' : '📊 Evaluate Answer'}
-                </button>
-                <button onClick={handleNext} disabled={currentQ === session.questions.length - 1} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 rounded-lg text-sm text-slate-300 transition-all">Next →</button>
+                  Evaluate Answer
+                </Button>
+                <Button 
+                  onClick={handleNext} 
+                  disabled={currentQ === session.questions.length - 1} 
+                  variant="outline"
+                  rightIcon={<ChevronRight size={16} />}
+                  className="flex-1 sm:flex-none justify-center"
+                >
+                  Next
+                </Button>
               </div>
-              {evalError && <p className="text-sm text-red-400">{evalError}</p>}
-            </div>
+              
+              {evalError && <div className="mt-4"><ErrorState message={evalError} /></div>}
+            </Card>
 
             {/* Evaluation Result */}
             {evalResult && (
-              <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 space-y-4">
-                <div className="flex items-center gap-2">
-                  <h2 className="font-semibold text-white">AI Feedback</h2>
-                  <span className="text-xs px-2 py-0.5 bg-rose-900/40 text-rose-300 border border-rose-700/50 rounded">AI Advisory</span>
+              <Card className="animate-fade-in" style={{ border: '2px solid var(--brand)', padding: '2rem' }}>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                    <Sparkles size={20} style={{ color: 'var(--brand)' }} />
+                    AI Feedback
+                  </h2>
+                  <Badge variant="brand">AI Advisory</Badge>
                 </div>
-                <p className="text-xs text-slate-500 italic">{evalResult.disclaimer}</p>
+                
+                <p className="text-xs italic mb-6 p-3 rounded-lg bg-surface-2 text-text-muted" style={{ background: 'var(--surface-2)', color: 'var(--text-muted)' }}>
+                  {evalResult.disclaimer}
+                </p>
 
                 {/* Score Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
                   {[
                     { label: 'Relevance', val: evalResult.evaluation.relevance },
                     { label: 'Clarity', val: evalResult.evaluation.clarity },
@@ -231,32 +327,54 @@ export default function InterviewAI() {
                     { label: 'Completeness', val: evalResult.evaluation.completeness },
                     { label: 'Overall', val: evalResult.evaluation.overall },
                   ].map(({ label, val }) => (
-                    <div key={label} className="bg-slate-800 rounded-lg p-3 text-center">
-                      <div className={`text-2xl font-bold ${val >= 8 ? 'text-emerald-400' : val >= 5 ? 'text-amber-400' : 'text-rose-400'}`}>{val}</div>
-                      <div className="text-xs text-slate-500 mt-0.5">{label}</div>
+                    <div key={label} className="rounded-xl p-4 text-center border" style={{ background: 'var(--surface-1)', borderColor: 'var(--border-subtle)' }}>
+                      <div className="text-3xl font-black font-mono mb-1" style={{ color: val >= 8 ? 'var(--success)' : val >= 5 ? 'var(--warning)' : 'var(--error)' }}>
+                        {val}
+                      </div>
+                      <div className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</div>
                     </div>
                   ))}
                 </div>
 
-                <div className="bg-slate-800/60 rounded-lg p-4">
-                  <p className="text-sm text-slate-300">{evalResult.evaluation.feedback}</p>
+                <div className="rounded-xl p-6 mb-8 border" style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)' }}>
+                  <p className="text-base leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+                    {evalResult.evaluation.feedback}
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <h3 className="text-sm font-medium text-emerald-400 mb-2">✅ Strengths</h3>
-                    <ul className="space-y-1">{evalResult.evaluation.strengths.map((s, i) => <li key={i} className="text-sm text-slate-300 flex gap-2"><span className="shrink-0">•</span>{s}</li>)}</ul>
+                    <h3 className="text-base font-bold flex items-center gap-2 mb-4" style={{ color: 'var(--success)' }}>
+                      <CheckCircle size={18} /> Strengths
+                    </h3>
+                    <ul className="space-y-3">
+                      {evalResult.evaluation.strengths.map((s, i) => (
+                        <li key={i} className="text-sm flex gap-3 items-start" style={{ color: 'var(--text-secondary)' }}>
+                          <span style={{ color: 'var(--success)', marginTop: '2px' }}>•</span>
+                          <span>{s}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-amber-400 mb-2">💡 Improve</h3>
-                    <ul className="space-y-1">{evalResult.evaluation.improvements.map((s, i) => <li key={i} className="text-sm text-slate-300 flex gap-2"><span className="shrink-0">•</span>{s}</li>)}</ul>
+                    <h3 className="text-base font-bold flex items-center gap-2 mb-4" style={{ color: 'var(--warning)' }}>
+                      <Lightbulb size={18} /> Improvements
+                    </h3>
+                    <ul className="space-y-3">
+                      {evalResult.evaluation.improvements.map((s, i) => (
+                        <li key={i} className="text-sm flex gap-3 items-start" style={{ color: 'var(--text-secondary)' }}>
+                          <span style={{ color: 'var(--warning)', marginTop: '2px' }}>•</span>
+                          <span>{s}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
-              </div>
+              </Card>
             )}
           </div>
         )}
       </div>
-    </div>
+    </AppLayout>
   );
 }

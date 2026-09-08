@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { applicationApi, type Application } from '../../services/applicationService';
 import { Link } from 'react-router-dom';
-import { Loader2, Briefcase, Building2, Calendar, Clock, Video } from 'lucide-react';
+import { Briefcase, Building2, Calendar, Clock, Video } from 'lucide-react';
+import AppLayout from '../../components/layout/AppLayout';
+import { PageHeader, LoadingState, ErrorState, Card, Badge, EmptyState, Button } from '../../components/ui';
 
 export default function StudentMyApplications() {
   const [applications, setApplications] = useState<Application[]>([]);
@@ -24,97 +26,99 @@ export default function StudentMyApplications() {
     }
   };
 
-  if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-slate-400" /></div>;
+  const getStatusVariant = (status: string) => {
+    switch(status) {
+      case 'SELECTED': return 'success';
+      case 'REJECTED': return 'error';
+      case 'INTERVIEW_STAGE': return 'warning';
+      case 'SHORTLISTED': return 'brand';
+      default: return 'neutral';
+    }
+  };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-white">My Applications</h1>
-        <p className="text-slate-400 mt-1">Track your job applications and upcoming interviews.</p>
+    <AppLayout>
+      <div className="space-y-6">
+        <PageHeader
+          title="My Applications"
+          subtitle="Track your job applications and upcoming interviews."
+        />
+
+        {error && <ErrorState message={error} onRetry={fetchApplications} />}
+
+        {loading ? (
+          <LoadingState rows={4} />
+        ) : applications.length === 0 && !error ? (
+          <Card style={{ padding: '4rem 2rem', textAlign: 'center' }}>
+            <EmptyState
+              icon={<Briefcase size={48} style={{ color: 'var(--text-muted)' }} />}
+              title="No Applications Yet"
+              description="You haven't applied to any placement drives yet."
+              action={
+                <Link to="/student/drives" style={{ textDecoration: 'none' }}>
+                  <Button variant="primary">Browse Drives</Button>
+                </Link>
+              }
+            />
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            {applications.map((app) => (
+              <Card key={app.id} style={{ padding: 0, overflow: 'hidden' }}>
+                <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '1rem' }} className="md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.375rem' }}>
+                      <Link to={`/student/drives/${app.placementDriveId}`} style={{ color: 'var(--text-primary)', textDecoration: 'none' }} className="hover:text-brand-light transition-colors">
+                        {app.placementDrive?.title}
+                      </Link>
+                    </h3>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}><Building2 size={14} /> {app.placementDrive?.company?.name}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}><Calendar size={14} /> Applied on {new Date(app.appliedAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <Badge variant={getStatusVariant(app.status)}>
+                      {app.status.replace('_', ' ')}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Interviews Section */}
+                {app.interviews && app.interviews.length > 0 && (
+                  <div style={{ background: 'var(--surface-2)', padding: '1.5rem' }}>
+                    <h4 style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Interviews</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+                      {app.interviews.map(interview => (
+                        <div key={interview.id} style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', borderRadius: '0.5rem', padding: '1rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>Round {interview.roundNumber} - {interview.type}</span>
+                            <Badge variant={interview.outcome === 'PASSED' ? 'success' : interview.outcome === 'FAILED' ? 'error' : 'neutral'}>
+                              {interview.outcome}
+                            </Badge>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                            <p style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}><Clock size={14} style={{ color: 'var(--text-muted)' }} /> {new Date(interview.scheduledAt).toLocaleString()}</p>
+                            {interview.meetingLink && (
+                              <p style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                                <Video size={14} style={{ color: 'var(--brand)' }} />
+                                <a href={interview.meetingLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand-light)', textDecoration: 'none' }} className="hover:underline">Join Meeting</a>
+                              </p>
+                            )}
+                            {interview.location && (
+                              <p style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}><Building2 size={14} style={{ color: 'var(--text-muted)' }} /> {interview.location}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
-
-      {error && (
-        <div className="bg-red-900/50 border border-red-500/50 text-red-200 p-4 rounded-lg">
-          {error}
-        </div>
-      )}
-
-      {applications.length === 0 && !error ? (
-        <div className="text-center bg-slate-800 border border-slate-700 rounded-xl p-12">
-          <Briefcase className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-          <h3 className="text-xl font-medium text-white mb-2">No Applications Yet</h3>
-          <p className="text-slate-400 mb-6">You haven't applied to any placement drives yet.</p>
-          <Link to="/student/drives" className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-            Browse Drives
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {applications.map((app) => (
-            <div key={app.id} className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
-              <div className="p-6 border-b border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-xl font-bold text-white mb-1">
-                    <Link to={`/student/drives/${app.placementDriveId}`} className="hover:text-indigo-400 transition-colors">
-                      {app.placementDrive?.title}
-                    </Link>
-                  </h3>
-                  <div className="flex items-center text-slate-400 text-sm space-x-4">
-                    <span className="flex items-center"><Building2 className="w-4 h-4 mr-1" /> {app.placementDrive?.company?.name}</span>
-                    <span className="flex items-center"><Calendar className="w-4 h-4 mr-1" /> Applied on {new Date(app.appliedAt).toLocaleDateString()}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className={`px-4 py-1.5 rounded-full text-sm font-medium border ${
-                    app.status === 'SELECTED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                    app.status === 'REJECTED' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                    app.status === 'INTERVIEW_STAGE' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                    app.status === 'SHORTLISTED' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
-                    'bg-slate-500/10 text-slate-400 border-slate-500/20'
-                  }`}>
-                    {app.status.replace('_', ' ')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Interviews Section */}
-              {app.interviews && app.interviews.length > 0 && (
-                <div className="bg-slate-800/50 p-6">
-                  <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">Interviews</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {app.interviews.map(interview => (
-                      <div key={interview.id} className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <span className="text-white font-medium">Round {interview.roundNumber} - {interview.type}</span>
-                          <span className={`text-xs px-2 py-0.5 rounded ${
-                            interview.outcome === 'PASSED' ? 'bg-emerald-500/20 text-emerald-400' :
-                            interview.outcome === 'FAILED' ? 'bg-red-500/20 text-red-400' :
-                            'bg-slate-500/20 text-slate-400'
-                          }`}>
-                            {interview.outcome}
-                          </span>
-                        </div>
-                        <div className="space-y-2 text-sm text-slate-300 mt-3">
-                          <p className="flex items-center"><Clock className="w-4 h-4 mr-2 text-slate-400" /> {new Date(interview.scheduledAt).toLocaleString()}</p>
-                          {interview.meetingLink && (
-                            <p className="flex items-center">
-                              <Video className="w-4 h-4 mr-2 text-indigo-400" />
-                              <a href={interview.meetingLink} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:underline">Join Meeting</a>
-                            </p>
-                          )}
-                          {interview.location && (
-                            <p className="flex items-center"><Building2 className="w-4 h-4 mr-2 text-slate-400" /> {interview.location}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    </AppLayout>
   );
 }

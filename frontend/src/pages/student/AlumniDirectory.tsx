@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import AppLayout from '../../components/layout/AppLayout';
+import { PageHeader, Card, Button, Badge, ErrorState, LoadingState } from '../../components/ui';
+import { Users, Briefcase, ExternalLink, Send, X, ArrowRight, UserCircle, Building } from 'lucide-react';
 
 interface Alumni {
   id: string;
@@ -80,134 +83,204 @@ export default function AlumniDirectory() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-6">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Alumni Network</h1>
-            <p className="text-slate-400 mt-1">Connect with verified alumni and explore referral opportunities.</p>
-          </div>
-          <button
+    <AppLayout>
+      <div className="space-y-6 max-w-6xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <PageHeader
+            title="Alumni Network"
+            subtitle="Connect with verified alumni and explore referral opportunities."
+            icon={<Users size={32} className="text-brand" />}
+          />
+          <Button
             onClick={() => navigate('/student/referrals')}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-medium transition"
+            variant="secondary"
+            rightIcon={<ArrowRight size={16} />}
           >
             My Requests
-          </button>
+          </Button>
         </div>
 
-        <div className="flex border-b border-slate-700">
+        <div className="flex border-b border-slate-800">
           <button
-            className={`px-4 py-3 font-medium text-sm border-b-2 ${activeTab === 'DIRECTORY' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-slate-300'}`}
+            className={`px-6 py-4 font-bold text-sm border-b-2 transition-colors flex items-center gap-2 ${
+              activeTab === 'DIRECTORY' ? 'border-brand text-brand' : 'border-transparent text-slate-400 hover:text-slate-300'
+            }`}
             onClick={() => setActiveTab('DIRECTORY')}
           >
+            <Users size={18} />
             Alumni Directory
           </button>
           <button
-            className={`px-4 py-3 font-medium text-sm border-b-2 ${activeTab === 'OPPORTUNITIES' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-slate-300'}`}
+            className={`px-6 py-4 font-bold text-sm border-b-2 transition-colors flex items-center gap-2 ${
+              activeTab === 'OPPORTUNITIES' ? 'border-brand text-brand' : 'border-transparent text-slate-400 hover:text-slate-300'
+            }`}
             onClick={() => setActiveTab('OPPORTUNITIES')}
           >
-            Referral Opportunities ({opportunities.length})
+            <Briefcase size={18} />
+            Referral Opportunities 
+            <Badge variant="brand">{opportunities.length}</Badge>
           </button>
         </div>
 
         {loading ? (
-          <div className="text-center text-slate-400 py-10">Loading network data...</div>
+          <LoadingState message="Loading network data..." />
         ) : error ? (
-          <div className="p-4 bg-red-900/40 text-red-400 rounded-lg border border-red-800">{error}</div>
+          <ErrorState message={error} onRetry={fetchData} />
         ) : activeTab === 'DIRECTORY' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
             {alumni.map(alum => (
-              <div key={alum.id} className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-sm flex flex-col h-full">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center text-xl font-bold text-indigo-300">
+              <Card key={alum.id} className="flex flex-col h-full hover:border-brand/30 transition-colors">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold bg-brand/10 text-brand">
                     {alum.fullName.charAt(0)}
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white">{alum.fullName}</h3>
-                    <p className="text-sm text-slate-400">Class of {alum.graduationYear} • {alum.branch}</p>
+                    <h3 className="text-lg font-bold text-white">{alum.fullName}</h3>
+                    <p className="text-sm font-medium text-slate-400">Class of {alum.graduationYear} • {alum.branch}</p>
                   </div>
                 </div>
-                <div className="flex-1 space-y-2 text-sm text-slate-300">
-                  <p><strong className="text-slate-500">Company:</strong> {alum.currentCompany || 'N/A'}</p>
-                  <p><strong className="text-slate-500">Role:</strong> {alum.currentRole || 'N/A'}</p>
+                
+                <div className="flex-1 space-y-4 mb-6">
+                  <div className="flex gap-3 items-start">
+                    <Building size={16} className="text-slate-500 mt-0.5" />
+                    <div>
+                      <p className="text-xs uppercase tracking-wider font-bold text-slate-500">Company</p>
+                      <p className="text-sm font-medium text-slate-200">{alum.currentCompany || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 items-start">
+                    <UserCircle size={16} className="text-slate-500 mt-0.5" />
+                    <div>
+                      <p className="text-xs uppercase tracking-wider font-bold text-slate-500">Role</p>
+                      <p className="text-sm font-medium text-slate-200">{alum.currentRole || 'N/A'}</p>
+                    </div>
+                  </div>
                 </div>
+
                 {alum.linkedinUrl && (
-                  <a href={alum.linkedinUrl} target="_blank" rel="noreferrer" className="mt-4 text-indigo-400 hover:text-indigo-300 text-sm flex items-center gap-1">
-                    LinkedIn Profile ↗
-                  </a>
+                  <Button
+                    variant="outline"
+                    onClick={() => window.open(alum.linkedinUrl!, '_blank', 'noreferrer')}
+                    rightIcon={<ExternalLink size={16} />}
+                    className="w-full justify-center"
+                  >
+                    LinkedIn Profile
+                  </Button>
                 )}
-              </div>
+              </Card>
             ))}
-            {alumni.length === 0 && <p className="text-slate-400">No verified alumni found.</p>}
+            {alumni.length === 0 && (
+              <div className="col-span-full">
+                <Card className="p-12 text-center flex flex-col items-center">
+                  <Users size={48} className="text-slate-600 mb-4" />
+                  <h3 className="text-lg font-bold text-white mb-2">No Alumni Found</h3>
+                  <p className="text-slate-400">There are no verified alumni profiles available yet.</p>
+                </Card>
+              </div>
+            )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
             {opportunities.map(opp => (
-              <div key={opp.id} className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-sm flex flex-col h-full hover:border-indigo-500/50 transition">
+              <Card key={opp.id} className="flex flex-col h-full hover:border-brand/30 transition-colors">
                 <div className="mb-4">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-semibold text-white">{opp.role}</h3>
-                    <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded border border-emerald-500/20">Active</span>
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-bold text-white">{opp.role}</h3>
+                    <Badge variant="success">Active</Badge>
                   </div>
-                  <p className="text-indigo-400 font-medium">{opp.companyName}</p>
+                  <p className="font-bold flex items-center gap-2 text-brand">
+                    <Building size={16} /> {opp.companyName}
+                  </p>
                 </div>
-                <div className="text-sm text-slate-400 space-y-2 mb-6 flex-1">
-                  <p><strong>Posted by:</strong> {opp.alumniProfile.fullName}</p>
-                  <p className="line-clamp-3">{opp.description}</p>
+                
+                <div className="p-4 rounded-xl mb-6 flex-1 space-y-3 bg-slate-800/50">
+                  <p className="text-sm">
+                    <strong className="text-slate-400">Posted by:</strong>{' '}
+                    <span className="font-medium text-slate-200">{opp.alumniProfile.fullName}</span>
+                  </p>
+                  <p className="text-sm leading-relaxed text-slate-300">{opp.description}</p>
                 </div>
-                <button
+                
+                <Button
                   onClick={() => setSelectedOpp(opp)}
-                  className="w-full py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition text-sm font-medium"
+                  variant="primary"
+                  leftIcon={<Send size={16} />}
+                  className="w-full justify-center"
                 >
                   Request Referral
-                </button>
-              </div>
+                </Button>
+              </Card>
             ))}
-            {opportunities.length === 0 && <p className="text-slate-400">No active referral opportunities.</p>}
+            {opportunities.length === 0 && (
+              <div className="col-span-full">
+                <Card className="p-12 text-center flex flex-col items-center">
+                  <Briefcase size={48} className="text-slate-600 mb-4" />
+                  <h3 className="text-lg font-bold text-white mb-2">No Opportunities</h3>
+                  <p className="text-slate-400">There are no active referral opportunities at the moment.</p>
+                </Card>
+              </div>
+            )}
           </div>
         )}
 
         {/* Request Modal */}
         {selectedOpp && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-            <div className="bg-slate-800 rounded-xl p-6 max-w-md w-full border border-slate-700 shadow-2xl">
-              <h2 className="text-xl font-bold text-white mb-2">Request Referral</h2>
-              <p className="text-sm text-slate-400 mb-6">
-                You are requesting a referral for <strong className="text-slate-300">{selectedOpp.role}</strong> at <strong className="text-slate-300">{selectedOpp.companyName}</strong> from {selectedOpp.alumniProfile.fullName}.
-              </p>
-              <form onSubmit={handleRequestReferral} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Message to Alumni</label>
-                  <textarea
-                    required
-                    value={message}
-                    onChange={e => setMessage(e.target.value)}
-                    placeholder="Briefly explain why you are a good fit for this role..."
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-indigo-500 min-h-[100px]"
-                  />
-                  <p className="text-xs text-slate-500 mt-1">Your primary resume will automatically be accessible to the alumni.</p>
-                </div>
-                <div className="flex gap-3 justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedOpp(null)}
-                    className="px-4 py-2 text-sm text-slate-300 hover:text-white"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={requesting}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg disabled:opacity-50"
-                  >
-                    {requesting ? 'Sending...' : 'Send Request'}
+          <div className="fixed inset-0 flex items-center justify-center p-4 z-50 animate-fade-in bg-slate-950/80 backdrop-blur-sm">
+            <Card className="max-w-xl w-full p-0 overflow-hidden shadow-2xl border-slate-700">
+              <div className="p-6 border-b border-slate-800 bg-slate-900/50">
+                <div className="flex justify-between items-start mb-2">
+                  <h2 className="text-xl font-bold text-white">Request Referral</h2>
+                  <button onClick={() => setSelectedOpp(null)} className="text-slate-500 hover:text-white transition-colors">
+                    <X size={24} />
                   </button>
                 </div>
-              </form>
-            </div>
+                <p className="text-sm text-slate-400">
+                  You are requesting a referral for <strong className="text-white">{selectedOpp.role}</strong> at <strong className="text-white">{selectedOpp.companyName}</strong> from {selectedOpp.alumniProfile.fullName}.
+                </p>
+              </div>
+              
+              <div className="p-6">
+                <form onSubmit={handleRequestReferral} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-bold uppercase tracking-wider mb-2 text-slate-400">
+                      Message to Alumni <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      required
+                      value={message}
+                      onChange={e => setMessage(e.target.value)}
+                      placeholder="Briefly explain why you are a good fit for this role..."
+                      className="w-full rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand p-4 bg-slate-950 border border-slate-800 text-white min-h-[120px] transition-all"
+                    />
+                    <p className="text-xs mt-2 italic text-slate-500">
+                      Your primary resume will automatically be accessible to the alumni.
+                    </p>
+                  </div>
+                  <div className="flex gap-3 justify-end">
+                    <Button
+                      type="button"
+                      onClick={() => setSelectedOpp(null)}
+                      variant="secondary"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={requesting}
+                      variant="primary"
+                      isLoading={requesting}
+                      loadingText="Sending..."
+                      leftIcon={<Send size={16} />}
+                    >
+                      Send Request
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </Card>
           </div>
         )}
       </div>
-    </div>
+    </AppLayout>
   );
 }

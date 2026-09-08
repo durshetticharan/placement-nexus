@@ -9,6 +9,10 @@ import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
 
+// Shared pages
+import Unauthorized from '../pages/shared/Unauthorized';
+import NotFound from '../pages/shared/NotFound';
+
 // Role dashboards
 import StudentDashboard   from '../pages/student/StudentDashboard';
 import RecruiterDashboard from '../pages/recruiter/RecruiterDashboard';
@@ -102,8 +106,8 @@ function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   if (!user) return <Navigate to="/login" replace />;
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // Wrong role — send to login (or could send to their own dashboard)
-    return <Navigate to="/login" replace />;
+    // Wrong role — send to unauthorized
+    return <Navigate to="/unauthorized" replace />;
   }
 
   return children;
@@ -121,6 +125,9 @@ export default function AppRoutes() {
       <Route path="/login"           element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password"  element={<ResetPassword />} />
+      
+      {/* Shared */}
+      <Route path="/unauthorized"    element={<Unauthorized />} />
 
       {/* Legacy generic dashboard (kept for backward compat) */}
       <Route
@@ -507,7 +514,7 @@ export default function AppRoutes() {
       />
 
       {/* Catch-all */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { companyService, type RecruiterProfile as IRecruiterProfile, type RecruiterCompanyMembership, type Company } from '../../services/companyService';
+import AppLayout from '../../components/layout/AppLayout';
+import { PageHeader, Card, Button, Badge, LoadingState } from '../../components/ui';
+import { UserCircle, Building2, ShieldAlert, ShieldCheck, Mail, Phone, Briefcase, Plus, AlertCircle, X, ChevronRight, Check } from 'lucide-react';
 
 interface Toast {
   id: number;
@@ -17,6 +20,7 @@ export default function RecruiterProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const navigate = useNavigate();
 
   // Form fields
   const [fullName, setFullName] = useState('');
@@ -133,141 +137,164 @@ export default function RecruiterProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-slate-400">
-        Loading Recruiter Profile…
-      </div>
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <LoadingState message="Loading your profile..." />
+        </div>
+      </AppLayout>
     );
   }
 
-  const getStatusBadge = (status?: string) => {
+  const getStatusBadgeVariant = (status?: string): 'success' | 'warning' | 'error' | 'default' => {
     switch (status) {
-      case 'APPROVED':
-        return <span className="px-2.5 py-1 text-xs rounded-full bg-emerald-900/50 text-emerald-400 border border-emerald-700">✓ Approved</span>;
-      case 'PENDING':
-        return <span className="px-2.5 py-1 text-xs rounded-full bg-amber-900/50 text-amber-400 border border-amber-700">⏳ Pending Verification</span>;
-      case 'REJECTED':
-        return <span className="px-2.5 py-1 text-xs rounded-full bg-red-900/50 text-red-400 border border-red-700">✕ Rejected</span>;
-      case 'SUSPENDED':
-        return <span className="px-2.5 py-1 text-xs rounded-full bg-rose-900/50 text-rose-300 border border-rose-700">⚠ Suspended</span>;
-      default:
-        return <span className="px-2.5 py-1 text-xs rounded-full bg-slate-800 text-slate-400">Unknown</span>;
+      case 'APPROVED': return 'success';
+      case 'PENDING': return 'warning';
+      case 'REJECTED': return 'error';
+      case 'SUSPENDED': return 'error';
+      default: return 'default';
+    }
+  };
+
+  const getStatusLabel = (status?: string) => {
+    switch (status) {
+      case 'APPROVED': return 'Approved';
+      case 'PENDING': return 'Pending Verification';
+      case 'REJECTED': return 'Rejected';
+      case 'SUSPENDED': return 'Suspended';
+      default: return 'Unknown';
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8">
+    <AppLayout>
       {/* Toast notifications */}
       <div className="fixed top-4 right-4 z-50 space-y-2 w-80">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`flex items-start gap-3 p-4 rounded-lg shadow-lg border text-sm ${
+            className={`flex items-start gap-3 p-4 rounded-xl shadow-lg border text-sm font-medium animate-fade-in ${
               t.type === 'success'
-                ? 'bg-emerald-900/80 border-emerald-600 text-emerald-200'
-                : 'bg-red-900/80 border-red-600 text-red-200'
+                ? 'bg-emerald-950/90 border-emerald-800 text-emerald-200 backdrop-blur-md'
+                : 'bg-red-950/90 border-red-800 text-red-200 backdrop-blur-md'
             }`}
           >
-            <span>{t.type === 'success' ? '✅' : '❌'}</span>
+            <span className="mt-0.5">{t.type === 'success' ? <Check size={16} /> : <AlertCircle size={16} />}</span>
             <p className="flex-1">{t.message}</p>
           </div>
         ))}
       </div>
 
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="space-y-6 max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-amber-600/20 border border-amber-500/30 flex items-center justify-center text-2xl text-amber-400">
-              💼
-            </div>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold text-white">Recruiter Profile</h1>
-                {getStatusBadge(profile?.verificationStatus)}
-              </div>
-              <p className="text-slate-400 text-sm mt-1">Manage your identity, department, and company affiliations</p>
-            </div>
-          </div>
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <PageHeader
+            title="Recruiter Profile"
+            subtitle="Manage your identity, department, and company affiliations"
+            icon={<UserCircle size={32} style={{ color: 'var(--brand)' }} />}
+            badge={
+              <Badge variant={getStatusBadgeVariant(profile?.verificationStatus)} className="ml-3">
+                {profile?.verificationStatus === 'APPROVED' && <ShieldCheck size={14} className="mr-1" />}
+                {profile?.verificationStatus === 'PENDING' && <AlertCircle size={14} className="mr-1" />}
+                {getStatusLabel(profile?.verificationStatus)}
+              </Badge>
+            }
+          />
           <div className="flex gap-3">
-            <Link
-              to="/dashboard/recruiter"
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg text-sm transition-colors"
+            <Button
+              onClick={() => navigate('/dashboard/recruiter')}
+              variant="outline"
             >
-              ← Back to Dashboard
-            </Link>
-            <Link
-              to="/recruiter/company"
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors"
+              Back to Dashboard
+            </Button>
+            <Button
+              onClick={() => navigate('/recruiter/company')}
+              variant="primary"
+              rightIcon={<ChevronRight size={16} />}
             >
-              Company Management →
-            </Link>
+              Company Management
+            </Button>
           </div>
         </div>
 
         {/* Rejection / Suspension Notice */}
         {profile?.verificationStatus === 'REJECTED' && profile.rejectionReason && (
-          <div className="p-4 bg-red-950/40 border border-red-800 rounded-xl">
-            <h3 className="text-red-400 font-semibold text-sm">Account Verification Rejected</h3>
-            <p className="text-red-300 text-xs mt-1">Reason: {profile.rejectionReason}</p>
-            <p className="text-slate-400 text-xs mt-2">Please update your profile details and reach out to the Placement Cell for re-review.</p>
+          <div className="p-4 rounded-xl border flex gap-3 animate-fade-in" style={{ background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error)' }}>
+            <ShieldAlert size={20} className="shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-bold text-sm mb-1">Account Verification Rejected</h3>
+              <p className="text-xs mb-2">Reason: {profile.rejectionReason}</p>
+              <p className="text-xs opacity-80">Please update your profile details and reach out to the Placement Cell for re-review.</p>
+            </div>
           </div>
         )}
         {profile?.verificationStatus === 'SUSPENDED' && (
-          <div className="p-4 bg-rose-950/40 border border-rose-800 rounded-xl">
-            <h3 className="text-rose-400 font-semibold text-sm">Account Suspended</h3>
-            <p className="text-rose-300 text-xs mt-1">Your recruiter account is currently suspended. Please contact the placement administrator.</p>
+          <div className="p-4 rounded-xl border flex gap-3 animate-fade-in" style={{ background: 'var(--error-light)', borderColor: 'var(--error)', color: 'var(--error)' }}>
+            <ShieldAlert size={20} className="shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-bold text-sm mb-1">Account Suspended</h3>
+              <p className="text-xs opacity-80">Your recruiter account is currently suspended. Please contact the placement administrator.</p>
+            </div>
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Edit Form */}
-          <div className="lg:col-span-2 bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-6">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <span>👤</span> Personal & Contact Details
+          <Card className="lg:col-span-2 flex flex-col h-full animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
+              <UserCircle style={{ color: 'var(--brand)' }} /> Personal & Contact Details
             </h2>
 
-            <form onSubmit={handleSaveProfile} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSaveProfile} className="space-y-6 flex-1 flex flex-col">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                    Full Name *
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    Full Name <span style={{ color: 'var(--error)' }}>*</span>
                   </label>
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
-                    className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+                    className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                    style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Account Email
                   </label>
-                  <input
-                    type="text"
-                    value={profile?.user?.email || ''}
-                    disabled
-                    className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-800 rounded-lg text-slate-500 cursor-not-allowed text-sm"
-                  />
+                  <div className="relative">
+                    <Mail size={16} className="absolute left-3 top-3" style={{ color: 'var(--text-muted)' }} />
+                    <input
+                      type="text"
+                      value={profile?.user?.email || ''}
+                      disabled
+                      className="w-full rounded-xl text-sm cursor-not-allowed opacity-70"
+                      style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', padding: '0.75rem 1rem 0.75rem 2.5rem' }}
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Designation
                   </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Lead Technical Recruiter"
-                    value={designation}
-                    onChange={(e) => setDesignation(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
-                  />
+                  <div className="relative">
+                    <Briefcase size={16} className="absolute left-3 top-3" style={{ color: 'var(--text-muted)' }} />
+                    <input
+                      type="text"
+                      placeholder="e.g. Lead Technical Recruiter"
+                      value={designation}
+                      onChange={(e) => setDesignation(e.target.value)}
+                      className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                      style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem 0.75rem 2.5rem', outlineColor: 'var(--brand)' }}
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Department
                   </label>
                   <input
@@ -275,25 +302,30 @@ export default function RecruiterProfilePage() {
                     placeholder="e.g. University Talent Acquisition"
                     value={department}
                     onChange={(e) => setDepartment(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+                    className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                    style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Phone Number
                   </label>
-                  <input
-                    type="tel"
-                    placeholder="e.g. +91 9876543210"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
-                  />
+                  <div className="relative">
+                    <Phone size={16} className="absolute left-3 top-3" style={{ color: 'var(--text-muted)' }} />
+                    <input
+                      type="tel"
+                      placeholder="e.g. +91 9876543210"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                      style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem 0.75rem 2.5rem', outlineColor: 'var(--brand)' }}
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Alternate Email
                   </label>
                   <input
@@ -301,74 +333,85 @@ export default function RecruiterProfilePage() {
                     placeholder="e.g. recruiter.work@gmail.com"
                     value={alternateEmail}
                     onChange={(e) => setAlternateEmail(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+                    className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                    style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}
                   />
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-700/60 flex justify-end">
-                <button
+              <div className="pt-6 mt-auto border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+                <Button
                   type="submit"
                   disabled={saving}
-                  className="px-6 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-semibold rounded-lg text-sm transition-colors shadow-lg shadow-amber-900/30"
+                  isLoading={saving}
+                  loadingText="Saving changes..."
+                  variant="primary"
+                  className="w-full sm:w-auto sm:ml-auto"
                 >
-                  {saving ? 'Saving changes…' : 'Save Profile Changes'}
-                </button>
+                  Save Profile Changes
+                </Button>
               </div>
             </form>
-          </div>
+          </Card>
 
           {/* Side: Company Affiliations */}
-          <div className="space-y-6">
-            <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <span>🏢</span> Company Affiliations
+          <div className="space-y-6 flex flex-col">
+            <Card className="flex-1 animate-fade-in" style={{ animationDelay: '200ms' }}>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
+                  <Building2 style={{ color: 'var(--brand)' }} /> Affiliations
                 </h2>
-                <button
+                <Button
                   onClick={() => setShowAssociateModal(true)}
-                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors"
+                  variant="secondary"
+                  className="px-2 py-1 text-xs"
+                  leftIcon={<Plus size={14} />}
                 >
-                  + Request Company
-                </button>
+                  Request
+                </Button>
               </div>
 
               {memberships.length === 0 ? (
-                <div className="text-center py-8 text-slate-500 text-sm">
-                  <p>No associated companies yet.</p>
+                <div className="text-center py-8 rounded-xl" style={{ background: 'var(--surface-2)' }}>
+                  <Building2 size={32} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+                  <p className="text-sm font-bold mb-1" style={{ color: 'var(--text-primary)' }}>No associated companies yet.</p>
                   <button
                     onClick={() => setShowAssociateModal(true)}
-                    className="mt-3 text-indigo-400 hover:text-indigo-300 text-xs underline"
+                    className="text-xs hover:underline"
+                    style={{ color: 'var(--brand)' }}
                   >
                     Request affiliation with a company
                   </button>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {memberships.map((mem) => (
                     <div
                       key={mem.id}
-                      className="p-4 bg-slate-900/70 border border-slate-700/60 rounded-xl space-y-2 hover:border-slate-600 transition-colors"
+                      className="p-4 rounded-xl border transition-colors hover:border-brand"
+                      style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)' }}
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="text-white font-semibold text-sm">{mem.company.name}</p>
-                          <p className="text-slate-400 text-xs mt-0.5">
-                            {mem.company.industry || 'Industry unspecified'} · {mem.company.city || 'Remote'}
-                          </p>
+                      <div className="flex flex-col gap-2 mb-3">
+                        <div className="flex justify-between items-start">
+                          <h4 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{mem.company.name}</h4>
+                          <Badge variant={getStatusBadgeVariant(mem.status)} className="text-[10px] px-1.5 py-0">
+                            {getStatusLabel(mem.status)}
+                          </Badge>
                         </div>
-                        {getStatusBadge(mem.status)}
+                        <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                          {mem.company.industry || 'Industry unspecified'} · {mem.company.city || 'Remote'}
+                        </p>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-800 text-slate-400">
-                        <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-indigo-300 font-medium">
+                      <div className="flex items-center justify-between text-xs pt-3 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+                        <span className="font-mono px-2 py-0.5 rounded-md font-bold" style={{ background: 'var(--brand-light)', color: 'var(--brand)' }}>
                           {mem.role === 'COMPANY_ADMIN' ? '👑 Admin' : '👤 Recruiter'}
                         </span>
-                        <span>{new Date(mem.createdAt).toLocaleDateString()}</span>
+                        <span style={{ color: 'var(--text-muted)' }}>{new Date(mem.createdAt).toLocaleDateString()}</span>
                       </div>
 
                       {mem.status === 'REJECTED' && mem.rejectionReason && (
-                        <p className="text-red-400 text-xs bg-red-950/40 p-2 rounded mt-2">
+                        <p className="text-xs mt-3 p-2 rounded-md font-medium" style={{ background: 'var(--error-light)', color: 'var(--error)' }}>
                           Reason: {mem.rejectionReason}
                         </p>
                       )}
@@ -376,17 +419,23 @@ export default function RecruiterProfilePage() {
                   ))}
                 </div>
               )}
-            </div>
+            </Card>
 
             {/* Quick Tips */}
-            <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 text-xs text-slate-400 space-y-2">
-              <h4 className="font-semibold text-slate-300">💡 Recruiter Roles</h4>
-              <p>
-                <strong className="text-indigo-300">Company Admin:</strong> Can manage company details, view all company recruiters, and initiate placement drives.
-              </p>
-              <p>
-                <strong className="text-amber-300">Recruiter:</strong> Affiliated member representing the company for hiring.
-              </p>
+            <div className="rounded-2xl p-5 border animate-fade-in" style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)', animationDelay: '300ms' }}>
+              <h4 className="font-bold mb-3 flex items-center gap-2 text-sm" style={{ color: 'var(--text-primary)' }}>
+                💡 Recruiter Roles
+              </h4>
+              <div className="space-y-3 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                <p>
+                  <strong className="block mb-1" style={{ color: 'var(--brand)' }}>Company Admin:</strong>
+                  Can manage company details, view all company recruiters, and initiate placement drives.
+                </p>
+                <p>
+                  <strong className="block mb-1" style={{ color: 'var(--text-primary)' }}>Recruiter:</strong>
+                  Affiliated member representing the company for hiring.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -394,54 +443,58 @@ export default function RecruiterProfilePage() {
 
       {/* Association Request Modal */}
       {showAssociateModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="w-full max-w-lg bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-white">Request Company Association</h3>
+        <div className="fixed inset-0 flex items-center justify-center z-[100] p-4 animate-fade-in" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
+          <div className="w-full max-w-lg rounded-2xl p-6 shadow-2xl relative" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)' }}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Request Company Association</h3>
               <button
                 onClick={() => setShowAssociateModal(false)}
-                className="text-slate-400 hover:text-white text-lg"
+                className="p-1 rounded-md transition-colors hover:bg-slate-800"
+                style={{ color: 'var(--text-muted)' }}
               >
-                ✕
+                <X size={20} />
               </button>
             </div>
 
-            <div className="flex border-b border-slate-700">
+            <div className="flex border-b mb-6" style={{ borderColor: 'var(--border-subtle)' }}>
               <button
                 type="button"
                 onClick={() => setAssocMode('existing')}
-                className={`flex-1 py-2.5 text-xs font-semibold uppercase tracking-wider border-b-2 transition-colors ${
+                className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${
                   assocMode === 'existing'
-                    ? 'border-indigo-500 text-indigo-400'
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                    ? 'border-brand text-brand'
+                    : 'border-transparent hover:text-white'
                 }`}
+                style={{ color: assocMode === 'existing' ? 'var(--brand)' : 'var(--text-muted)', borderBottomColor: assocMode === 'existing' ? 'var(--brand)' : 'transparent' }}
               >
                 Join Existing Company
               </button>
               <button
                 type="button"
                 onClick={() => setAssocMode('new')}
-                className={`flex-1 py-2.5 text-xs font-semibold uppercase tracking-wider border-b-2 transition-colors ${
+                className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${
                   assocMode === 'new'
-                    ? 'border-indigo-500 text-indigo-400'
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                    ? 'border-brand text-brand'
+                    : 'border-transparent hover:text-white'
                 }`}
+                style={{ color: assocMode === 'new' ? 'var(--brand)' : 'var(--text-muted)', borderBottomColor: assocMode === 'new' ? 'var(--brand)' : 'transparent' }}
               >
                 Register New Company
               </button>
             </div>
 
-            <form onSubmit={handleRequestAssociation} className="space-y-4">
+            <form onSubmit={handleRequestAssociation} className="space-y-5">
               {assocMode === 'existing' ? (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                    Select Company *
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    Select Company <span style={{ color: 'var(--error)' }}>*</span>
                   </label>
                   <select
                     value={selectedCompanyId}
                     onChange={(e) => setSelectedCompanyId(e.target.value)}
                     required
-                    className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}
                   >
                     <option value="">-- Choose a company --</option>
                     {allCompanies.map((c) => (
@@ -453,8 +506,8 @@ export default function RecruiterProfilePage() {
                 </div>
               ) : (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                    Company Name *
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    Company Name <span style={{ color: 'var(--error)' }}>*</span>
                   </label>
                   <input
                     type="text"
@@ -462,28 +515,30 @@ export default function RecruiterProfilePage() {
                     value={newCompanyName}
                     onChange={(e) => setNewCompanyName(e.target.value)}
                     required
-                    className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}
                   />
-                  <p className="text-slate-500 text-xs mt-1">A new company profile will be created and submitted to Placement Officers for verification.</p>
+                  <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>A new company profile will be created and submitted to Placement Officers for verification.</p>
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Requested Role
                   </label>
                   <select
                     value={assocRole}
                     onChange={(e) => setAssocRole(e.target.value as any)}
-                    className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}
                   >
                     <option value="RECRUITER">Recruiter</option>
                     <option value="COMPANY_ADMIN">Company Admin</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Designation
                   </label>
                   <input
@@ -491,13 +546,14 @@ export default function RecruiterProfilePage() {
                     placeholder="e.g. Campus Recruiter"
                     value={assocDesignation}
                     onChange={(e) => setAssocDesignation(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                   Department
                 </label>
                 <input
@@ -505,30 +561,35 @@ export default function RecruiterProfilePage() {
                   placeholder="e.g. HR / Engineering Talent"
                   value={assocDepartment}
                   onChange={(e) => setAssocDepartment(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                  className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}
                 />
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-700">
-                <button
+              <div className="flex gap-4 pt-6">
+                <Button
                   type="button"
                   onClick={() => setShowAssociateModal(false)}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg text-sm transition-colors"
+                  variant="outline"
+                  className="flex-1"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={submittingAssoc}
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-lg text-sm transition-colors"
+                  isLoading={submittingAssoc}
+                  loadingText="Submitting..."
+                  variant="primary"
+                  className="flex-1"
                 >
-                  {submittingAssoc ? 'Submitting…' : 'Submit Request'}
-                </button>
+                  Submit Request
+                </Button>
               </div>
             </form>
           </div>
         </div>
       )}
-    </div>
+    </AppLayout>
   );
 }

@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import AppLayout from '../../components/layout/AppLayout';
+import { PageHeader, Card, Button, Badge, ErrorState, LoadingState } from '../../components/ui';
+import { BookOpen, Plus, Search, Filter, Star, Clock, CheckCircle, UserCircle } from 'lucide-react';
 
 interface Experience {
   id: string;
@@ -27,18 +30,18 @@ interface Experience {
   createdAt: string;
 }
 
-const DIFFICULTY_COLORS: Record<string, string> = {
-  EASY: 'text-emerald-400 bg-emerald-900/30',
-  MEDIUM: 'text-amber-400 bg-amber-900/30',
-  HARD: 'text-orange-400 bg-orange-900/30',
-  VERY_HARD: 'text-red-400 bg-red-900/30',
+const DIFFICULTY_COLORS: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
+  EASY: 'success',
+  MEDIUM: 'warning',
+  HARD: 'error',
+  VERY_HARD: 'error',
 };
 
 const OUTCOME_COLORS: Record<string, string> = {
-  SELECTED: 'text-emerald-400',
-  REJECTED: 'text-red-400',
-  WAITLISTED: 'text-amber-400',
-  PREFER_NOT_TO_SAY: 'text-slate-400',
+  SELECTED: 'var(--success)',
+  REJECTED: 'var(--error)',
+  WAITLISTED: 'var(--warning)',
+  PREFER_NOT_TO_SAY: 'var(--text-muted)',
 };
 
 export default function DriveExperiences() {
@@ -106,56 +109,63 @@ export default function DriveExperiences() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 p-4 md:p-6">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <AppLayout>
+      <div className="space-y-6 max-w-5xl mx-auto">
 
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Drive Experiences</h1>
-            <p className="text-slate-400 text-sm mt-1">Learn from previous placement drives</p>
-          </div>
-          <button
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <PageHeader
+            title="Drive Experiences"
+            subtitle="Learn from previous placement drives"
+            icon={<BookOpen size={32} style={{ color: 'var(--brand)' }} />}
+          />
+          <Button
             onClick={() => setShowSubmitForm(!showSubmitForm)}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg transition-colors"
+            variant="primary"
+            leftIcon={<Plus size={16} />}
           >
-            + Share Experience
-          </button>
+            Share Experience
+          </Button>
         </div>
 
         {/* Submit Success */}
         {submitSuccess && (
-          <div className="p-4 bg-emerald-900/40 border border-emerald-500/50 rounded-xl text-emerald-300 text-sm">
-            ✅ Experience submitted! It will be visible after officer review.
+          <div className="p-4 rounded-xl text-sm font-bold flex items-center gap-2 animate-fade-in" style={{ background: 'var(--success-light)', color: 'var(--success)', border: '1px solid var(--success)' }}>
+            <CheckCircle size={18} /> Experience submitted! It will be visible after officer review.
           </div>
         )}
 
         {/* Submit Form */}
         {showSubmitForm && (
-          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 space-y-4">
-            <h2 className="text-lg font-semibold text-white">Share Your Experience</h2>
-            {submitError && <p className="text-red-400 text-sm">{submitError}</p>}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Card className="animate-fade-in" style={{ border: '2px solid var(--brand)' }}>
+            <h2 className="text-xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Share Your Experience</h2>
+            {submitError && <div className="mb-4"><ErrorState message={submitError} /></div>}
+            
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-slate-400 text-xs block mb-1">Company Name *</label>
+                  <label className="block text-sm font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Company Name <span style={{ color: 'var(--error)' }}>*</span></label>
                   <input value={form.companyName} onChange={e => setForm(f => ({ ...f, companyName: e.target.value }))} required
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                    style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }} />
                 </div>
                 <div>
-                  <label className="text-slate-400 text-xs block mb-1">Role Applied For *</label>
+                  <label className="block text-sm font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Role Applied For <span style={{ color: 'var(--error)' }}>*</span></label>
                   <input value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} required
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                    style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }} />
                 </div>
                 <div>
-                  <label className="text-slate-400 text-xs block mb-1">Drive Year *</label>
+                  <label className="block text-sm font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Drive Year <span style={{ color: 'var(--error)' }}>*</span></label>
                   <input type="number" value={form.driveYear} onChange={e => setForm(f => ({ ...f, driveYear: parseInt(e.target.value) }))} required min={2000} max={new Date().getFullYear() + 1}
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                    style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }} />
                 </div>
                 <div>
-                  <label className="text-slate-400 text-xs block mb-1">Difficulty</label>
+                  <label className="block text-sm font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Difficulty</label>
                   <select value={form.difficulty} onChange={e => setForm(f => ({ ...f, difficulty: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                    style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}>
                     <option value="">Select difficulty</option>
                     <option value="EASY">Easy</option>
                     <option value="MEDIUM">Medium</option>
@@ -164,9 +174,10 @@ export default function DriveExperiences() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-slate-400 text-xs block mb-1">Outcome</label>
+                  <label className="block text-sm font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Outcome</label>
                   <select value={form.outcome} onChange={e => setForm(f => ({ ...f, outcome: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                    style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}>
                     <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
                     <option value="SELECTED">Selected</option>
                     <option value="REJECTED">Rejected</option>
@@ -174,120 +185,163 @@ export default function DriveExperiences() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-slate-400 text-xs block mb-1">Overall Rating (1–5)</label>
+                  <label className="block text-sm font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Overall Rating (1–5)</label>
                   <input type="number" value={form.overallRating} onChange={e => setForm(f => ({ ...f, overallRating: e.target.value }))} min={1} max={5}
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                    style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }} />
                 </div>
               </div>
+              
               <div>
-                <label className="text-slate-400 text-xs block mb-1">Your Experience (narrative)</label>
+                <label className="block text-sm font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Your Experience (narrative)</label>
                 <textarea value={form.narrative} onChange={e => setForm(f => ({ ...f, narrative: e.target.value }))} rows={4} maxLength={3000}
                   placeholder="Describe the overall process, what you faced, how you felt..."
-                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" />
+                  className="w-full rounded-xl text-sm focus:outline-none focus:ring-2 resize-y"
+                  style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '1rem', outlineColor: 'var(--brand)' }} />
               </div>
+              
               <div>
-                <label className="text-slate-400 text-xs block mb-1">Preparation Tips</label>
+                <label className="block text-sm font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Preparation Tips</label>
                 <textarea value={form.overallTips} onChange={e => setForm(f => ({ ...f, overallTips: e.target.value }))} rows={2} maxLength={1000}
                   placeholder="What would you advise future candidates to prepare?"
-                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" />
+                  className="w-full rounded-xl text-sm focus:outline-none focus:ring-2 resize-y"
+                  style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '1rem', outlineColor: 'var(--brand)' }} />
               </div>
-              <div className="flex items-center gap-3">
+              
+              <div className="flex items-center gap-3 p-4 rounded-xl" style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)' }}>
                 <input type="checkbox" id="anonymous" checked={form.isAnonymous} onChange={e => setForm(f => ({ ...f, isAnonymous: e.target.checked }))}
-                  className="rounded" />
-                <label htmlFor="anonymous" className="text-slate-300 text-sm">Submit anonymously (your name will not be shown)</label>
+                  className="w-5 h-5 rounded cursor-pointer" style={{ accentColor: 'var(--brand)' }} />
+                <label htmlFor="anonymous" className="text-sm font-bold cursor-pointer select-none" style={{ color: 'var(--text-primary)' }}>Submit anonymously (your name will not be shown)</label>
               </div>
-              <div className="flex gap-3">
-                <button type="submit" disabled={submitLoading}
-                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
-                  {submitLoading ? 'Submitting...' : 'Submit Experience'}
-                </button>
-                <button type="button" onClick={() => setShowSubmitForm(false)}
-                  className="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm rounded-lg transition-colors">
+              
+              <div className="flex gap-4 pt-4">
+                <Button type="button" onClick={() => setShowSubmitForm(false)} variant="outline" className="flex-1 justify-center">
                   Cancel
-                </button>
+                </Button>
+                <Button type="submit" disabled={submitLoading} variant="primary" isLoading={submitLoading} loadingText="Submitting..." className="flex-1 justify-center">
+                  Submit Experience
+                </Button>
               </div>
             </form>
-          </div>
+          </Card>
         )}
 
         {/* Filters */}
-        <form onSubmit={handleFilterSearch} className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 flex flex-wrap gap-3">
-          <input value={filters.company} onChange={e => setFilters(f => ({ ...f, company: e.target.value }))}
-            placeholder="Search company..." className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[160px]" />
+        <form onSubmit={handleFilterSearch} className="flex flex-col md:flex-row gap-4 p-4 rounded-xl" style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)' }}>
+          <div className="flex-1 min-w-[200px] relative">
+            <Search className="absolute top-2.5 left-3" size={16} style={{ color: 'var(--text-muted)' }} />
+            <input value={filters.company} onChange={e => setFilters(f => ({ ...f, company: e.target.value }))}
+              placeholder="Search company..." 
+              className="w-full rounded-lg text-sm focus:outline-none focus:ring-2"
+              style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.5rem 1rem 0.5rem 2.25rem', outlineColor: 'var(--brand)' }} />
+          </div>
+          
           <select value={filters.difficulty} onChange={e => setFilters(f => ({ ...f, difficulty: e.target.value }))}
-            className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            className="flex-1 md:max-w-[160px] rounded-lg text-sm focus:outline-none focus:ring-2"
+            style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.5rem 1rem', outlineColor: 'var(--brand)' }}>
             <option value="">All Difficulties</option>
             <option value="EASY">Easy</option>
             <option value="MEDIUM">Medium</option>
             <option value="HARD">Hard</option>
             <option value="VERY_HARD">Very Hard</option>
           </select>
+          
           <select value={filters.outcome} onChange={e => setFilters(f => ({ ...f, outcome: e.target.value }))}
-            className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            className="flex-1 md:max-w-[160px] rounded-lg text-sm focus:outline-none focus:ring-2"
+            style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.5rem 1rem', outlineColor: 'var(--brand)' }}>
             <option value="">All Outcomes</option>
             <option value="SELECTED">Selected</option>
             <option value="REJECTED">Rejected</option>
             <option value="WAITLISTED">Waitlisted</option>
           </select>
+          
           <input type="number" value={filters.year} onChange={e => setFilters(f => ({ ...f, year: e.target.value }))}
-            placeholder="Year..." min={2000} max={2030}
-            className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-28" />
-          <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg transition-colors">
+            placeholder="Year" min={2000} max={2030}
+            className="w-24 rounded-lg text-sm focus:outline-none focus:ring-2"
+            style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.5rem 1rem', outlineColor: 'var(--brand)' }} />
+            
+          <Button type="submit" variant="secondary" leftIcon={<Filter size={16} />} className="justify-center">
             Search
-          </button>
+          </Button>
         </form>
 
         {/* Experiences List */}
         {loading ? (
-          <div className="text-center py-16 text-slate-400">Loading experiences...</div>
+          <LoadingState message="Loading experiences..." />
         ) : error ? (
-          <div className="text-center py-16 text-red-400">{error}</div>
+          <ErrorState message={error} onRetry={fetchExperiences} />
         ) : experiences.length === 0 ? (
-          <div className="text-center py-16 text-slate-500">
-            <div className="text-4xl mb-3">📋</div>
-            <p>No approved experiences found.</p>
-            <p className="text-sm mt-1">Be the first to share yours!</p>
-          </div>
+          <Card style={{ padding: '4rem 2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ padding: '1rem', background: 'var(--surface-2)', borderRadius: '50%', color: 'var(--text-muted)' }}>
+              <BookOpen size={48} />
+            </div>
+            <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>No Experiences Found</h3>
+            <p style={{ color: 'var(--text-secondary)' }}>No approved experiences match your search criteria. Be the first to share yours!</p>
+          </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-fade-in">
             {experiences.map(exp => (
-              <Link key={exp.id} to={`/student/experiences/${exp.id}`}
-                className="block bg-slate-800 border border-slate-700 hover:border-indigo-500/50 rounded-2xl p-5 transition-all group">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-white text-base group-hover:text-indigo-300 transition-colors">{exp.companyName}</span>
-                      <span className="text-slate-400 text-sm">— {exp.role}</span>
-                      <span className="text-slate-500 text-xs">{exp.driveYear}</span>
+              <Link key={exp.id} to={`/student/experiences/${exp.id}`} className="block group">
+                <Card className="hover:border-brand transition-colors h-full flex flex-col">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 flex-wrap mb-2">
+                        <h3 className="text-lg font-bold group-hover:text-brand transition-colors" style={{ color: 'var(--text-primary)' }}>
+                          {exp.companyName}
+                        </h3>
+                        <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>— {exp.role}</span>
+                        <Badge variant="default">{exp.driveYear}</Badge>
+                      </div>
+                      
+                      <div className="flex gap-2 flex-wrap mb-3">
+                        {exp.difficulty && (
+                          <Badge variant={DIFFICULTY_COLORS[exp.difficulty] || 'default'}>
+                            {exp.difficulty.replace('_', ' ')}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      {exp.narrative && (
+                        <p className="text-sm line-clamp-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                          {exp.narrative}
+                        </p>
+                      )}
                     </div>
-                    {exp.difficulty && (
-                      <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full mt-1.5 ${DIFFICULTY_COLORS[exp.difficulty]}`}>
-                        {exp.difficulty.replace('_', ' ')}
+                    
+                    <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
+                      {exp.overallRating && (
+                        <div className="flex items-center" style={{ color: 'var(--warning)' }}>
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} size={16} fill={i < exp.overallRating! ? 'currentColor' : 'none'} className={i < exp.overallRating! ? '' : 'opacity-30'} />
+                          ))}
+                        </div>
+                      )}
+                      <span className="text-sm font-bold uppercase tracking-wider" style={{ color: OUTCOME_COLORS[exp.outcome] || 'var(--text-primary)' }}>
+                        {exp.outcome.replace(/_/g, ' ')}
                       </span>
-                    )}
-                    {exp.narrative && (
-                      <p className="text-slate-400 text-sm mt-2 line-clamp-2">{exp.narrative}</p>
-                    )}
+                    </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    {exp.overallRating && (
-                      <div className="text-amber-400 font-bold text-lg">{'★'.repeat(exp.overallRating)}{'☆'.repeat(5 - exp.overallRating)}</div>
-                    )}
-                    <span className={`text-xs font-semibold ${OUTCOME_COLORS[exp.outcome]}`}>
-                      {exp.outcome.replace(/_/g, ' ')}
+                  
+                  <div className="pt-4 border-t flex flex-wrap items-center gap-4 text-xs font-medium" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
+                    <span className="flex items-center gap-1">
+                      <UserCircle size={14} />
+                      {exp.isAnonymous ? 'Anonymous' : (exp.alumniProfile?.fullName || exp.student?.fullName || 'Unknown')}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <BookOpen size={14} />
+                      {exp.rounds.length} round{exp.rounds.length !== 1 ? 's' : ''}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock size={14} />
+                      {new Date(exp.createdAt).toLocaleDateString()}
                     </span>
                   </div>
-                </div>
-                <div className="mt-3 flex items-center gap-4 text-xs text-slate-500">
-                  <span>{exp.isAnonymous ? 'Anonymous' : (exp.alumniProfile?.fullName || exp.student?.fullName || 'Unknown')}</span>
-                  <span>{exp.rounds.length} round{exp.rounds.length !== 1 ? 's' : ''}</span>
-                  <span>{new Date(exp.createdAt).toLocaleDateString()}</span>
-                </div>
+                </Card>
               </Link>
             ))}
           </div>
         )}
       </div>
-    </div>
+    </AppLayout>
   );
 }

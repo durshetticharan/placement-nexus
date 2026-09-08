@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { companyService, type RecruiterProfile, type RecruiterCompanyMembership } from '../../services/companyService';
-import NotificationCenter from '../../components/NotificationCenter';
+import AppLayout from '../../components/layout/AppLayout';
+import { PageHeader, } from '../../components/ui';
+import { Briefcase } from 'lucide-react';
 
 export default function RecruiterDashboard() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [profile, setProfile] = useState<RecruiterProfile | null>(null);
   const [memberships, setMemberships] = useState<RecruiterCompanyMembership[]>([]);
@@ -29,16 +30,13 @@ export default function RecruiterDashboard() {
     loadData();
   }, []);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login', { replace: true });
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-slate-400">
-        Loading Recruiter Workspace…
-      </div>
+      <AppLayout>
+        <div className="flex items-center justify-center h-64 text-slate-400">
+          Loading Recruiter Workspace...
+        </div>
+      </AppLayout>
     );
   }
 
@@ -47,31 +45,14 @@ export default function RecruiterDashboard() {
   const isSuspended = profile?.verificationStatus === 'SUSPENDED';
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-amber-600/20 border border-amber-500/30 flex items-center justify-center text-2xl text-amber-400">
-              💼
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">Recruiter Dashboard</h1>
-              <p className="text-slate-400 text-sm">
-                Welcome, {profile?.fullName || user?.email || 'Recruiter'}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <NotificationCenter />
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-red-400 hover:text-red-300 rounded-lg text-sm transition-colors"
-            >
-              Log out
-            </button>
-          </div>
-        </div>
+    <AppLayout>
+      <PageHeader 
+        title="Recruiter Dashboard"
+        subtitle={`Welcome, ${profile?.fullName || user?.email || 'Recruiter'}`}
+        icon={<Briefcase size={24} className="text-amber-500" />}
+      />
+
+      <div className="space-y-6">
 
         {/* Verification Status Banners */}
         {isPending && (
@@ -210,6 +191,6 @@ export default function RecruiterDashboard() {
           <span className="font-semibold text-slate-300">Phase 10 Feature:</span> Company Profiles & Recruiter Verification are live. Job postings and placement drive management will unlock in Phase 11.
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }

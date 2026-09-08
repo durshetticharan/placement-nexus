@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { companyService, type Company } from '../../services/companyService';
+import AppLayout from '../../components/layout/AppLayout';
+import { PageHeader, Card, Button, Badge, LoadingState } from '../../components/ui';
+import { Building2, Search, Filter, Plus, Edit2, CheckCircle, XCircle, AlertTriangle, RefreshCw, X as CloseIcon, Users, ShieldCheck } from 'lucide-react';
 
 interface Toast {
   id: number;
@@ -11,6 +14,7 @@ interface Toast {
 let toastCounter = 0;
 
 export default function CompanyDirectory() {
+  const navigate = useNavigate();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -48,6 +52,8 @@ export default function CompanyDirectory() {
     setToasts((prev) => [...prev, { id, type, message }]);
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
   };
+
+  const dismissToast = (id: number) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
   const fetchCompanies = useCallback(async () => {
     try {
@@ -183,110 +189,125 @@ export default function CompanyDirectory() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8">
-      {/* Toast notifications */}
-      <div className="fixed top-4 right-4 z-50 space-y-2 w-80">
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            className={`flex items-start gap-3 p-4 rounded-lg shadow-lg border text-sm ${
-              t.type === 'success'
-                ? 'bg-emerald-900/80 border-emerald-600 text-emerald-200'
-                : 'bg-red-900/80 border-red-600 text-red-200'
-            }`}
-          >
-            <span>{t.type === 'success' ? '✅' : '❌'}</span>
-            <p className="flex-1">{t.message}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center text-2xl text-emerald-400">
-              🏛️
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">Company Directory</h1>
-              <p className="text-slate-400 text-sm mt-1">Manage partner companies, onboard employers, and review verification requests</p>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <Link
-              to="/dashboard/officer"
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg text-sm transition-colors"
+    <AppLayout>
+      <div className="space-y-6 max-w-7xl mx-auto relative">
+        {/* Toast notifications */}
+        <div className="fixed top-4 right-4 z-[100] space-y-2 w-80 animate-fade-in">
+          {toasts.map((t) => (
+            <div
+              key={t.id}
+              className={`flex items-start gap-3 p-4 rounded-xl shadow-2xl border text-sm backdrop-blur-md ${
+                t.type === 'success'
+                  ? 'bg-emerald-950/90 border-emerald-500/30 text-emerald-100'
+                  : 'bg-red-950/90 border-red-500/30 text-red-100'
+              }`}
             >
-              ← Dashboard
-            </Link>
-            <button
-              onClick={openCreateModal}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-emerald-900/30"
-            >
-              + Register New Company
-            </button>
-          </div>
+              <span className="mt-0.5">{t.type === 'success' ? <CheckCircle size={16} className="text-emerald-500" /> : <XCircle size={16} className="text-red-500" />}</span>
+              <p className="flex-1 font-medium">{t.message}</p>
+              <button onClick={() => dismissToast(t.id)} className="text-white/50 hover:text-white transition-colors ml-2">
+                <CloseIcon size={16} />
+              </button>
+            </div>
+          ))}
         </div>
 
+        <PageHeader
+          title="Company Directory"
+          subtitle="Manage partner companies, onboard employers, and review verification requests"
+          icon={<Building2 size={32} style={{ color: 'var(--brand)' }} />}
+          action={
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={() => navigate('/officer')}
+                variant="outline"
+              >
+                Back to Dashboard
+              </Button>
+              <Button
+                onClick={openCreateModal}
+                variant="primary"
+                leftIcon={<Plus size={16} />}
+              >
+                Register New Company
+              </Button>
+            </div>
+          }
+        />
+
         {/* Filter / Search Bar */}
-        <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="w-full md:w-80">
+        <Card className="p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="w-full md:w-80 relative group">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors" />
             <input
               type="text"
               placeholder="Search companies by name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full pl-10 pr-4 py-2 rounded-xl text-sm transition-all focus:outline-none focus:ring-2"
+              style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outlineColor: 'var(--brand)' }}
             />
           </div>
 
           <div className="flex flex-wrap gap-3 w-full md:w-auto">
-            <select
-              value={verificationFilter}
-              onChange={(e) => setVerificationFilter(e.target.value)}
-              className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-              <option value="ALL">All Verification (Any)</option>
-              <option value="PENDING">Pending Verification</option>
-              <option value="APPROVED">Approved</option>
-              <option value="REJECTED">Rejected</option>
-              <option value="SUSPENDED">Suspended</option>
-            </select>
+            <div className="relative group">
+              <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors" />
+              <select
+                value={verificationFilter}
+                onChange={(e) => setVerificationFilter(e.target.value)}
+                className="pl-9 pr-8 py-2 rounded-xl text-sm appearance-none focus:outline-none focus:ring-2 transition-all cursor-pointer"
+                style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outlineColor: 'var(--brand)' }}
+              >
+                <option value="ALL">All Verification (Any)</option>
+                <option value="PENDING">Pending Verification</option>
+                <option value="APPROVED">Approved</option>
+                <option value="REJECTED">Rejected</option>
+                <option value="SUSPENDED">Suspended</option>
+              </select>
+            </div>
 
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-              <option value="ALL">All Statuses (Any)</option>
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
-              <option value="SUSPENDED">Suspended</option>
-            </select>
+            <div className="relative group">
+              <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="pl-9 pr-8 py-2 rounded-xl text-sm appearance-none focus:outline-none focus:ring-2 transition-all cursor-pointer"
+                style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outlineColor: 'var(--brand)' }}
+              >
+                <option value="ALL">All Statuses (Any)</option>
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+                <option value="SUSPENDED">Suspended</option>
+              </select>
+            </div>
 
-            <button
+            <Button
               onClick={() => fetchCompanies()}
-              className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl text-sm transition-colors"
+              variant="outline"
+              leftIcon={<RefreshCw size={16} />}
             >
-              ↻ Refresh
-            </button>
+              Refresh
+            </Button>
           </div>
-        </div>
+        </Card>
 
         {/* Companies Table / Grid */}
         {loading ? (
-          <div className="text-center py-20 text-slate-400">Loading company directory…</div>
-        ) : companies.length === 0 ? (
-          <div className="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-16 text-center text-slate-400">
-            <p className="text-lg font-medium text-slate-300">No companies found</p>
-            <p className="text-xs mt-1">Try adjusting your search criteria or register a new company.</p>
+          <div className="flex items-center justify-center min-h-[40vh]">
+            <LoadingState message="Loading company directory..." />
           </div>
+        ) : companies.length === 0 ? (
+          <Card className="text-center py-20 flex flex-col items-center justify-center border-dashed">
+            <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-4 text-slate-500">
+              <Search size={32} />
+            </div>
+            <p className="text-lg font-bold text-white mb-1">No companies found</p>
+            <p className="text-sm text-slate-400">Try adjusting your search criteria or register a new company.</p>
+          </Card>
         ) : (
-          <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl overflow-hidden shadow-xl">
+          <Card className="p-0 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-300">
-                <thead className="bg-slate-900/80 text-xs font-semibold uppercase text-slate-400 border-b border-slate-700/80">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-900/50 text-xs uppercase text-slate-400 font-bold border-b border-slate-800">
                   <tr>
                     <th className="px-6 py-4">Company Name</th>
                     <th className="px-6 py-4">Industry & Location</th>
@@ -296,23 +317,23 @@ export default function CompanyDirectory() {
                     <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700/50">
+                <tbody className="divide-y divide-slate-800">
                   {companies.map((c) => (
-                    <tr key={c.id} className="hover:bg-slate-700/30 transition-colors">
+                    <tr key={c.id} className="hover:bg-slate-800/50 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center font-bold text-white text-base">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white text-base shadow-inner">
                             {c.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="font-semibold text-white">{c.name}</p>
-                            {c.legalName && <p className="text-slate-400 text-xs">{c.legalName}</p>}
+                            <p className="font-bold text-white group-hover:text-brand transition-colors">{c.name}</p>
+                            {c.legalName && <p className="text-slate-400 text-xs font-medium">{c.legalName}</p>}
                             {c.website && (
                               <a
                                 href={c.website}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="text-indigo-400 hover:text-indigo-300 text-xs underline block"
+                                className="text-brand hover:text-brand-light text-xs font-medium block mt-0.5"
                               >
                                 {c.website}
                               </a>
@@ -322,78 +343,69 @@ export default function CompanyDirectory() {
                       </td>
 
                       <td className="px-6 py-4 text-xs">
-                        <p className="font-medium text-slate-200">{c.industry || 'General'}</p>
+                        <p className="font-bold text-slate-300">{c.industry || 'General'}</p>
                         <p className="text-slate-400 mt-0.5">
                           {[c.city, c.state, c.country].filter(Boolean).join(', ') || 'Remote'}
                         </p>
                       </td>
 
                       <td className="px-6 py-4">
-                        <span
-                          className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                            c.status === 'ACTIVE'
-                              ? 'bg-emerald-900/40 text-emerald-400 border border-emerald-700/60'
-                              : c.status === 'SUSPENDED'
-                              ? 'bg-rose-900/40 text-rose-300 border border-rose-700/60'
-                              : 'bg-slate-700 text-slate-300'
-                          }`}
-                        >
+                        <Badge variant={c.status === 'ACTIVE' ? 'success' : c.status === 'SUSPENDED' ? 'error' : 'secondary'}>
                           {c.status}
-                        </span>
+                        </Badge>
                       </td>
 
                       <td className="px-6 py-4">
-                        <span
-                          className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                            c.verification?.status === 'APPROVED'
-                              ? 'bg-emerald-900/40 text-emerald-400 border border-emerald-700/60'
-                              : c.verification?.status === 'PENDING'
-                              ? 'bg-amber-900/40 text-amber-400 border border-amber-700/60'
-                              : 'bg-red-900/40 text-red-400 border border-red-700/60'
-                          }`}
-                        >
+                        <Badge variant={c.verification?.status === 'APPROVED' ? 'success' : c.verification?.status === 'PENDING' ? 'warning' : 'error'}>
                           {c.verification?.status || 'PENDING'}
-                        </span>
+                        </Badge>
                       </td>
 
-                      <td className="px-6 py-4 text-xs text-slate-400">
-                        <p>{c._count?.recruiters ?? 0} recruiters</p>
-                        <p>{c._count?.memberships ?? 0} memberships</p>
+                      <td className="px-6 py-4 text-xs font-medium text-slate-400">
+                        <p className="flex items-center gap-1.5"><Users size={12} /> {c._count?.recruiters ?? 0} recruiters</p>
+                        <p className="flex items-center gap-1.5 mt-0.5"><ShieldCheck size={12} /> {c._count?.memberships ?? 0} memberships</p>
                       </td>
 
                       <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
-                        <button
+                        <Button
                           onClick={() => openEditModal(c)}
-                          className="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-xs transition-colors"
+                          size="sm"
+                          variant="secondary"
+                          className="px-2.5 py-1"
                         >
-                          ✎ Edit
-                        </button>
+                          <Edit2 size={14} /> Edit
+                        </Button>
 
                         {c.verification?.status === 'PENDING' && (
-                          <button
-                            onClick={() => handleApprove(c)}
-                            className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-600 text-white rounded text-xs font-semibold transition-colors"
-                          >
-                            ✓ Approve
-                          </button>
-                        )}
-
-                        {c.verification?.status === 'PENDING' && (
-                          <button
-                            onClick={() => setActionTarget({ id: c.id, name: c.name, type: 'reject' })}
-                            className="px-2.5 py-1 bg-red-800 hover:bg-red-700 text-white rounded text-xs transition-colors"
-                          >
-                            ✕ Reject
-                          </button>
+                          <>
+                            <Button
+                              onClick={() => handleApprove(c)}
+                              size="sm"
+                              variant="success"
+                              className="px-2.5 py-1"
+                            >
+                              <CheckCircle size={14} /> Approve
+                            </Button>
+                            <Button
+                              onClick={() => setActionTarget({ id: c.id, name: c.name, type: 'reject' })}
+                              size="sm"
+                              variant="error"
+                              className="px-2.5 py-1"
+                            >
+                              <XCircle size={14} /> Reject
+                            </Button>
+                          </>
                         )}
 
                         {c.status === 'ACTIVE' && c.verification?.status === 'APPROVED' && (
-                          <button
+                          <Button
                             onClick={() => setActionTarget({ id: c.id, name: c.name, type: 'suspend' })}
-                            className="px-2.5 py-1 bg-rose-900/60 hover:bg-rose-800 text-rose-300 rounded text-xs transition-colors"
+                            size="sm"
+                            variant="outline"
+                            className="px-2.5 py-1 border-red-500/30 hover:bg-red-500/10 text-red-500 hover:text-red-400"
                           >
-                            ⚠ Suspend
-                          </button>
+                            <AlertTriangle size={14} /> Suspend
+                          </Button>
                         )}
                       </td>
                     </tr>
@@ -401,16 +413,17 @@ export default function CompanyDirectory() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </Card>
         )}
       </div>
 
       {/* Create / Edit Company Modal */}
       {(showCreateModal || editingCompany) && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="w-full max-w-2xl bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-2xl space-y-5 my-8">
-            <div className="flex items-center justify-between border-b border-slate-700 pb-3">
-              <h3 className="text-lg font-bold text-white">
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4 animate-fade-in" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
+          <div className="w-full max-w-3xl rounded-2xl shadow-2xl relative flex flex-col max-h-[90vh]" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)' }}>
+            <div className="p-6 border-b flex justify-between items-center shrink-0" style={{ borderColor: 'var(--border-subtle)' }}>
+              <h3 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                {editingCompany ? <Edit2 className="text-brand" size={24} /> : <Building2 className="text-brand" size={24} />}
                 {editingCompany ? `Edit Company — ${editingCompany.name}` : 'Register New Partner Company'}
               </h3>
               <button
@@ -418,16 +431,16 @@ export default function CompanyDirectory() {
                   setShowCreateModal(false);
                   setEditingCompany(null);
                 }}
-                className="text-slate-400 hover:text-white text-lg"
+                className="p-1 rounded-lg hover:bg-slate-800 transition-colors" style={{ color: 'var(--text-muted)' }}
               >
-                ✕
+                <CloseIcon size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleSaveCompany} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSaveCompany} className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Company Name *
                   </label>
                   <input
@@ -436,11 +449,12 @@ export default function CompanyDirectory() {
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
                     placeholder="e.g. Google India"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all"
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outlineColor: 'var(--brand)' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Legal Registered Name
                   </label>
                   <input
@@ -448,11 +462,12 @@ export default function CompanyDirectory() {
                     value={formLegalName}
                     onChange={(e) => setFormLegalName(e.target.value)}
                     placeholder="e.g. Google India Pvt. Ltd."
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all"
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outlineColor: 'var(--brand)' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Industry
                   </label>
                   <input
@@ -460,11 +475,12 @@ export default function CompanyDirectory() {
                     value={formIndustry}
                     onChange={(e) => setFormIndustry(e.target.value)}
                     placeholder="e.g. Technology / Cloud"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all"
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outlineColor: 'var(--brand)' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Website
                   </label>
                   <input
@@ -472,11 +488,12 @@ export default function CompanyDirectory() {
                     value={formWebsite}
                     onChange={(e) => setFormWebsite(e.target.value)}
                     placeholder="https://careers.google.com"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all"
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outlineColor: 'var(--brand)' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Contact Email
                   </label>
                   <input
@@ -484,11 +501,12 @@ export default function CompanyDirectory() {
                     value={formContactEmail}
                     onChange={(e) => setFormContactEmail(e.target.value)}
                     placeholder="campus-recruitment@google.com"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all"
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outlineColor: 'var(--brand)' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Contact Phone
                   </label>
                   <input
@@ -496,11 +514,12 @@ export default function CompanyDirectory() {
                     value={formContactPhone}
                     onChange={(e) => setFormContactPhone(e.target.value)}
                     placeholder="+91 80 1234 5678"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all"
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outlineColor: 'var(--brand)' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Headquarters / City
                   </label>
                   <input
@@ -508,32 +527,35 @@ export default function CompanyDirectory() {
                     value={formCity}
                     onChange={(e) => setFormCity(e.target.value)}
                     placeholder="e.g. Bangalore"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all"
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outlineColor: 'var(--brand)' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     State & Country
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     <input
                       type="text"
                       value={formState}
                       onChange={(e) => setFormState(e.target.value)}
                       placeholder="Karnataka"
-                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all"
+                      style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outlineColor: 'var(--brand)' }}
                     />
                     <input
                       type="text"
                       value={formCountry}
                       onChange={(e) => setFormCountry(e.target.value)}
                       placeholder="India"
-                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all"
+                      style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outlineColor: 'var(--brand)' }}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Company Size
                   </label>
                   <input
@@ -541,11 +563,12 @@ export default function CompanyDirectory() {
                     value={formCompanySize}
                     onChange={(e) => setFormCompanySize(e.target.value)}
                     placeholder="e.g. 10,000+ employees"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all"
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outlineColor: 'var(--brand)' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                     Founded Year
                   </label>
                   <input
@@ -553,42 +576,45 @@ export default function CompanyDirectory() {
                     value={formFoundedYear}
                     onChange={(e) => setFormFoundedYear(e.target.value === '' ? '' : parseInt(e.target.value))}
                     placeholder="1998"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all"
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outlineColor: 'var(--brand)' }}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
                   Company Description
                 </label>
                 <textarea
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
-                  rows={3}
+                  rows={4}
                   placeholder="Overview of company operations, hiring domain..."
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-emerald-500 resize-none"
+                  className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all resize-none"
+                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outlineColor: 'var(--brand)' }}
                 />
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-700">
-                <button
+              <div className="flex gap-3 justify-end pt-6 border-t shrink-0" style={{ borderColor: 'var(--border-subtle)' }}>
+                <Button
                   type="button"
                   onClick={() => {
                     setShowCreateModal(false);
                     setEditingCompany(null);
                   }}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg text-sm transition-colors"
+                  variant="outline"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={submittingForm}
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold rounded-lg text-sm transition-colors"
+                  variant="primary"
+                  leftIcon={submittingForm ? <RefreshCw className="animate-spin" size={16} /> : undefined}
                 >
                   {submittingForm ? 'Saving…' : editingCompany ? 'Update Company' : 'Create Company'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -597,39 +623,55 @@ export default function CompanyDirectory() {
 
       {/* Reject / Suspend Reason Modal */}
       {actionTarget && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-2xl space-y-4">
-            <h3 className="text-lg font-bold text-white">
-              {actionTarget.type === 'reject' ? 'Reject Verification' : 'Suspend Company'} — {actionTarget.name}
-            </h3>
-            <p className="text-slate-400 text-xs">
-              Please enter the reason for this action. It will be recorded in the audit log.
-            </p>
-            <textarea
-              value={actionReason}
-              onChange={(e) => setActionReason(e.target.value)}
-              placeholder="Provide reason for rejection or suspension..."
-              rows={3}
-              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-rose-500 resize-none"
-            />
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setActionTarget(null)}
-                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg text-sm"
-              >
-                Cancel
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4 animate-fade-in" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
+          <div className="w-full max-w-md rounded-2xl shadow-2xl relative flex flex-col" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)' }}>
+            <div className="p-6 border-b flex justify-between items-start" style={{ borderColor: 'var(--border-subtle)' }}>
+              <div>
+                <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                  {actionTarget.type === 'reject' ? <XCircle className="text-red-500" size={24} /> : <AlertTriangle className="text-red-500" size={24} />}
+                  {actionTarget.type === 'reject' ? 'Reject Verification' : 'Suspend Company'}
+                </h2>
+                <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>For <span className="font-bold">{actionTarget.name}</span></p>
+              </div>
+              <button onClick={() => setActionTarget(null)} className="p-1 rounded-lg hover:bg-slate-800 transition-colors" style={{ color: 'var(--text-muted)' }}>
+                <CloseIcon size={20} />
               </button>
-              <button
-                onClick={handleActionConfirm}
-                disabled={actionLoading || !actionReason.trim()}
-                className="px-5 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-semibold rounded-lg text-sm"
-              >
-                {actionLoading ? 'Processing…' : 'Confirm Action'}
-              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                Please enter the reason for this action. It will be recorded in the audit log.
+              </p>
+              <textarea
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+                placeholder="Provide reason for rejection or suspension..."
+                rows={4}
+                className="w-full rounded-xl text-sm focus:outline-none focus:ring-2 resize-none"
+                style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}
+              />
+              <div className="flex gap-3 pt-2">
+                <Button
+                  onClick={() => setActionTarget(null)}
+                  variant="outline"
+                  className="flex-1 justify-center"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleActionConfirm}
+                  disabled={actionLoading || !actionReason.trim()}
+                  variant="error"
+                  className="flex-1 justify-center"
+                  leftIcon={actionLoading ? <RefreshCw className="animate-spin" size={16} /> : undefined}
+                >
+                  {actionLoading ? 'Processing…' : 'Confirm Action'}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </AppLayout>
   );
 }

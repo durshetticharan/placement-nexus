@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { getDrivePreparation, initDrivePreparation, updateTaskStatus } from '../../services/preparation.service';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import AppLayout from '../../components/layout/AppLayout';
+import { PageHeader, Card, Button, LoadingState, ErrorState, Badge } from '../../components/ui';
+import { Target, CheckCircle2, Circle, ArrowLeft, ExternalLink, ListTodo } from 'lucide-react';
 
 const DrivePreparation: React.FC = () => {
   const { driveId } = useParams();
+  const navigate = useNavigate();
   const [plan, setPlan] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadPlan();
@@ -13,6 +18,8 @@ const DrivePreparation: React.FC = () => {
 
   const loadPlan = async () => {
     try {
+      setLoading(true);
+      setError(null);
       let data = await getDrivePreparation(driveId!);
       if (!data.plan) {
         // Init plan if it doesn't exist
@@ -22,6 +29,7 @@ const DrivePreparation: React.FC = () => {
       setPlan(data.plan);
     } catch (err) {
       console.error(err);
+      setError('Failed to load preparation plan.');
     } finally {
       setLoading(false);
     }
@@ -30,55 +38,129 @@ const DrivePreparation: React.FC = () => {
   const handleToggleTask = async (taskId: string, currentStatus: string) => {
     const newStatus = currentStatus === 'COMPLETED' ? 'NOT_STARTED' : 'COMPLETED';
     try {
+      // Optimistic update
+      setPlan((prev: any) => ({
+        ...prev,
+        tasks: prev.tasks.map((t: any) => 
+          t.id === taskId ? { ...t, status: newStatus } : t
+        )
+      }));
+      
       await updateTaskStatus(taskId, newStatus);
-      loadPlan(); // reload to get new progressPct
+      loadPlan(); // reload to get true progressPct
     } catch (err) {
       console.error('Failed to update task', err);
+      loadPlan(); // Revert on failure
     }
   };
 
-  if (loading) return <div>Loading preparation plan...</div>;
-  if (!plan) return <div>Failed to load plan.</div>;
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <LoadingState message="Loading your preparation plan..." />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (error || !plan) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <ErrorState message={error || 'Failed to load plan.'} onRetry={loadPlan} />
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-2">Drive Preparation Plan</h1>
-      
-      <div className="mb-6 bg-gray-200 rounded-full h-4 overflow-hidden">
-        <div 
-          className="bg-blue-600 h-full transition-all duration-500" 
-          style={{ width: `${plan.progressPct}%` }}
-        ></div>
-      </div>
-      <p className="text-sm text-gray-600 mb-6">{plan.progressPct}% Completed</p>
+    <AppLayout>
+      <div className="space-y-6 max-w-4xl mx-auto">
+        
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <PageHeader
+            title="Drive Preparation Plan"
+            subtitle="Your personalized roadmap for this placement drive."
+            icon={<Target size={32} style={{ color: 'var(--brand)' }} />}
+          />
+          <Button
+            onClick={() => navigate('/student/drives')}
+            variant="outline"
+            leftIcon={<ArrowLeft size={16} />}
+          >
+            Back to Drives
+          </Button>
+        </div>
 
-      <div className="space-y-3">
-        {plan.tasks?.map((task: any) => (
-          <div key={task.id} className="flex items-center p-3 border rounded bg-white shadow-sm">
-            <input 
-              type="checkbox" 
-              className="w-5 h-5 mr-4 cursor-pointer"
-              checked={task.status === 'COMPLETED'}
-              onChange={() => handleToggleTask(task.id, task.status)}
-            />
-            <div className="flex-1">
-              <h4 className={`text-lg ${task.status === 'COMPLETED' ? 'line-through text-gray-400' : 'text-gray-800'}`}>
-                {task.title}
-              </h4>
-              <p className="text-xs text-gray-500 uppercase">{task.category}</p>
+        <Card className="animate-fade-in">
+          <div className="mb-6">
+            <div className="flex justify-between items-end mb-2">
+              <span className="font-bold" style={{ color: 'var(--text-primary)' }}>Overall Progress</span>
+              <span className="text-2xl font-black" style={{ color: 'var(--brand)' }}>{plan.progressPct}%</span>
             </div>
-            {task.driveResource && (
-              <a href={task.driveResource.externalUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-600 underline">
-                View Resource
-              </a>
+            <div className="h-3 rounded-full overflow-hidden" style={{ background: 'var(--surface-2)' }}>
+              <div 
+                className="h-full transition-all duration-1000 ease-out" 
+                style={{ width: `${plan.progressPct}%`, background: 'var(--brand)' }}
+              ></div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {plan.tasks?.length > 0 ? (
+              plan.tasks.map((task: any) => (
+                <div 
+                  key={task.id} 
+                  className={`flex items-start gap-4 p-4 rounded-xl border transition-all ${task.status === 'COMPLETED' ? 'opacity-70' : 'hover:border-brand'}`}
+                  style={{ 
+                    background: task.status === 'COMPLETED' ? 'var(--surface-1)' : 'var(--surface-2)',
+                    borderColor: task.status === 'COMPLETED' ? 'var(--border-subtle)' : 'var(--border-subtle)'
+                  }}
+                >
+                  <button 
+                    onClick={() => handleToggleTask(task.id, task.status)}
+                    className="mt-1 flex-shrink-0 transition-transform hover:scale-110 focus:outline-none"
+                    style={{ color: task.status === 'COMPLETED' ? 'var(--success)' : 'var(--text-muted)' }}
+                  >
+                    {task.status === 'COMPLETED' ? <CheckCircle2 size={24} /> : <Circle size={24} />}
+                  </button>
+                  
+                  <div className="flex-1 min-w-0">
+                    <h4 className={`text-base font-bold mb-1 transition-all ${task.status === 'COMPLETED' ? 'line-through' : ''}`}
+                        style={{ color: task.status === 'COMPLETED' ? 'var(--text-muted)' : 'var(--text-primary)' }}>
+                      {task.title}
+                    </h4>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Badge variant="default" className="text-[10px]">
+                        {task.category}
+                      </Badge>
+                      {task.driveResource && (
+                        <a 
+                          href={task.driveResource.externalUrl} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="text-xs font-bold flex items-center gap-1 hover:underline"
+                          style={{ color: 'var(--brand)' }}
+                        >
+                          View Resource <ExternalLink size={12} />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="py-12 text-center flex flex-col items-center justify-center">
+                <ListTodo size={48} style={{ color: 'var(--text-muted)', marginBottom: '1rem' }} />
+                <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>No Tasks Yet</h3>
+                <p style={{ color: 'var(--text-secondary)' }}>No tasks have been added to your preparation plan.</p>
+              </div>
             )}
           </div>
-        ))}
-        {(!plan.tasks || plan.tasks.length === 0) && (
-          <p className="text-gray-500 text-center py-4">No tasks added to your plan yet.</p>
-        )}
+        </Card>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 

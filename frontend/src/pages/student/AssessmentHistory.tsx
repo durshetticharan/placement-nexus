@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getAttemptHistory, type AssessmentAttempt } from '../../services/assessmentService';
 import { getErrorMessage } from '../../utils/error';
+import AppLayout from '../../components/layout/AppLayout';
+import { PageHeader, LoadingState, ErrorState, Card, Badge, EmptyState, Button } from '../../components/ui';
+import { History, BookOpen, Clock, ChevronRight, Play } from 'lucide-react';
 
 export default function StudentAssessmentHistory() {
   const navigate = useNavigate();
@@ -26,41 +29,54 @@ export default function StudentAssessmentHistory() {
     fetchHistory();
   }, [fetchHistory]);
 
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case 'EVALUATED': return 'success';
+      case 'SUBMITTED': return 'brand';
+      default: return 'warning';
+    }
+  };
+
+  if (loading && attempts.length === 0) {
+    return (
+      <AppLayout>
+        <LoadingState message="Loading attempt history…" />
+      </AppLayout>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8">
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl">
-          <div>
-            <Link to="/student/assessments" className="text-slate-400 hover:text-white text-xs mb-1 block">
-              ← Back to Assessments
-            </Link>
-            <h1 className="text-2xl font-bold text-white">Assessment Attempt History</h1>
-            <p className="text-slate-400 text-sm">Review all your previous assessment attempts & scores</p>
-          </div>
+    <AppLayout>
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+          <PageHeader
+            title="Assessment History"
+            subtitle="Review all your previous assessment attempts and scores"
+          />
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/student/assessments')}
+            leftIcon={<BookOpen size={16} />}
+          >
+            Browse Assessments
+          </Button>
         </div>
 
-        {error && (
-          <div className="p-4 bg-red-900/40 border border-red-500 rounded-xl text-red-300 text-sm flex items-center justify-between">
-            <span>{error}</span>
-            <button onClick={() => setError('')} className="text-red-400 hover:text-white ml-4">✕</button>
-          </div>
-        )}
+        {error && <ErrorState message={error} onRetry={fetchHistory} />}
 
-        {loading ? (
-          <div className="p-12 text-center text-slate-400 bg-slate-800/50 rounded-xl border border-slate-700">
-            Loading attempt history...
-          </div>
-        ) : attempts.length === 0 ? (
-          <div className="p-12 text-center text-slate-400 bg-slate-800/50 rounded-xl border border-slate-700 space-y-3">
-            <p className="text-slate-400">You haven't attempted any assessments yet.</p>
-            <Link
-              to="/student/assessments"
-              className="inline-block px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-lg transition-colors"
-            >
-              Browse Assessments
-            </Link>
-          </div>
+        {!loading && !error && attempts.length === 0 ? (
+          <Card style={{ padding: '4rem 2rem', textAlign: 'center' }}>
+            <EmptyState
+              icon={<History size={48} style={{ color: 'var(--text-muted)' }} />}
+              title="No Attempt History"
+              description="You haven't attempted any assessments yet."
+              action={
+                <Button variant="primary" onClick={() => navigate('/student/assessments')}>
+                  Browse Assessments
+                </Button>
+              }
+            />
+          </Card>
         ) : (
           <div className="space-y-4">
             {attempts.map((item) => {
@@ -74,73 +90,75 @@ export default function StudentAssessmentHistory() {
               });
 
               return (
-                <div
-                  key={item.id}
-                  className="bg-slate-800 p-6 rounded-xl border border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg hover:border-slate-600 transition-colors"
+                <Card 
+                  key={item.id} 
+                  style={{ 
+                    padding: '1.5rem',
+                    borderLeft: item.status === 'IN_PROGRESS' ? '4px solid var(--warning)' : '1px solid var(--border-subtle)'
+                  }}
+                  className="hover:-translate-y-1 hover:shadow-md transition-all"
                 >
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <h2 className="text-lg font-bold text-white">{item.assessment.title}</h2>
-                      <span
-                        className={`px-2.5 py-0.5 rounded text-xs font-semibold border ${
-                          item.status === 'EVALUATED'
-                            ? 'bg-emerald-900/50 text-emerald-300 border-emerald-600'
-                            : item.status === 'SUBMITTED'
-                            ? 'bg-indigo-900/50 text-indigo-300 border-indigo-600'
-                            : 'bg-amber-900/50 text-amber-300 border-amber-600'
-                        }`}
-                      >
-                        {item.status}
-                      </span>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-3 flex-1">
+                      <div className="flex items-center gap-3">
+                        <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{item.assessment.title}</h2>
+                        <Badge variant={getStatusVariant(item.status) as any}>
+                          {item.status}
+                        </Badge>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                        <span className="flex items-center gap-1">
+                          <BookOpen size={14} style={{ color: 'var(--text-muted)' }} />
+                          {item.assessment.category} ({item.assessment.topic})
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock size={14} style={{ color: 'var(--text-muted)' }} />
+                          {formattedDate}
+                        </span>
+                        {item.timeTakenSecs !== null && item.timeTakenSecs !== undefined && (
+                          <span className="flex items-center gap-1 font-medium">
+                            Duration: {Math.floor(item.timeTakenSecs / 60)}m {item.timeTakenSecs % 60}s
+                          </span>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
-                      <span>Category: {item.assessment.category}</span>
-                      <span>•</span>
-                      <span>Topic: {item.assessment.topic}</span>
-                      <span>•</span>
-                      <span>Started: {formattedDate}</span>
-                      {item.timeTakenSecs !== null && item.timeTakenSecs !== undefined && (
-                        <>
-                          <span>•</span>
-                          <span>Duration: {Math.floor(item.timeTakenSecs / 60)}m {item.timeTakenSecs % 60}s</span>
-                        </>
+                    <div className="flex items-center gap-6 border-t md:border-t-0 pt-4 md:pt-0" style={{ borderColor: 'var(--border-subtle)' }}>
+                      {item.result && (
+                        <div className="text-right flex flex-col">
+                          <span className="text-xs uppercase tracking-wider font-bold mb-1" style={{ color: 'var(--text-muted)' }}>Score</span>
+                          <span className="text-2xl font-black font-mono" style={{ color: 'var(--success)' }}>
+                            {item.result.percentage}%
+                          </span>
+                        </div>
+                      )}
+
+                      {isCompleted ? (
+                        <Button
+                          variant="outline"
+                          onClick={() => navigate(`/student/attempts/${item.id}/result`)}
+                          rightIcon={<ChevronRight size={16} />}
+                        >
+                          View Report
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="primary"
+                          onClick={() => navigate(`/student/assessments/${item.assessmentId}/take`)}
+                          leftIcon={<Play size={16} />}
+                        >
+                          Resume
+                        </Button>
                       )}
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-4 border-t md:border-t-0 pt-3 md:pt-0 border-slate-700 justify-between md:justify-end">
-                    {item.result && (
-                      <div className="text-right">
-                        <span className="text-xs text-slate-400 block">Score</span>
-                        <span className="text-xl font-bold text-emerald-400 font-mono">
-                          {item.result.percentage}%
-                        </span>
-                      </div>
-                    )}
-
-                    {isCompleted ? (
-                      <button
-                        onClick={() => navigate(`/student/attempts/${item.id}/result`)}
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-lg transition-colors"
-                      >
-                        View Report →
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => navigate(`/student/assessments/${item.assessmentId}/take`)}
-                        className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs rounded-lg transition-colors"
-                      >
-                        Resume →
-                      </button>
-                    )}
-                  </div>
-                </div>
+                </Card>
               );
             })}
           </div>
         )}
       </div>
-    </div>
+    </AppLayout>
   );
 }

@@ -1,10 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getResultDetail, type AssessmentAttempt } from '../../services/assessmentService';
 import { getErrorMessage } from '../../utils/error';
+import AppLayout from '../../components/layout/AppLayout';
+import { PageHeader, LoadingState, ErrorState, Card, Button, } from '../../components/ui';
+import { History, Clock, BookOpen, CheckCircle, XCircle } from 'lucide-react';
 
 export default function AssessmentResult() {
   const { id: attemptId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [attempt, setAttempt] = useState<AssessmentAttempt | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -30,25 +34,22 @@ export default function AssessmentResult() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-slate-400">
-        Loading score report...
-      </div>
+      <AppLayout>
+        <LoadingState message="Loading score report…" />
+      </AppLayout>
     );
   }
 
   if (error || !attempt) {
     return (
-      <div className="min-h-screen bg-slate-900 p-8 flex flex-col items-center justify-center space-y-4">
-        <div className="p-4 bg-red-900/40 border border-red-500 rounded-xl text-red-300 text-sm max-w-md w-full">
-          {error || 'Result not found.'}
+      <AppLayout>
+        <ErrorState message={error || 'Result not found.'} />
+        <div className="mt-6 flex justify-center">
+          <Button onClick={() => navigate('/student/assessments')} variant="outline">
+            Return to Assessment List
+          </Button>
         </div>
-        <Link
-          to="/student/assessments"
-          className="px-4 py-2 bg-slate-800 text-white rounded hover:bg-slate-700 text-sm font-semibold"
-        >
-          Return to Assessment List
-        </Link>
-      </div>
+      </AppLayout>
     );
   }
 
@@ -65,92 +66,106 @@ export default function AssessmentResult() {
   const topicEntries = Object.entries(rawBreakdown);
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <AppLayout>
+      <div className="space-y-6 max-w-4xl mx-auto">
         {/* Header */}
-        <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <Link to="/student/assessments" className="text-slate-400 hover:text-white text-xs mb-1 block">
-              ← Back to Assessments
-            </Link>
-            <h1 className="text-2xl font-bold text-white">Assessment Result</h1>
-            <p className="text-slate-400 text-sm">
-              {attempt.assessment.title} • {attempt.assessment.category} ({attempt.assessment.topic})
-            </p>
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <PageHeader
+            title="Assessment Result"
+            subtitle={`${attempt.assessment.title} • ${attempt.assessment.category} (${attempt.assessment.topic})`}
+          />
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/student/assessments')}
+              leftIcon={<BookOpen size={16} />}
+            >
+              Assessments
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => navigate('/student/assessments/history')}
+              leftIcon={<History size={16} />}
+            >
+              History
+            </Button>
           </div>
-          <Link
-            to="/student/assessments/history"
-            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold text-xs rounded-lg transition-colors text-center whitespace-nowrap"
-          >
-            📜 View All History
-          </Link>
         </div>
 
         {/* Ungraded questions banner */}
         {hasUngradedQuestions && (
-          <div className="p-4 bg-amber-900/40 border border-amber-500 rounded-xl text-amber-200 text-sm flex items-start gap-3">
-            <span className="text-lg">⏳</span>
+          <Card style={{ padding: '1rem 1.5rem', background: 'var(--warning-light)', borderColor: 'var(--warning)', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+            <Clock size={24} style={{ color: 'var(--warning)', marginTop: '0.25rem' }} />
             <div>
-              <p className="font-bold text-amber-100">Manual Review Pending</p>
-              <p className="text-xs text-amber-300/90 mt-0.5">
+              <h3 className="font-bold" style={{ color: 'var(--warning)' }}>Manual Review Pending</h3>
+              <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
                 {pendingCount} question(s) (Coding / Descriptive) are pending evaluation. The score below reflects auto-graded MCQ questions only and may increase once reviewed.
               </p>
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Score Summary Card */}
-        <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-xl text-center space-y-6">
-          <div className="space-y-2">
-            <span className="text-xs uppercase tracking-widest text-slate-400 font-bold">
+        <Card style={{ padding: '3rem', textAlign: 'center' }}>
+          <div className="space-y-4">
+            <span className="text-xs uppercase tracking-widest font-bold" style={{ color: 'var(--text-muted)' }}>
               Overall Score
             </span>
-            <div className="text-5xl font-extrabold text-white font-mono">
+            <div className="text-6xl font-black font-mono mb-2" style={{ color: 'var(--text-primary)' }}>
               {result?.percentage ?? 0}%
             </div>
-            <p className="text-slate-400 text-sm">
-              Scored <span className="text-emerald-400 font-bold">{result?.scoredMarks ?? 0}</span> out of{' '}
-              <span className="text-white font-bold">{result?.totalMarks ?? 0}</span> total marks
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              Scored <span className="font-bold" style={{ color: 'var(--success)' }}>{result?.scoredMarks ?? 0}</span> out of{' '}
+              <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{result?.totalMarks ?? 0}</span> total marks
             </p>
           </div>
 
           {passPct !== null && passPct !== undefined && (
-            <div className="inline-block px-6 py-2 rounded-full border text-sm font-bold shadow-inner">
+            <div className="mt-8">
               {isPassed ? (
-                <span className="text-emerald-400 border-emerald-600 bg-emerald-950/60 px-4 py-1.5 rounded-full border">
-                  🎉 PASSED (Criteria: ≥{passPct}%)
-                </span>
+                <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full font-bold shadow-sm" style={{ background: 'var(--success-light)', color: 'var(--success)', border: '1px solid var(--success)' }}>
+                  <CheckCircle size={20} />
+                  <span>PASSED (Criteria: &ge;{passPct}%)</span>
+                </div>
               ) : (
-                <span className="text-red-400 border-red-600 bg-red-950/60 px-4 py-1.5 rounded-full border">
-                  ❌ DID NOT PASS (Criteria: ≥{passPct}%)
-                </span>
+                <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full font-bold shadow-sm" style={{ background: 'var(--error-light)', color: 'var(--error)', border: '1px solid var(--error)' }}>
+                  <XCircle size={20} />
+                  <span>DID NOT PASS (Criteria: &ge;{passPct}%)</span>
+                </div>
               )}
             </div>
           )}
-        </div>
+        </Card>
 
         {/* Topic Breakdown */}
-        <div className="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl space-y-4">
-          <h2 className="text-lg font-bold text-white border-b border-slate-700 pb-2">
+        <Card style={{ padding: '2rem' }}>
+          <h2 className="text-lg font-bold mb-6 pb-2" style={{ color: 'var(--text-primary)', borderBottom: '1px solid var(--border-subtle)' }}>
             Topic Performance Breakdown
           </h2>
 
           {topicEntries.length === 0 ? (
-            <p className="text-slate-400 text-sm py-4">No topic performance data recorded.</p>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No topic performance data recorded.</p>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {topicEntries.map(([topicName, pct]: [string, any]) => {
                 const percentageNum = typeof pct === 'number' ? pct : 0;
                 return (
-                  <div key={topicName} className="space-y-1.5">
+                  <div key={topicName} className="space-y-2">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-slate-200 font-medium">{topicName === '__untagged__' ? 'General' : topicName}</span>
-                      <span className="text-indigo-400 font-mono font-bold">{percentageNum}%</span>
+                      <span className="font-bold" style={{ color: 'var(--text-primary)' }}>
+                        {topicName === '__untagged__' ? 'General' : topicName}
+                      </span>
+                      <span className="font-mono font-bold" style={{ color: 'var(--brand)' }}>
+                        {percentageNum}%
+                      </span>
                     </div>
-                    <div className="w-full bg-slate-900 h-3 rounded-full overflow-hidden border border-slate-700">
+                    <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)' }}>
                       <div
-                        className="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(100, Math.max(0, percentageNum))}%` }}
+                        className="h-full rounded-full transition-all duration-1000 ease-out"
+                        style={{ 
+                          width: `${Math.min(100, Math.max(0, percentageNum))}%`,
+                          background: 'linear-gradient(90deg, var(--brand) 0%, var(--success) 100%)'
+                        }}
                       />
                     </div>
                   </div>
@@ -158,8 +173,8 @@ export default function AssessmentResult() {
               })}
             </div>
           )}
-        </div>
+        </Card>
       </div>
-    </div>
+    </AppLayout>
   );
 }

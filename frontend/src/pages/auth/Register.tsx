@@ -2,8 +2,9 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-
 import { getErrorMessage } from '../../utils/error';
+import { Button } from '../../components/ui';
+import {  AlertCircle, UserPlus } from 'lucide-react';
 
 const ROLES = [
   { value: 'STUDENT',           label: 'Student' },
@@ -12,8 +13,8 @@ const ROLES = [
   { value: 'PLACEMENT_OFFICER', label: 'Placement Officer' },
 ];
 
-const INPUT = 'w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500';
-const LABEL = 'block text-sm font-medium text-slate-300 mb-1';
+const INPUT = 'w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-all';
+const LABEL = 'block text-sm font-semibold text-slate-300 mb-2';
 
 export default function Register() {
   const [email, setEmail]           = useState('');
@@ -45,22 +46,9 @@ export default function Register() {
         email,
         password,
         role,
-        ...(role === 'STUDENT' && {
-          fullName,
-          rollNumber,
-        }),
-        ...(role === 'RECRUITER' && {
-          fullName,
-          designation: designation || undefined,
-          companyName,
-        }),
-        ...(role === 'ALUMNI' && {
-          fullName,
-          degree,
-          branch,
-          graduationYear: gradYear ? parseInt(gradYear, 10) : undefined,
-          collegeName: college,
-        }),
+        ...(role === 'STUDENT' && { fullName, rollNumber }),
+        ...(role === 'RECRUITER' && { fullName, designation: designation || undefined, companyName }),
+        ...(role === 'ALUMNI' && { fullName, degree, branch, graduationYear: gradYear ? parseInt(gradYear, 10) : undefined, collegeName: college }),
       });
       navigate('/verify-otp', { state: { email } });
     } catch (err: any) {
@@ -71,123 +59,142 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-slate-800 rounded-xl border border-slate-700 p-8 shadow-xl">
-        <h1 className="text-2xl font-bold text-white mb-1">Create your account</h1>
-        <p className="text-slate-400 text-sm mb-6">Placement Nexus — join as your role</p>
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 font-sans relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute top-[0%] left-[-10%] w-[40%] h-[40%] bg-brand/20 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-[0%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"></div>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-900/40 border border-red-500 rounded-lg text-red-300 text-sm">
-            {error}
+      <div className="w-full max-w-[460px] relative z-10 py-8">
+        {/* Brand */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand to-indigo-600 flex items-center justify-center shadow-lg shadow-brand/25">
+              <UserPlus className="text-white" size={24} />
+            </div>
           </div>
-        )}
+          <h1 className="text-2xl font-bold text-white tracking-tight mb-1">Create your account</h1>
+          <p className="text-sm text-slate-400">Join Placement Nexus</p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* ── Core fields ─────────────────────────────────────── */}
-          <div>
-            <label className={LABEL}>Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com" required className={INPUT} />
-          </div>
-
-          <div>
-            <label className={LABEL}>Password</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-              placeholder="Min 8 chars, at least 1 number" required className={INPUT} />
-          </div>
-
-          <div>
-            <label className={LABEL}>Role</label>
-            <select value={role} onChange={(e) => setRole(e.target.value)} className={INPUT}>
-              {ROLES.map((r) => (
-                <option key={r.value} value={r.value}>{r.label}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* ── Student extra fields ────────────────────────────── */}
-          {role === 'STUDENT' && (
-            <div className="space-y-4 pt-2 border-t border-slate-700">
-              <p className="text-xs text-slate-400 uppercase tracking-wider font-medium">Student details</p>
-              <div>
-                <label className={LABEL}>Full Name <span className="text-red-400">*</span></label>
-                <input value={fullName} onChange={(e) => setFullName(e.target.value)}
-                  placeholder="John Doe" required className={INPUT} />
-              </div>
-              <div>
-                <label className={LABEL}>Roll Number <span className="text-red-400">*</span></label>
-                <input value={rollNumber} onChange={(e) => setRollNumber(e.target.value)}
-                  placeholder="23R1A0501" required className={INPUT} />
-              </div>
+        {/* Card */}
+        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-8 shadow-2xl">
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 animate-fade-in">
+              <AlertCircle className="text-red-400 shrink-0" size={18} />
+              <p className="text-sm text-red-400 font-medium">{error}</p>
             </div>
           )}
 
-          {/* ── Recruiter extra fields ────────────────────────────── */}
-          {role === 'RECRUITER' && (
-            <div className="space-y-4 pt-2 border-t border-slate-700">
-              <p className="text-xs text-slate-400 uppercase tracking-wider font-medium">Recruiter details</p>
-              <div>
-                <label className={LABEL}>Full Name <span className="text-red-400">*</span></label>
-                <input value={fullName} onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Alice Smith" required className={INPUT} />
-              </div>
-              <div>
-                <label className={LABEL}>Designation</label>
-                <input value={designation} onChange={(e) => setDesig(e.target.value)}
-                  placeholder="HR Manager" className={INPUT} />
-              </div>
-              <div>
-                <label className={LABEL}>Company Name <span className="text-red-400">*</span></label>
-                <input value={companyName} onChange={(e) => setCompany(e.target.value)}
-                  placeholder="Acme Corp" required className={INPUT} />
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* ── Core fields ─────────────────────────────────────── */}
+            <div>
+              <label className={LABEL}>Email</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com" required className={INPUT} />
             </div>
-          )}
 
-          {/* ── Alumni extra fields ───────────────────────────────── */}
-          {role === 'ALUMNI' && (
-            <div className="space-y-4 pt-2 border-t border-slate-700">
-              <p className="text-xs text-slate-400 uppercase tracking-wider font-medium">Alumni details</p>
-              <div>
-                <label className={LABEL}>Full Name <span className="text-red-400">*</span></label>
-                <input value={fullName} onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Bob Alumnus" required className={INPUT} />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={LABEL}>Password</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                placeholder="Min 8 chars, at least 1 number" required className={INPUT} />
+            </div>
+
+            <div>
+              <label className={LABEL}>Role</label>
+              <select value={role} onChange={(e) => setRole(e.target.value)} className={INPUT}>
+                {ROLES.map((r) => (
+                  <option key={r.value} value={r.value} className="bg-slate-900">{r.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* ── Student extra fields ────────────────────────────── */}
+            {role === 'STUDENT' && (
+              <div className="space-y-5 pt-4 mt-2 border-t border-slate-800">
+                <p className="text-xs text-brand font-bold uppercase tracking-wider">Student details</p>
                 <div>
-                  <label className={LABEL}>Degree <span className="text-red-400">*</span></label>
-                  <input value={degree} onChange={(e) => setDegree(e.target.value)}
-                    placeholder="B.Tech" required className={INPUT} />
+                  <label className={LABEL}>Full Name <span className="text-brand">*</span></label>
+                  <input value={fullName} onChange={(e) => setFullName(e.target.value)}
+                    placeholder="John Doe" required className={INPUT} />
                 </div>
                 <div>
-                  <label className={LABEL}>Branch <span className="text-red-400">*</span></label>
-                  <input value={branch} onChange={(e) => setBranch(e.target.value)}
-                    placeholder="CSE" required className={INPUT} />
+                  <label className={LABEL}>Roll Number <span className="text-brand">*</span></label>
+                  <input value={rollNumber} onChange={(e) => setRollNumber(e.target.value)}
+                    placeholder="23R1A0501" required className={INPUT} />
                 </div>
               </div>
-              <div>
-                <label className={LABEL}>Graduation Year <span className="text-red-400">*</span></label>
-                <input type="number" value={gradYear} onChange={(e) => setGradYear(e.target.value)}
-                  placeholder="2022" min="1990" max="2100" required className={INPUT} />
+            )}
+
+            {/* ── Recruiter extra fields ────────────────────────────── */}
+            {role === 'RECRUITER' && (
+              <div className="space-y-5 pt-4 mt-2 border-t border-slate-800">
+                <p className="text-xs text-brand font-bold uppercase tracking-wider">Recruiter details</p>
+                <div>
+                  <label className={LABEL}>Full Name <span className="text-brand">*</span></label>
+                  <input value={fullName} onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Alice Smith" required className={INPUT} />
+                </div>
+                <div>
+                  <label className={LABEL}>Designation</label>
+                  <input value={designation} onChange={(e) => setDesig(e.target.value)}
+                    placeholder="HR Manager" className={INPUT} />
+                </div>
+                <div>
+                  <label className={LABEL}>Company Name <span className="text-brand">*</span></label>
+                  <input value={companyName} onChange={(e) => setCompany(e.target.value)}
+                    placeholder="Acme Corp" required className={INPUT} />
+                </div>
               </div>
-              <div>
-                <label className={LABEL}>College Name <span className="text-red-400">*</span></label>
-                <input value={college} onChange={(e) => setCollege(e.target.value)}
-                  placeholder="JNTU Hyderabad" required className={INPUT} />
+            )}
+
+            {/* ── Alumni extra fields ───────────────────────────────── */}
+            {role === 'ALUMNI' && (
+              <div className="space-y-5 pt-4 mt-2 border-t border-slate-800">
+                <p className="text-xs text-brand font-bold uppercase tracking-wider">Alumni details</p>
+                <div>
+                  <label className={LABEL}>Full Name <span className="text-brand">*</span></label>
+                  <input value={fullName} onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Bob Alumnus" required className={INPUT} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={LABEL}>Degree <span className="text-brand">*</span></label>
+                    <input value={degree} onChange={(e) => setDegree(e.target.value)}
+                      placeholder="B.Tech" required className={INPUT} />
+                  </div>
+                  <div>
+                    <label className={LABEL}>Branch <span className="text-brand">*</span></label>
+                    <input value={branch} onChange={(e) => setBranch(e.target.value)}
+                      placeholder="CSE" required className={INPUT} />
+                  </div>
+                </div>
+                <div>
+                  <label className={LABEL}>Graduation Year <span className="text-brand">*</span></label>
+                  <input type="number" value={gradYear} onChange={(e) => setGradYear(e.target.value)}
+                    placeholder="2022" min="1990" max="2100" required className={INPUT} />
+                </div>
+                <div>
+                  <label className={LABEL}>College Name <span className="text-brand">*</span></label>
+                  <input value={college} onChange={(e) => setCollege(e.target.value)}
+                    placeholder="JNTU Hyderabad" required className={INPUT} />
+                </div>
               </div>
+            )}
+
+            <div className="pt-4">
+              <Button type="submit" disabled={loading} variant="brand" size="lg" className="w-full font-semibold shadow-lg shadow-brand/20">
+                {loading ? 'Creating account...' : 'Create account'}
+              </Button>
             </div>
-          )}
+          </form>
 
-          <button type="submit" disabled={loading}
-            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors">
-            {loading ? 'Creating account...' : 'Create account'}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-slate-400">
-          Already have an account?{' '}
-          <Link to="/login" className="text-indigo-400 hover:underline">Sign in</Link>
-        </p>
+          <p className="mt-8 text-center text-sm text-slate-400">
+            Already have an account?{' '}
+            <Link to="/login" className="font-semibold text-brand hover:text-brand-light transition-colors">
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import * as careerService from '../../services/careerService';
 import { getErrorMessage } from '../../utils/error';
+import AppLayout from '../../components/layout/AppLayout';
+import { PageHeader, LoadingState, ErrorState, Card, Badge, EmptyState, Button, InfoBanner } from '../../components/ui';
+import { BookOpen, Target, CheckCircle2, ChevronRight, Bookmark } from 'lucide-react';
 
 export default function CareerDevelopment() {
   const [careerPaths, setCareerPaths] = useState<careerService.CareerPath[]>([]);
@@ -63,90 +65,64 @@ export default function CareerDevelopment() {
     }
   }
 
-  function getPriorityBadgeClass(priority: string) {
+  function getPriorityVariant(priority: string) {
     switch (priority) {
-      case 'CRITICAL':
-        return 'bg-red-900/40 text-red-300 border-red-700/50';
-      case 'HIGH':
-        return 'bg-amber-900/40 text-amber-300 border-amber-700/50';
-      case 'MEDIUM':
-        return 'bg-blue-900/40 text-blue-300 border-blue-700/50';
-      default:
-        return 'bg-slate-800 text-slate-300 border-slate-700';
+      case 'CRITICAL': return 'error';
+      case 'HIGH': return 'warning';
+      case 'MEDIUM': return 'brand';
+      default: return 'neutral';
     }
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
-        <div className="flex items-center space-x-3 text-indigo-400">
-          <svg className="animate-spin h-6 w-6" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-          </svg>
-          <span className="font-medium">Loading Career Intelligence…</span>
-        </div>
-      </div>
+      <AppLayout>
+        <LoadingState message="Loading Career Intelligence…" />
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
-          <div>
-            <div className="flex items-center space-x-2 text-indigo-400 text-sm font-medium mb-1">
-              <Link to="/dashboard/student" className="hover:underline">Dashboard</Link>
-              <span>/</span>
-              <span>Career Development</span>
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight text-white">Career Intelligence & Pathing</h1>
-            <p className="text-slate-400 text-sm mt-1">
-              Set your target career track, analyze skill priorities, and access recommended learning resources.
-            </p>
-          </div>
+    <AppLayout>
+      <div className="space-y-6">
+        <PageHeader
+          title="Career Intelligence & Pathing"
+          subtitle="Set your target career track, analyze skill priorities, and access recommended learning resources."
+        />
 
-          <Link
-            to="/dashboard/student"
-            className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition"
-          >
-            ← Back to Dashboard
-          </Link>
-        </div>
-
-        {/* Notifications */}
-        {error && (
-          <div className="p-4 rounded-xl bg-red-950/60 border border-red-800/60 text-red-200 text-sm">
-            {error}
-          </div>
-        )}
+        {error && <ErrorState message={error} onRetry={loadData} />}
+        
         {successMsg && (
-          <div className="p-4 rounded-xl bg-emerald-950/60 border border-emerald-800/60 text-emerald-200 text-sm flex justify-between items-center">
-            <span>{successMsg}</span>
-            <button onClick={() => setSuccessMsg('')} className="text-emerald-400 hover:text-emerald-200 text-xs">Dismiss</button>
-          </div>
+          <InfoBanner
+            type="success"
+            title="Goal Updated"
+            message={successMsg}
+            />
         )}
 
         {/* Current Active Goal Banner */}
-        <div className="p-6 rounded-2xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-slate-900 border border-indigo-500/30 shadow-xl">
+        <Card style={{ 
+          background: 'linear-gradient(135deg, var(--surface-2) 0%, var(--surface-1) 100%)',
+          borderLeft: '4px solid var(--brand)',
+          padding: '2rem'
+        }}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold uppercase tracking-wider mb-2">
-                <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
-                <span>Active Target Goal</span>
+              <div className="inline-flex items-center space-x-2 mb-3">
+                <span className="w-2 h-2 rounded-full bg-brand animate-pulse" style={{ backgroundColor: 'var(--brand)' }}></span>
+                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--brand-light)' }}>Active Target Goal</span>
               </div>
               {primaryGoal ? (
                 <div>
-                  <h2 className="text-2xl font-bold text-white">{primaryGoal.careerPath.name}</h2>
-                  <p className="text-slate-300 text-sm mt-1 max-w-2xl">
+                  <h2 className="text-2xl font-bold text-white mb-2">{primaryGoal.careerPath.name}</h2>
+                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                     {primaryGoal.careerPath.description || 'Target career track active. Aligning skills and readiness analytics.'}
                   </p>
                 </div>
               ) : (
                 <div>
-                  <h2 className="text-2xl font-bold text-amber-300">No Target Goal Selected</h2>
-                  <p className="text-slate-400 text-sm mt-1">
+                  <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--warning)' }}>No Target Goal Selected</h2>
+                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                     Select a career path below to customize your skill analysis and learning roadmap.
                   </p>
                 </div>
@@ -154,23 +130,24 @@ export default function CareerDevelopment() {
             </div>
 
             {primaryGoal && (
-              <div className="text-right flex flex-col items-end justify-center">
-                <span className="text-xs text-slate-400 uppercase tracking-wider">Required Skills</span>
-                <span className="text-2xl font-bold text-indigo-300">
-                  {primaryGoal.careerPath.skillRequirements?.length || 0} Skills
+              <div className="text-left md:text-right flex flex-col md:items-end justify-center">
+                <span className="text-xs uppercase tracking-wider font-bold mb-1" style={{ color: 'var(--text-muted)' }}>Required Skills</span>
+                <span className="text-3xl font-black" style={{ color: 'var(--brand-light)' }}>
+                  {primaryGoal.careerPath.skillRequirements?.length || 0}
                 </span>
               </div>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* Main Grid: Path Selector & Path Details */}
-        <div className="grid grid-[#layout] grid-cols-1 lg:grid-cols-3 gap-8">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }} className="lg:grid-cols-3">
+          
           {/* Left Column: Path Selector */}
           <div className="lg:col-span-1 space-y-4">
-            <h3 className="text-lg font-semibold text-white flex items-center justify-between">
-              <span>Available Career Paths</span>
-              <span className="text-xs font-normal text-slate-400">({careerPaths.length})</span>
+            <h3 className="text-lg font-bold flex items-center justify-between" style={{ color: 'var(--text-primary)' }}>
+              <span>Available Paths</span>
+              <Badge variant="neutral">{careerPaths.length}</Badge>
             </h3>
 
             <div className="space-y-3">
@@ -182,38 +159,40 @@ export default function CareerDevelopment() {
                   <div
                     key={path.id}
                     onClick={() => setSelectedPath(path)}
-                    className={`p-4 rounded-xl border cursor-pointer transition flex flex-col justify-between ${
-                      isSelected
-                        ? 'bg-slate-800/90 border-indigo-500 shadow-md'
-                        : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/50 hover:border-slate-700'
-                    }`}
+                    style={{
+                      padding: '1.25rem',
+                      borderRadius: '0.75rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      border: isSelected ? '1px solid var(--brand)' : '1px solid var(--border-subtle)',
+                      background: isSelected ? 'var(--surface-2)' : 'var(--surface-1)',
+                      boxShadow: isSelected ? '0 4px 12px var(--shadow-color)' : 'none'
+                    }}
+                    className="hover:-translate-y-1 hover:shadow-lg"
                   >
-                    <div className="flex items-start justify-between">
-                      <h4 className="font-semibold text-white text-base">{path.name}</h4>
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{path.name}</h4>
                       {isGoal && (
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                          Active Goal
-                        </span>
+                        <CheckCircle2 size={16} style={{ color: 'var(--success)' }} />
                       )}
                     </div>
-                    <p className="text-xs text-slate-400 mt-2 line-clamp-2">{path.description}</p>
-                    <div className="mt-3 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
-                      <span>{path.skillRequirements?.length || 0} Core Skills</span>
-                      <button
-                        type="button"
-                        disabled={actionLoading || isGoal}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectGoal(path.id);
-                        }}
-                        className={`px-3 py-1 rounded-md font-medium transition ${
-                          isGoal
-                            ? 'bg-emerald-950 text-emerald-400 cursor-default'
-                            : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                        }`}
-                      >
-                        {isGoal ? 'Selected' : 'Set as Goal'}
-                      </button>
+                    <p className="text-xs line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{path.description}</p>
+                    
+                    <div className="mt-3 pt-3 flex items-center justify-between text-xs" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                      <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>{path.skillRequirements?.length || 0} Core Skills</span>
+                      {!isGoal && (
+                        <Button 
+                          variant={isSelected ? 'primary' : 'outline'} 
+                          size="sm"
+                          disabled={actionLoading}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelectGoal(path.id);
+                          }}
+                        >
+                          Set Goal
+                        </Button>
+                      )}
                     </div>
                   </div>
                 );
@@ -224,99 +203,118 @@ export default function CareerDevelopment() {
           {/* Right Column: Path Details & Skill Breakdown */}
           <div className="lg:col-span-2 space-y-6">
             {selectedPath ? (
-              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+              <Card style={{ padding: 0, overflow: 'hidden' }}>
+                <div style={{ padding: '2rem', borderBottom: '1px solid var(--border-subtle)' }} className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                   <div>
-                    <h3 className="text-2xl font-bold text-white">{selectedPath.name}</h3>
-                    <p className="text-slate-400 text-sm mt-1">{selectedPath.description}</p>
+                    <h3 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{selectedPath.name}</h3>
+                    <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{selectedPath.description}</p>
                   </div>
                   {primaryGoal?.careerPathId !== selectedPath.id && (
-                    <button
-                      type="button"
+                    <Button
+                      variant="primary"
                       disabled={actionLoading}
                       onClick={() => handleSelectGoal(selectedPath.id)}
-                      className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition shadow-lg shadow-indigo-600/20"
+                      leftIcon={<Target size={18} />}
                     >
                       {actionLoading ? 'Updating…' : 'Set as Target Goal'}
-                    </button>
+                    </Button>
                   )}
                 </div>
 
-                {/* Required Skills Table */}
-                <div className="space-y-4">
-                  <h4 className="text-base font-semibold text-white">Required Skills & Priorities</h4>
+                {/* Required Skills */}
+                <div style={{ padding: '2rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <h4 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>
+                    Required Skills & Priorities
+                  </h4>
                   {selectedPath.skillRequirements && selectedPath.skillRequirements.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem' }}>
                       {selectedPath.skillRequirements.map((req) => (
                         <div
                           key={req.id}
-                          className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between"
+                          style={{
+                            padding: '1rem',
+                            borderRadius: '0.5rem',
+                            background: 'var(--surface-2)',
+                            border: '1px solid var(--border-subtle)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                          }}
                         >
                           <div>
-                            <div className="font-medium text-slate-200 text-sm">{req.skill.name}</div>
-                            <div className="text-xs text-slate-500 mt-0.5">Target: {req.requiredLevel}</div>
+                            <div className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{req.skill.name}</div>
+                            <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Target: {req.requiredLevel}</div>
                           </div>
-                          <span
-                            className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${getPriorityBadgeClass(
-                              req.priority,
-                            )}`}
-                          >
+                          <Badge variant={getPriorityVariant(req.priority) as any}>
                             {req.priority}
-                          </span>
+                          </Badge>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-slate-500 text-sm italic">No specific skill requirements defined for this path yet.</p>
+                    <p className="text-sm italic" style={{ color: 'var(--text-muted)' }}>No specific skill requirements defined for this path yet.</p>
                   )}
                 </div>
 
-                {/* Recommended Resources for Selected Path */}
-                <div className="space-y-4 pt-4 border-t border-slate-800">
-                  <h4 className="text-base font-semibold text-white">Recommended Learning Resources</h4>
+                {/* Recommended Resources */}
+                <div style={{ padding: '2rem', background: 'var(--surface-2)' }}>
+                  <h4 className="text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                    <BookOpen size={16} /> Recommended Learning
+                  </h4>
                   {learningResources.length > 0 ? (
                     <div className="space-y-3">
                       {learningResources.map((res) => (
-                        <div
+                        <a
                           key={res.id}
-                          className="p-4 rounded-xl bg-slate-950/40 border border-slate-800/60 flex flex-col md:flex-row md:items-center justify-between gap-3"
+                          href={res.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'block',
+                            padding: '1.25rem',
+                            borderRadius: '0.5rem',
+                            background: 'var(--surface-1)',
+                            border: '1px solid var(--border-subtle)',
+                            textDecoration: 'none',
+                            transition: 'all 0.2s ease'
+                          }}
+                          className="hover:border-brand hover:shadow-md group"
                         >
-                          <div>
-                            <div className="flex items-center space-x-2">
-                              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-indigo-300 uppercase">
-                                {res.resourceType}
-                              </span>
-                              {res.provider && (
-                                <span className="text-xs text-slate-400">by {res.provider}</span>
-                              )}
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge variant="brand">{res.resourceType}</Badge>
+                                {res.provider && (
+                                  <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>by {res.provider}</span>
+                                )}
+                              </div>
+                              <h5 className="font-bold text-sm mb-1 group-hover:text-brand-light transition-colors" style={{ color: 'var(--text-primary)' }}>{res.title}</h5>
+                              {res.description && <p className="text-xs line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{res.description}</p>}
                             </div>
-                            <h5 className="font-medium text-white text-sm mt-1">{res.title}</h5>
-                            {res.description && <p className="text-xs text-slate-400 mt-0.5">{res.description}</p>}
+                            <div style={{ color: 'var(--text-muted)' }} className="group-hover:text-brand-light transition-colors group-hover:translate-x-1">
+                              <ChevronRight size={20} />
+                            </div>
                           </div>
-                          <a
-                            href={res.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs font-medium transition"
-                          >
-                            Access Resource ↗
-                          </a>
-                        </div>
+                        </a>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-slate-500 text-sm italic">No learning resources cataloged yet.</p>
+                    <p className="text-sm italic" style={{ color: 'var(--text-muted)' }}>No learning resources cataloged yet.</p>
                   )}
                 </div>
-              </div>
+              </Card>
             ) : (
-              <div className="p-12 text-center text-slate-500 bg-slate-900/40 rounded-2xl border border-slate-800">
-                Select a career path to view detailed requirements.
-              </div>
+              <Card style={{ padding: '4rem 2rem', textAlign: 'center' }}>
+                <EmptyState
+                  icon={<Bookmark size={48} style={{ color: 'var(--text-muted)' }} />}
+                  title="Select a Career Path"
+                  description="Choose a career path from the list to view its detailed requirements and learning roadmap."
+                />
+              </Card>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AppLayout from '../../components/layout/AppLayout';
 import {
   triggerSkillGapAnalysis,
   getSkillGapAnalysis,
@@ -540,237 +541,239 @@ export default function SkillGapAnalysis() {
   }));
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
-      fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-      color: '#f8fafc',
-    }}>
-      {/* Animated background blobs */}
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 0 }}>
-        <div style={{ position: 'absolute', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)', top: '-100px', left: '-100px' }} />
-        <div style={{ position: 'absolute', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 70%)', bottom: '-80px', right: '-80px' }} />
-        <div style={{ position: 'absolute', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%)', top: '40%', right: '20%' }} />
-      </div>
-
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: '900px', margin: '0 auto', padding: '32px 20px 64px' }}>
-
-        {/* Back nav */}
-        <button
-          onClick={() => navigate('/dashboard/student')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '6px',
-            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)',
-            borderRadius: '10px', padding: '8px 16px', color: 'rgba(255,255,255,0.65)',
-            cursor: 'pointer', fontSize: '13px', marginBottom: '32px', transition: 'all 0.2s',
-          }}
-          onMouseEnter={(e) => { (e.currentTarget).style.background = 'rgba(255,255,255,0.10)'; }}
-          onMouseLeave={(e) => { (e.currentTarget).style.background = 'rgba(255,255,255,0.06)'; }}
-        >
-          ← Back to Dashboard
-        </button>
-
-        {/* Hero header */}
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '10px',
-            background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)',
-            borderRadius: '100px', padding: '6px 18px', marginBottom: '20px',
-          }}>
-            <span style={{ fontSize: '16px' }}>🧠</span>
-            <span style={{ fontSize: '13px', color: '#a5b4fc', fontWeight: 600, letterSpacing: '0.04em' }}>
-              Phase 8 — Skill Gap Analysis
-            </span>
-          </div>
-          <h1 style={{ margin: '0 0 12px', fontSize: 'clamp(28px, 5vw, 42px)', fontWeight: 800, background: 'linear-gradient(135deg, #f8fafc 30%, #a5b4fc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            Skill Gap Analysis
-          </h1>
-          <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.50)', maxWidth: '520px', margin: '0 auto' }}>
-            Evidence-based analysis of your skills against your career path requirements. Every score is explainable.
-          </p>
+    <AppLayout>
+      <div style={{
+        position: 'relative',
+        minHeight: '100%',
+        color: '#f8fafc',
+        overflow: 'hidden'
+      }}>
+        {/* Animated background blobs */}
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 0 }}>
+          <div style={{ position: 'absolute', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)', top: '-100px', left: '-100px' }} />
+          <div style={{ position: 'absolute', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%)', bottom: '-80px', right: '-80px' }} />
+          <div style={{ position: 'absolute', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 70%)', top: '40%', right: '20%' }} />
         </div>
 
-        {/* Error banner */}
-        {error && (
-          <div style={{
-            background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.30)',
-            borderRadius: '14px', padding: '16px 20px', marginBottom: '24px',
-            display: 'flex', alignItems: 'flex-start', gap: '12px',
-          }}>
-            <span style={{ fontSize: '20px' }}>⚠️</span>
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#fca5a5', marginBottom: '4px' }}>Analysis Failed</div>
-              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)' }}>{error}</div>
-            </div>
-          </div>
-        )}
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '900px', margin: '0 auto', padding: '0 0 64px' }}>
 
-        {/* Trigger button */}
-        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+          {/* Back nav */}
           <button
-            id="analyze-skill-gap-btn"
-            onClick={handleAnalyze}
-            disabled={isLoading}
+            onClick={() => navigate('/dashboard/student')}
             style={{
-              padding: '14px 40px',
-              background: isLoading ? 'rgba(99,102,241,0.30)' : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-              border: 'none', borderRadius: '14px',
-              color: '#ffffff', fontSize: '15px', fontWeight: 700,
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              boxShadow: isLoading ? 'none' : '0 8px 32px rgba(99,102,241,0.35)',
-              transition: 'all 0.25s',
-              display: 'inline-flex', alignItems: 'center', gap: '10px',
+              display: 'flex', alignItems: 'center', gap: '6px',
+              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)',
+              borderRadius: '10px', padding: '8px 16px', color: 'rgba(255,255,255,0.65)',
+              cursor: 'pointer', fontSize: '13px', marginBottom: '32px', transition: 'all 0.2s',
             }}
-            onMouseEnter={(e) => { if (!isLoading) (e.currentTarget).style.transform = 'translateY(-2px)'; }}
-            onMouseLeave={(e) => { (e.currentTarget).style.transform = 'translateY(0)'; }}
+            onMouseEnter={(e) => { (e.currentTarget).style.background = 'rgba(255,255,255,0.10)'; }}
+            onMouseLeave={(e) => { (e.currentTarget).style.background = 'rgba(255,255,255,0.06)'; }}
           >
-            {isLoading ? (
-              <>
-                <span style={{ display: 'inline-block', width: '16px', height: '16px', border: '2.5px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                Analyzing…
-              </>
-            ) : (
-              <>🔍 {savedResult?.hasBeenComputed ? 'Re-analyze Skill Gaps' : 'Analyze My Skill Gaps'}</>
-            )}
+            ← Back to Dashboard
           </button>
-          {savedResult?.hasBeenComputed && (
-            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.30)', marginTop: '10px' }}>
-              Showing {activeView === 'fresh' ? 'latest analysis' : 'saved results'}.
-              {activeView === 'saved' && (
-                <button
-                  onClick={() => setActiveView('fresh')}
-                  style={{ background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', fontSize: '12px', marginLeft: '6px', padding: 0 }}
-                >
-                  {freshResult ? 'Switch to latest →' : ''}
-                </button>
+
+          {/* Hero header */}
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '10px',
+              background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)',
+              borderRadius: '100px', padding: '6px 18px', marginBottom: '20px',
+            }}>
+              <span style={{ fontSize: '16px' }}>🧠</span>
+              <span style={{ fontSize: '13px', color: '#a5b4fc', fontWeight: 600, letterSpacing: '0.04em' }}>
+                Phase 8 — Skill Gap Analysis
+              </span>
+            </div>
+            <h1 style={{ margin: '0 0 12px', fontSize: 'clamp(28px, 5vw, 42px)', fontWeight: 800, background: 'linear-gradient(135deg, #f8fafc 30%, #a5b4fc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              Skill Gap Analysis
+            </h1>
+            <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.50)', maxWidth: '520px', margin: '0 auto' }}>
+              Evidence-based analysis of your skills against your career path requirements. Every score is explainable.
+            </p>
+          </div>
+
+          {/* Error banner */}
+          {error && (
+            <div style={{
+              background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.30)',
+              borderRadius: '14px', padding: '16px 20px', marginBottom: '24px',
+              display: 'flex', alignItems: 'flex-start', gap: '12px',
+            }}>
+              <span style={{ fontSize: '20px' }}>⚠️</span>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: '#fca5a5', marginBottom: '4px' }}>Analysis Failed</div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)' }}>{error}</div>
+              </div>
+            </div>
+          )}
+
+          {/* Trigger button */}
+          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+            <button
+              id="analyze-skill-gap-btn"
+              onClick={handleAnalyze}
+              disabled={isLoading}
+              style={{
+                padding: '14px 40px',
+                background: isLoading ? 'rgba(99,102,241,0.30)' : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                border: 'none', borderRadius: '14px',
+                color: '#ffffff', fontSize: '15px', fontWeight: 700,
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                boxShadow: isLoading ? 'none' : '0 8px 32px rgba(99,102,241,0.35)',
+                transition: 'all 0.25s',
+                display: 'inline-flex', alignItems: 'center', gap: '10px',
+              }}
+              onMouseEnter={(e) => { if (!isLoading) (e.currentTarget).style.transform = 'translateY(-2px)'; }}
+              onMouseLeave={(e) => { (e.currentTarget).style.transform = 'translateY(0)'; }}
+            >
+              {isLoading ? (
+                <>
+                  <span style={{ display: 'inline-block', width: '16px', height: '16px', border: '2.5px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                  Analyzing…
+                </>
+              ) : (
+                <>🔍 {savedResult?.hasBeenComputed ? 'Re-analyze Skill Gaps' : 'Analyze My Skill Gaps'}</>
               )}
-              {activeView === 'fresh' && savedResult?.hasBeenComputed && (
-                <button
-                  onClick={() => setActiveView('saved')}
-                  style={{ background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', fontSize: '12px', marginLeft: '6px', padding: 0 }}
-                >
-                  View saved →
-                </button>
+            </button>
+            {savedResult?.hasBeenComputed && (
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.30)', marginTop: '10px' }}>
+                Showing {activeView === 'fresh' ? 'latest analysis' : 'saved results'}.
+                {activeView === 'saved' && (
+                  <button
+                    onClick={() => setActiveView('fresh')}
+                    style={{ background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', fontSize: '12px', marginLeft: '6px', padding: 0 }}
+                  >
+                    {freshResult ? 'Switch to latest →' : ''}
+                  </button>
+                )}
+                {activeView === 'fresh' && savedResult?.hasBeenComputed && (
+                  <button
+                    onClick={() => setActiveView('saved')}
+                    style={{ background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', fontSize: '12px', marginLeft: '6px', padding: 0 }}
+                  >
+                    View saved →
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Loading state for initial fetch */}
+          {isFetching && (
+            <div style={{ textAlign: 'center', padding: '48px 0', color: 'rgba(255,255,255,0.40)' }}>
+              <div style={{ width: '36px', height: '36px', border: '3px solid rgba(255,255,255,0.10)', borderTopColor: '#6366f1', borderRadius: '50%', margin: '0 auto 12px', animation: 'spin 0.8s linear infinite' }} />
+              Loading saved analysis…
+            </div>
+          )}
+
+          {/* Results */}
+          {!isFetching && hasData && (
+            <>
+              {/* Career path label & timestamp */}
+              {(careerPathName || computedAt) && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
+                  {careerPathName && (
+                    <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)' }}>
+                      Career Path: <span style={{ color: '#a5b4fc', fontWeight: 600 }}>{careerPathName}</span>
+                    </div>
+                  )}
+                  {computedAt && (
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.30)' }}>
+                      Computed: {new Date(computedAt).toLocaleString()}
+                    </div>
+                  )}
+                </div>
               )}
+
+              {/* Summary cards */}
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '28px' }}>
+                <SummaryCard label="Strong" count={displaySummary.STRONG} level="STRONG" />
+                <SummaryCard label="Moderate" count={displaySummary.MODERATE} level="MODERATE" />
+                <SummaryCard label="Weak" count={displaySummary.WEAK} level="WEAK" />
+                <SummaryCard label="Missing" count={displaySummary.MISSING} level="MISSING" />
+              </div>
+
+              {/* Radar chart */}
+              {radarGaps.length >= 3 && (
+                <div style={{ marginBottom: '28px' }}>
+                  <SkillRadarChart gaps={radarGaps} />
+                </div>
+              )}
+
+              {/* Filter tabs */}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
+                {['ALL', 'MISSING', 'WEAK', 'MODERATE', 'STRONG'].map((level) => {
+                  const active = filterLevel === level;
+                  const cfg = level !== 'ALL' ? GAP_CONFIG[level as keyof typeof GAP_CONFIG] : null;
+                  return (
+                    <button
+                      key={level}
+                      onClick={() => setFilterLevel(level)}
+                      style={{
+                        padding: '7px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
+                        border: active ? `1px solid ${cfg?.color ?? '#6366f1'}` : '1px solid rgba(255,255,255,0.10)',
+                        background: active ? (cfg ? cfg.bg : 'rgba(99,102,241,0.15)') : 'rgba(255,255,255,0.04)',
+                        color: active ? (cfg?.color ?? '#a5b4fc') : 'rgba(255,255,255,0.50)',
+                        cursor: 'pointer', transition: 'all 0.2s',
+                      }}
+                    >
+                      {level === 'ALL' ? 'All Skills' : GAP_CONFIG[level as keyof typeof GAP_CONFIG].label}
+                      {level !== 'ALL' && (
+                        <span style={{ marginLeft: '6px', opacity: 0.7 }}>
+                          {displaySummary[level as keyof GapSummary]}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Gap cards */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {filteredGaps.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.35)', fontSize: '14px' }}>
+                    No skills in this category.
+                  </div>
+                ) : (
+                  filteredGaps.map((gap) => (
+                    <GapCard
+                      key={gap.skillId ?? (gap as SavedSkillGap).skill?.id}
+                      gap={gap}
+                      isFresh={activeView === 'fresh'}
+                    />
+                  ))
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Empty state: never analyzed */}
+          {!isFetching && !hasData && !isLoading && (
+            <div style={{
+              textAlign: 'center', padding: '64px 24px',
+              background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.08)',
+              borderRadius: '24px',
+            }}>
+              <div style={{ fontSize: '56px', marginBottom: '20px' }}>🧭</div>
+              <h2 style={{ margin: '0 0 12px', fontSize: '22px', fontWeight: 700, color: '#f8fafc' }}>No Analysis Yet</h2>
+              <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.45)', maxWidth: '400px', margin: '0 auto 24px' }}>
+                Click "Analyze My Skill Gaps" to generate an evidence-based breakdown of your skills vs. your career path requirements.
+              </p>
+              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.30)' }}>
+                Make sure you have a career goal set first. <br />
+                Add skills, take assessments, and link coding profiles for richer results.
+              </p>
             </div>
           )}
         </div>
 
-        {/* Loading state for initial fetch */}
-        {isFetching && (
-          <div style={{ textAlign: 'center', padding: '48px 0', color: 'rgba(255,255,255,0.40)' }}>
-            <div style={{ width: '36px', height: '36px', border: '3px solid rgba(255,255,255,0.10)', borderTopColor: '#6366f1', borderRadius: '50%', margin: '0 auto 12px', animation: 'spin 0.8s linear infinite' }} />
-            Loading saved analysis…
-          </div>
-        )}
-
-        {/* Results */}
-        {!isFetching && hasData && (
-          <>
-            {/* Career path label & timestamp */}
-            {(careerPathName || computedAt) && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
-                {careerPathName && (
-                  <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)' }}>
-                    Career Path: <span style={{ color: '#a5b4fc', fontWeight: 600 }}>{careerPathName}</span>
-                  </div>
-                )}
-                {computedAt && (
-                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.30)' }}>
-                    Computed: {new Date(computedAt).toLocaleString()}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Summary cards */}
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '28px' }}>
-              <SummaryCard label="Strong" count={displaySummary.STRONG} level="STRONG" />
-              <SummaryCard label="Moderate" count={displaySummary.MODERATE} level="MODERATE" />
-              <SummaryCard label="Weak" count={displaySummary.WEAK} level="WEAK" />
-              <SummaryCard label="Missing" count={displaySummary.MISSING} level="MISSING" />
-            </div>
-
-            {/* Radar chart */}
-            {radarGaps.length >= 3 && (
-              <div style={{ marginBottom: '28px' }}>
-                <SkillRadarChart gaps={radarGaps} />
-              </div>
-            )}
-
-            {/* Filter tabs */}
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
-              {['ALL', 'MISSING', 'WEAK', 'MODERATE', 'STRONG'].map((level) => {
-                const active = filterLevel === level;
-                const cfg = level !== 'ALL' ? GAP_CONFIG[level as keyof typeof GAP_CONFIG] : null;
-                return (
-                  <button
-                    key={level}
-                    onClick={() => setFilterLevel(level)}
-                    style={{
-                      padding: '7px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
-                      border: active ? `1px solid ${cfg?.color ?? '#6366f1'}` : '1px solid rgba(255,255,255,0.10)',
-                      background: active ? (cfg ? cfg.bg : 'rgba(99,102,241,0.15)') : 'rgba(255,255,255,0.04)',
-                      color: active ? (cfg?.color ?? '#a5b4fc') : 'rgba(255,255,255,0.50)',
-                      cursor: 'pointer', transition: 'all 0.2s',
-                    }}
-                  >
-                    {level === 'ALL' ? 'All Skills' : GAP_CONFIG[level as keyof typeof GAP_CONFIG].label}
-                    {level !== 'ALL' && (
-                      <span style={{ marginLeft: '6px', opacity: 0.7 }}>
-                        {displaySummary[level as keyof GapSummary]}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Gap cards */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {filteredGaps.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.35)', fontSize: '14px' }}>
-                  No skills in this category.
-                </div>
-              ) : (
-                filteredGaps.map((gap) => (
-                  <GapCard
-                    key={gap.skillId ?? (gap as SavedSkillGap).skill?.id}
-                    gap={gap}
-                    isFresh={activeView === 'fresh'}
-                  />
-                ))
-              )}
-            </div>
-          </>
-        )}
-
-        {/* Empty state: never analyzed */}
-        {!isFetching && !hasData && !isLoading && (
-          <div style={{
-            textAlign: 'center', padding: '64px 24px',
-            background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.08)',
-            borderRadius: '24px',
-          }}>
-            <div style={{ fontSize: '56px', marginBottom: '20px' }}>🧭</div>
-            <h2 style={{ margin: '0 0 12px', fontSize: '22px', fontWeight: 700, color: '#f8fafc' }}>No Analysis Yet</h2>
-            <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.45)', maxWidth: '400px', margin: '0 auto 24px' }}>
-              Click "Analyze My Skill Gaps" to generate an evidence-based breakdown of your skills vs. your career path requirements.
-            </p>
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.30)' }}>
-              Make sure you have a career goal set first. <br />
-              Add skills, take assessments, and link coding profiles for richer results.
-            </p>
-          </div>
-        )}
+        {/* CSS animation */}
+        <style>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
-
-      {/* CSS animation */}
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-    </div>
+    </AppLayout>
   );
 }

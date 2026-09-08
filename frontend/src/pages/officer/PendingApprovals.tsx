@@ -1,8 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import { companyService, type Company, type RecruiterCompanyMembership } from '../../services/companyService';
+import AppLayout from '../../components/layout/AppLayout';
+import { PageHeader, Card, Button, Badge, LoadingState } from '../../components/ui';
+import { CheckSquare, RefreshCw, CheckCircle2, XCircle, Check, X, ShieldCheck, Clock, Building2, Users, GraduationCap, X as CloseIcon } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,19 +47,21 @@ interface Toast {
 
 function ToastList({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: number) => void }) {
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2 w-80">
+    <div className="fixed top-4 right-4 z-[100] space-y-2 w-80 animate-fade-in">
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`flex items-start gap-3 p-4 rounded-lg shadow-lg border text-sm ${
+          className={`flex items-start gap-3 p-4 rounded-xl shadow-2xl border text-sm backdrop-blur-md ${
             t.type === 'success'
-              ? 'bg-emerald-900/80 border-emerald-600 text-emerald-200'
-              : 'bg-red-900/80 border-red-600 text-red-200'
+              ? 'bg-emerald-950/90 border-emerald-500/30 text-emerald-100'
+              : 'bg-red-950/90 border-red-500/30 text-red-100'
           }`}
         >
-          <span className="mt-0.5">{t.type === 'success' ? '✅' : '❌'}</span>
-          <p className="flex-1">{t.message}</p>
-          <button onClick={() => onDismiss(t.id)} className="text-slate-400 hover:text-white ml-2">✕</button>
+          <span className="mt-0.5">{t.type === 'success' ? <CheckCircle2 size={16} className="text-emerald-500" /> : <XCircle size={16} className="text-red-500" />}</span>
+          <p className="flex-1 font-medium">{t.message}</p>
+          <button onClick={() => onDismiss(t.id)} className="text-white/50 hover:text-white transition-colors ml-2">
+            <CloseIcon size={16} />
+          </button>
         </div>
       ))}
     </div>
@@ -75,31 +80,48 @@ interface RejectModalProps {
 function RejectModal({ name, onConfirm, onCancel, loading }: RejectModalProps) {
   const [reason, setReason] = useState('');
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-40 p-4">
-      <div className="w-full max-w-md bg-slate-800 rounded-xl border border-slate-700 p-6 shadow-2xl space-y-4">
-        <h2 className="text-lg font-bold text-white">Reject — {name}</h2>
-        <p className="text-slate-400 text-sm">Provide a reason. This will be stored in the audit log.</p>
-        <textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder="e.g. Incomplete verification documents, unverified domain…"
-          rows={4}
-          className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none text-sm"
-        />
-        <div className="flex gap-3 justify-end">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm transition-colors"
-          >
-            Cancel
+    <div className="fixed inset-0 flex items-center justify-center z-[100] p-4 animate-fade-in" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
+      <div className="w-full max-w-md rounded-2xl shadow-2xl relative flex flex-col" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)' }}>
+        <div className="p-6 border-b flex justify-between items-start" style={{ borderColor: 'var(--border-subtle)' }}>
+          <div>
+            <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <XCircle className="text-red-500" size={24} /> Reject Request
+            </h2>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>For <span className="font-bold">{name}</span></p>
+          </div>
+          <button onClick={onCancel} className="p-1 rounded-lg hover:bg-slate-800 transition-colors" style={{ color: 'var(--text-muted)' }}>
+            <CloseIcon size={20} />
           </button>
-          <button
-            onClick={() => reason.trim() && onConfirm(reason.trim())}
-            disabled={!reason.trim() || loading}
-            className="px-4 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors"
-          >
-            {loading ? 'Rejecting…' : 'Reject'}
-          </button>
+        </div>
+        
+        <div className="p-6 space-y-4">
+          <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Provide a reason. This will be stored in the audit log.</p>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="e.g. Incomplete verification documents, unverified domain…"
+            rows={4}
+            className="w-full rounded-xl text-sm focus:outline-none focus:ring-2 resize-none"
+            style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}
+          />
+          <div className="flex gap-3 pt-2">
+            <Button
+              onClick={onCancel}
+              variant="outline"
+              className="flex-1 justify-center"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => reason.trim() && onConfirm(reason.trim())}
+              disabled={!reason.trim() || loading}
+              variant="error"
+              className="flex-1 justify-center"
+              leftIcon={loading ? <RefreshCw className="animate-spin" size={16} /> : undefined}
+            >
+              {loading ? 'Rejecting…' : 'Reject Request'}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -112,6 +134,7 @@ let toastCounter = 0;
 
 export default function PendingApprovals() {
   useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('recruiters');
 
   const [recruiters, setRecruiters] = useState<PendingRecruiter[]>([]);
@@ -240,236 +263,260 @@ export default function PendingApprovals() {
   // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-slate-900 p-4 md:p-8 text-slate-100">
-      <ToastList toasts={toasts} onDismiss={dismissToast} />
+    <AppLayout>
+      <div className="space-y-6 max-w-6xl mx-auto relative">
+        <ToastList toasts={toasts} onDismiss={dismissToast} />
 
-      {rejectTarget && (
-        <RejectModal
-          name={rejectTarget.name}
-          loading={actionLoading === rejectTarget.id}
-          onConfirm={handleRejectConfirm}
-          onCancel={() => setRejectTarget(null)}
+        {rejectTarget && (
+          <RejectModal
+            name={rejectTarget.name}
+            loading={actionLoading === rejectTarget.id}
+            onConfirm={handleRejectConfirm}
+            onCancel={() => setRejectTarget(null)}
+          />
+        )}
+
+        <PageHeader
+          title="Pending Approvals Queue"
+          subtitle="Review and action verification requests across Recruiters, Companies, Memberships, and Alumni"
+          icon={<CheckSquare size={32} style={{ color: 'var(--brand)' }} />}
+          action={
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={fetchAll}
+                disabled={loadingList}
+                variant="outline"
+                leftIcon={<RefreshCw size={16} className={loadingList ? 'animate-spin' : ''} />}
+              >
+                {loadingList ? 'Refreshing…' : 'Refresh'}
+              </Button>
+              <Button
+                onClick={() => navigate('/officer')}
+                variant="secondary"
+              >
+                Back to Dashboard
+              </Button>
+            </div>
+          }
         />
-      )}
-
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Page header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Pending Approvals Queue</h1>
-            <p className="text-slate-400 text-sm mt-1">Review and action verification requests across Recruiters, Companies, Memberships, and Alumni</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={fetchAll}
-              disabled={loadingList}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 disabled:opacity-50 text-slate-300 rounded-lg text-sm transition-colors"
-            >
-              {loadingList ? 'Refreshing…' : '↻ Refresh'}
-            </button>
-            <Link
-              to="/dashboard/officer"
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg text-sm transition-colors"
-            >
-              ← Dashboard
-            </Link>
-          </div>
-        </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-700 overflow-x-auto">
+        <div className="flex border-b overflow-x-auto hide-scrollbar" style={{ borderColor: 'var(--border-subtle)' }}>
           {(
             [
-              { id: 'recruiters', label: 'Recruiters', count: recruiters.length },
-              { id: 'companies', label: 'Companies', count: companies.length },
-              { id: 'memberships', label: 'Membership Requests', count: memberships.length },
-              { id: 'alumni', label: 'Alumni', count: alumni.length },
-            ] as { id: Tab; label: string; count: number }[]
-          ).map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap -mb-px flex items-center gap-2 ${
-                activeTab === tab.id
-                  ? 'border-emerald-500 text-emerald-400'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <span>{tab.label}</span>
-              {tab.count > 0 && (
-                <span className="px-2 py-0.5 text-xs rounded-full bg-emerald-600 text-white font-mono">
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          ))}
+              { id: 'recruiters', label: 'Recruiters', count: recruiters.length, icon: Users },
+              { id: 'companies', label: 'Companies', count: companies.length, icon: Building2 },
+              { id: 'memberships', label: 'Memberships', count: memberships.length, icon: ShieldCheck },
+              { id: 'alumni', label: 'Alumni', count: alumni.length, icon: GraduationCap },
+            ] as const
+          ).map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap -mb-px flex items-center gap-2.5 ${
+                  activeTab === tab.id
+                    ? 'border-brand text-brand'
+                    : 'border-transparent hover:text-white'
+                }`}
+                style={{ color: activeTab === tab.id ? 'var(--brand)' : 'var(--text-secondary)' }}
+              >
+                <Icon size={16} />
+                <span>{tab.label}</span>
+                {tab.count > 0 && (
+                  <span className={`px-2 py-0.5 text-xs rounded-full font-mono font-bold ${activeTab === tab.id ? 'bg-brand text-white' : 'bg-slate-800 text-slate-300'}`}>
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Tab Content */}
         {loadingList ? (
-          <div className="text-center py-16 text-slate-400">Loading verification queue…</div>
+          <div className="flex items-center justify-center min-h-[40vh]">
+            <LoadingState message="Loading verification queue..." />
+          </div>
         ) : activeTab === 'recruiters' ? (
           recruiters.length === 0 ? (
-            <div className="text-center py-16 text-slate-500 bg-slate-800/40 rounded-2xl border border-slate-800">
-              No pending recruiters 🎉
-            </div>
+            <Card className="text-center py-20 flex flex-col items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-4 text-slate-500">
+                <CheckSquare size={32} />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">All caught up!</h3>
+              <p className="text-slate-400">No pending recruiter verifications.</p>
+            </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {recruiters.map((rec) => (
-                <div key={rec.id} className="bg-slate-800 rounded-xl border border-slate-700 p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-amber-700 flex items-center justify-center text-sm font-bold text-white">
-                        {rec.fullName.charAt(0).toUpperCase()}
+                <Card key={rec.id} className="p-0 overflow-hidden flex flex-col h-full hover:border-slate-600 transition-colors">
+                  <div className="p-5 flex-1">
+                    <div className="flex items-start justify-between gap-4 mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-inner bg-gradient-to-br from-indigo-500 to-purple-600">
+                          {rec.fullName.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-base font-bold text-white leading-tight">{rec.fullName}</p>
+                          {rec.designation && <p className="text-slate-400 text-sm mt-0.5">{rec.designation}</p>}
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-white font-semibold">{rec.fullName}</p>
-                        {rec.designation && <p className="text-slate-400 text-xs">{rec.designation}</p>}
+                      <Badge variant="warning">Pending</Badge>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 p-4 rounded-xl" style={{ background: 'var(--surface-2)' }}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Email</span>
+                        <span className="text-sm font-mono text-slate-300">{rec.user.email}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Company</span>
+                        <span className="text-sm font-medium text-white">{rec.company?.name || 'Unassigned'}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Applied</span>
+                        <span className="text-sm text-slate-300 flex items-center gap-1.5"><Clock size={14} className="text-slate-500" /> {new Date(rec.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 text-xs rounded-full bg-amber-900/40 text-amber-400 border border-amber-700 whitespace-nowrap">
-                      Pending Verification
-                    </span>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm bg-slate-900/40 p-3 rounded-lg border border-slate-700/50">
-                    <div>
-                      <span className="text-slate-400 text-xs block">Email</span>
-                      <span className="text-slate-200 font-mono text-xs">{rec.user.email}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 text-xs block">Company</span>
-                      <span className="text-slate-200">{rec.company?.name || 'Unassigned'}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 text-xs block">Applied</span>
-                      <span className="text-slate-200">{new Date(rec.createdAt).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 mt-4 pt-3 border-t border-slate-700 justify-end">
-                    <button
-                      onClick={() => handleApprove(rec.id, 'recruiters', rec.fullName)}
-                      disabled={actionLoading !== null}
-                      className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition-colors"
-                    >
-                      ✓ Approve Recruiter
-                    </button>
-                    <button
+                  <div className="flex gap-2 p-4 border-t mt-auto" style={{ borderColor: 'var(--border-subtle)', background: 'var(--surface-1)' }}>
+                    <Button
                       onClick={() => setRejectTarget({ id: rec.id, name: rec.fullName, type: 'recruiters' })}
                       disabled={actionLoading !== null}
-                      className="px-4 py-2 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition-colors"
+                      variant="outline"
+                      className="flex-1 justify-center border-red-500/30 hover:bg-red-500/10 text-red-500 hover:text-red-400"
+                      leftIcon={<X size={16} />}
                     >
-                      ✕ Reject
-                    </button>
+                      Reject
+                    </Button>
+                    <Button
+                      onClick={() => handleApprove(rec.id, 'recruiters', rec.fullName)}
+                      disabled={actionLoading !== null}
+                      variant="success"
+                      className="flex-1 justify-center"
+                      leftIcon={<Check size={16} />}
+                    >
+                      Approve
+                    </Button>
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
           )
         ) : activeTab === 'companies' ? (
           companies.length === 0 ? (
-            <div className="text-center py-16 text-slate-500 bg-slate-800/40 rounded-2xl border border-slate-800">
-              No pending companies 🎉
-            </div>
+            <Card className="text-center py-20 flex flex-col items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-4 text-slate-500">
+                <CheckSquare size={32} />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">All caught up!</h3>
+              <p className="text-slate-400">No pending company verifications.</p>
+            </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {companies.map((c) => (
-                <div key={c.id} className="bg-slate-800 rounded-xl border border-slate-700 p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-700 flex items-center justify-center text-sm font-bold text-white">
-                        {c.name.charAt(0).toUpperCase()}
+                <Card key={c.id} className="p-0 overflow-hidden flex flex-col h-full hover:border-slate-600 transition-colors">
+                  <div className="p-5 flex-1">
+                    <div className="flex items-start justify-between gap-4 mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-bold text-white shadow-inner bg-gradient-to-br from-emerald-500 to-teal-600">
+                          {c.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-base font-bold text-white leading-tight">{c.name}</p>
+                          {c.industry && <p className="text-slate-400 text-sm mt-0.5">{c.industry}</p>}
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-white font-semibold">{c.name}</p>
-                        {c.industry && <p className="text-slate-400 text-xs">{c.industry}</p>}
+                      <Badge variant="warning">Pending</Badge>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 p-4 rounded-xl" style={{ background: 'var(--surface-2)' }}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Website</span>
+                        <a href={c.website || '#'} target="_blank" rel="noreferrer" className="text-sm font-medium text-brand hover:underline">{c.website || 'N/A'}</a>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Location</span>
+                        <span className="text-sm font-medium text-white">{[c.city, c.state, c.country].filter(Boolean).join(', ') || 'N/A'}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Submitted</span>
+                        <span className="text-sm text-slate-300 flex items-center gap-1.5"><Clock size={14} className="text-slate-500" /> {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'N/A'}</span>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 text-xs rounded-full bg-amber-900/40 text-amber-400 border border-amber-700 whitespace-nowrap">
-                      Pending Company Review
-                    </span>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm bg-slate-900/40 p-3 rounded-lg border border-slate-700/50">
-                    <div>
-                      <span className="text-slate-400 text-xs block">Website</span>
-                      <span className="text-indigo-300 text-xs">{c.website || 'N/A'}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 text-xs block">Location</span>
-                      <span className="text-slate-200">{[c.city, c.state, c.country].filter(Boolean).join(', ') || 'N/A'}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 text-xs block">Submitted</span>
-                      <span className="text-slate-200">{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'N/A'}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 mt-4 pt-3 border-t border-slate-700 justify-end">
-                    <button
-                      onClick={() => handleApprove(c.id, 'companies', c.name)}
-                      disabled={actionLoading !== null}
-                      className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition-colors"
-                    >
-                      ✓ Approve Company
-                    </button>
-                    <button
+                  <div className="flex gap-2 p-4 border-t mt-auto" style={{ borderColor: 'var(--border-subtle)', background: 'var(--surface-1)' }}>
+                    <Button
                       onClick={() => setRejectTarget({ id: c.id, name: c.name, type: 'companies' })}
                       disabled={actionLoading !== null}
-                      className="px-4 py-2 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition-colors"
+                      variant="outline"
+                      className="flex-1 justify-center border-red-500/30 hover:bg-red-500/10 text-red-500 hover:text-red-400"
+                      leftIcon={<X size={16} />}
                     >
-                      ✕ Reject
-                    </button>
+                      Reject
+                    </Button>
+                    <Button
+                      onClick={() => handleApprove(c.id, 'companies', c.name)}
+                      disabled={actionLoading !== null}
+                      variant="success"
+                      className="flex-1 justify-center"
+                      leftIcon={<Check size={16} />}
+                    >
+                      Approve
+                    </Button>
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
           )
         ) : activeTab === 'memberships' ? (
           memberships.length === 0 ? (
-            <div className="text-center py-16 text-slate-500 bg-slate-800/40 rounded-2xl border border-slate-800">
-              No pending company membership requests 🎉
-            </div>
+            <Card className="text-center py-20 flex flex-col items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-4 text-slate-500">
+                <CheckSquare size={32} />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">All caught up!</h3>
+              <p className="text-slate-400">No pending company membership requests.</p>
+            </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {memberships.map((mem) => (
-                <div key={mem.id} className="bg-slate-800 rounded-xl border border-slate-700 p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-white font-semibold text-base">{mem.recruiter?.fullName}</p>
-                        <span className="font-mono text-xs px-2 py-0.5 rounded bg-indigo-900/60 text-indigo-300 border border-indigo-700/60">
-                          {mem.role}
-                        </span>
+                <Card key={mem.id} className="p-0 overflow-hidden flex flex-col h-full hover:border-slate-600 transition-colors">
+                  <div className="p-5 flex-1">
+                    <div className="flex items-start justify-between gap-4 mb-5">
+                      <div>
+                        <div className="flex items-center gap-3 mb-1">
+                          <p className="text-white font-bold text-lg">{mem.recruiter?.fullName}</p>
+                          <Badge variant="brand">{mem.role.replace(/_/g, ' ')}</Badge>
+                        </div>
+                        <p className="text-slate-400 text-sm font-mono">{mem.recruiter?.user?.email}</p>
                       </div>
-                      <p className="text-slate-400 text-xs mt-0.5 font-mono">{mem.recruiter?.user?.email}</p>
+                      <Badge variant="warning">Association Pending</Badge>
                     </div>
-                    <span className="px-2.5 py-1 text-xs rounded-full bg-amber-900/40 text-amber-400 border border-amber-700 whitespace-nowrap">
-                      Association Pending
-                    </span>
+
+                    <div className="p-4 rounded-xl flex items-center justify-between bg-brand/5 border border-brand/10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-brand/20 text-brand flex items-center justify-center">
+                          <Building2 size={20} />
+                        </div>
+                        <div>
+                          <span className="text-xs font-bold uppercase tracking-wider text-brand/70 block mb-0.5">Requested Company</span>
+                          <span className="text-white font-bold">{mem.company.name}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-0.5">Requested On</span>
+                        <span className="text-sm font-medium text-slate-300">{new Date(mem.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="mt-4 bg-slate-900/40 p-3 rounded-lg border border-slate-700/50 flex items-center justify-between">
-                    <div>
-                      <span className="text-slate-400 text-xs block">Requested Company</span>
-                      <span className="text-white font-semibold text-sm">{mem.company.name}</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-slate-400 text-xs block">Requested On</span>
-                      <span className="text-slate-300 text-xs">{new Date(mem.createdAt).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 mt-4 pt-3 border-t border-slate-700 justify-end">
-                    <button
-                      onClick={() => handleApprove(mem.id, 'memberships', `${mem.recruiter?.fullName} → ${mem.company.name}`)}
-                      disabled={actionLoading !== null}
-                      className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition-colors"
-                    >
-                      ✓ Approve Association
-                    </button>
-                    <button
+                  <div className="flex gap-2 p-4 border-t mt-auto" style={{ borderColor: 'var(--border-subtle)', background: 'var(--surface-1)' }}>
+                    <Button
                       onClick={() =>
                         setRejectTarget({
                           id: mem.id,
@@ -478,74 +525,93 @@ export default function PendingApprovals() {
                         })
                       }
                       disabled={actionLoading !== null}
-                      className="px-4 py-2 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition-colors"
+                      variant="outline"
+                      className="flex-1 justify-center border-red-500/30 hover:bg-red-500/10 text-red-500 hover:text-red-400"
+                      leftIcon={<X size={16} />}
                     >
-                      ✕ Reject
-                    </button>
+                      Reject
+                    </Button>
+                    <Button
+                      onClick={() => handleApprove(mem.id, 'memberships', `${mem.recruiter?.fullName} → ${mem.company.name}`)}
+                      disabled={actionLoading !== null}
+                      variant="success"
+                      className="flex-1 justify-center"
+                      leftIcon={<Check size={16} />}
+                    >
+                      Approve Association
+                    </Button>
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
           )
         ) : alumni.length === 0 ? (
-          <div className="text-center py-16 text-slate-500 bg-slate-800/40 rounded-2xl border border-slate-800">
-            No pending alumni 🎉
-          </div>
+          <Card className="text-center py-20 flex flex-col items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-4 text-slate-500">
+              <CheckSquare size={32} />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">All caught up!</h3>
+            <p className="text-slate-400">No pending alumni verifications.</p>
+          </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {alumni.map((al) => (
-              <div key={al.id} className="bg-slate-800 rounded-xl border border-slate-700 p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-violet-700 flex items-center justify-center text-sm font-bold text-white">
-                      {al.fullName.charAt(0).toUpperCase()}
+              <Card key={al.id} className="p-0 overflow-hidden flex flex-col h-full hover:border-slate-600 transition-colors">
+                <div className="p-5 flex-1">
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-inner bg-gradient-to-br from-amber-500 to-orange-600">
+                        {al.fullName.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-base font-bold text-white leading-tight mb-1">{al.fullName}</p>
+                        <p className="text-slate-400 text-xs font-medium">{al.degree} · {al.branch} · {al.graduationYear}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-white font-semibold">{al.fullName}</p>
-                      <p className="text-slate-400 text-xs">{al.degree} · {al.branch} · {al.graduationYear}</p>
+                    <Badge variant="warning">Pending</Badge>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 p-4 rounded-xl" style={{ background: 'var(--surface-2)' }}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Email</span>
+                      <span className="text-sm font-mono text-slate-300">{al.user.email}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-500">College</span>
+                      <span className="text-sm font-medium text-white truncate max-w-[200px]" title={al.collegeName}>{al.collegeName}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Applied</span>
+                      <span className="text-sm text-slate-300 flex items-center gap-1.5"><Clock size={14} className="text-slate-500" /> {new Date(al.createdAt).toLocaleDateString()}</span>
                     </div>
                   </div>
-                  <span className="px-2.5 py-1 text-xs rounded-full bg-amber-900/40 text-amber-400 border border-amber-700 whitespace-nowrap">
-                    Pending
-                  </span>
                 </div>
 
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm bg-slate-900/40 p-3 rounded-lg border border-slate-700/50">
-                  <div>
-                    <span className="text-slate-400 text-xs block">Email</span>
-                    <span className="text-slate-200 font-mono text-xs">{al.user.email}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 text-xs block">College</span>
-                    <span className="text-slate-200">{al.collegeName}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 text-xs block">Applied</span>
-                    <span className="text-slate-200">{new Date(al.createdAt).toLocaleDateString()}</span>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 mt-4 pt-3 border-t border-slate-700 justify-end">
-                  <button
-                    onClick={() => handleApprove(al.id, 'alumni', al.fullName)}
-                    disabled={actionLoading !== null}
-                    className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition-colors"
-                  >
-                    ✓ Approve Alumni
-                  </button>
-                  <button
+                <div className="flex gap-2 p-4 border-t mt-auto" style={{ borderColor: 'var(--border-subtle)', background: 'var(--surface-1)' }}>
+                  <Button
                     onClick={() => setRejectTarget({ id: al.id, name: al.fullName, type: 'alumni' })}
                     disabled={actionLoading !== null}
-                    className="px-4 py-2 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition-colors"
+                    variant="outline"
+                    className="flex-1 justify-center border-red-500/30 hover:bg-red-500/10 text-red-500 hover:text-red-400"
+                    leftIcon={<X size={16} />}
                   >
-                    ✕ Reject
-                  </button>
+                    Reject
+                  </Button>
+                  <Button
+                    onClick={() => handleApprove(al.id, 'alumni', al.fullName)}
+                    disabled={actionLoading !== null}
+                    variant="success"
+                    className="flex-1 justify-center"
+                    leftIcon={<Check size={16} />}
+                  >
+                    Approve
+                  </Button>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         )}
       </div>
-    </div>
+    </AppLayout>
   );
 }
