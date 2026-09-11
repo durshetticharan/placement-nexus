@@ -42,9 +42,4 @@ See [`docs/API_CONVENTIONS.md`](docs/API_CONVENTIONS.md).
 Being built in 20 controlled phases. Currently: **Phase 2 complete** (Authentication with JWT, httpOnly cookies, OTP verification, Zod validation, and React auth pages).
 
 ## Team
-
-- Palle Amulya Reddy — 237R1A05X3
-- Odela Sai Charan — 237R1A05X1
-- Durshetti Charan Teja — 237R1A05U0
-
-**Project Guide:** Dr. B. Laxmaiah
+Durshetti Charan Teja
