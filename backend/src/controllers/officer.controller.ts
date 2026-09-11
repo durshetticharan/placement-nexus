@@ -59,7 +59,7 @@ export async function updateCompany(req: Request, res: Response): Promise<void> 
   try {
     const id = req.params['id'] as string;
     const officerUserId = req.user!.userId;
-    const updated = await companyService.updateCompany(id, req.body, officerUserId, true);
+    const updated = await companyService.updateCompany(id, req.body, officerUserId);
     res.json({ success: true, data: updated });
   } catch (err: any) {
     handleError(res, err);

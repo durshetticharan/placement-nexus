@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CompanyRole, CompanyStatus, VerificationStatus } from '@prisma/client';
+import { CompanyRole, CompanyStatus } from '@prisma/client';
 
 export const createCompanySchema = z.object({
   name: z.string().trim().min(1, 'Company name is required.').max(150, 'Company name too long.'),

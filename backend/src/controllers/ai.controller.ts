@@ -77,7 +77,8 @@ export async function resumeAnalyze(req: Request, res: Response): Promise<void> 
       return;
     }
 
-    const result = await aiClient.analyzeResume({ resume_text: resumeText, student_id: student.id });
+    const jobDescription: string | undefined = req.body.job_description;
+    const result = await aiClient.analyzeResume({ resume_text: resumeText, student_id: student.id, job_description: jobDescription });
 
     // Persist — does NOT mutate StudentSkill
     if (student.resumes.length > 0) {

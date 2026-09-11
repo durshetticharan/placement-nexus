@@ -17,12 +17,16 @@ export async function createDrive(userId: string, data: any) {
     include: { memberships: { where: { status: 'APPROVED' } } }
   });
 
-  if (!recruiter || recruiter.verificationStatus !== 'APPROVED') {
+  if (!recruiter) {
+    throw new DriveServiceError(404, 'NOT_FOUND', 'Recruiter profile not found');
+  }
+
+  if (recruiter.verificationStatus !== 'APPROVED') {
     throw new DriveServiceError(403, 'UNAUTHORIZED', 'Only approved recruiters can create drives');
   }
 
   // Use the company from the recruiter's approved membership
-  if (recruiter.memberships.length === 0) {
+  if (!recruiter.memberships || recruiter.memberships.length === 0) {
     throw new DriveServiceError(403, 'UNAUTHORIZED', 'Recruiter does not belong to any approved company');
   }
 
@@ -227,7 +231,7 @@ export async function updateDriveStatus(userId: string, driveId: string, status:
 
     // Notify all approved students about the new drive
     const students = await prisma.student.findMany({
-      where: { user: { status: 'ACTIVE' } },
+      where: { user: { status: 'ACTIVE' }, profileCompletionPct: 100 },
       select: { userId: true }
     });
     
@@ -267,7 +271,13 @@ export async function getDriveById(driveId: string) {
     }
   });
   if (!drive) throw new DriveServiceError(404, 'NOT_FOUND', 'Drive not found');
-  return drive;
+
+  const auditLogs = await prisma.auditLog.findMany({
+    where: { entityType: 'PlacementDrive', entityId: driveId },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  return { ...drive, auditLogs };
 }
 
 export async function listRecruiterDrives(userId: string) {

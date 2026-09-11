@@ -72,6 +72,7 @@ import ContentModeration     from '../pages/officer/ContentModeration';
 
 // Phase 17 — AI Features
 import ResumeAI    from '../pages/student/ResumeAI';
+import ResumeBuilder from '../pages/student/ResumeBuilder';
 import CareerAI    from '../pages/student/CareerAI';
 import InterviewAI from '../pages/student/InterviewAI';
 
@@ -391,6 +392,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <ResumeAI />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/resume-builder"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <ResumeBuilder />
           </ProtectedRoute>
         }
       />

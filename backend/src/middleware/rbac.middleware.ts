@@ -73,7 +73,7 @@ export async function requireVerifiedRecruiter(
     }
 
     next();
-  } catch (err) {
+  } catch {
     res.status(500).json({
       success: false,
       error: { code: 'INTERNAL_ERROR', message: 'Verification check failed.' },
@@ -120,7 +120,7 @@ export async function requireVerifiedAlumni(
     }
 
     next();
-  } catch (err) {
+  } catch {
     res.status(500).json({
       success: false,
       error: { code: 'INTERNAL_ERROR', message: 'Verification check failed.' },

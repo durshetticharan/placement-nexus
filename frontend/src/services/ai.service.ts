@@ -81,8 +81,11 @@ export interface InterviewSession {
 
 const AI_BASE = '/ai';
 
-export async function analyzeResume(resumeText: string): Promise<ResumeAnalysisResult> {
-  const { data } = await api.post(`${AI_BASE}/resume/analyze`, { resume_text: resumeText });
+export async function analyzeResume(resumeText: string, jobDescription?: string): Promise<ResumeAnalysisResult> {
+  const { data } = await api.post(`${AI_BASE}/resume/analyze`, { 
+    resume_text: resumeText,
+    job_description: jobDescription
+  });
   return data.data;
 }
 

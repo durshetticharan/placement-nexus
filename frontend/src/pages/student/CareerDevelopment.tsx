@@ -3,13 +3,15 @@ import * as careerService from '../../services/careerService';
 import { getErrorMessage } from '../../utils/error';
 import AppLayout from '../../components/layout/AppLayout';
 import { PageHeader, LoadingState, ErrorState, Card, Badge, EmptyState, Button, InfoBanner } from '../../components/ui';
-import { BookOpen, Target, CheckCircle2, ChevronRight, Bookmark } from 'lucide-react';
+import { BookOpen, Target, CheckCircle2, ChevronRight, Bookmark, BrainCircuit } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function CareerDevelopment() {
   const [careerPaths, setCareerPaths] = useState<careerService.CareerPath[]>([]);
   const [primaryGoal, setPrimaryGoal] = useState<careerService.StudentCareerGoal | null>(null);
   const [learningResources, setLearningResources] = useState<careerService.LearningResource[]>([]);
   const [selectedPath, setSelectedPath] = useState<careerService.CareerPath | null>(null);
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -132,9 +134,16 @@ export default function CareerDevelopment() {
             {primaryGoal && (
               <div className="text-left md:text-right flex flex-col md:items-end justify-center">
                 <span className="text-xs uppercase tracking-wider font-bold mb-1" style={{ color: 'var(--text-muted)' }}>Required Skills</span>
-                <span className="text-3xl font-black" style={{ color: 'var(--brand-light)' }}>
+                <span className="text-3xl font-black mb-4" style={{ color: 'var(--brand-light)' }}>
                   {primaryGoal.careerPath.skillRequirements?.length || 0}
                 </span>
+                <Button 
+                  variant="primary" 
+                  onClick={() => navigate('/student/skill-gap')}
+                  leftIcon={<BrainCircuit size={16} />}
+                >
+                  Analyze Skill Gap
+                </Button>
               </div>
             )}
           </div>

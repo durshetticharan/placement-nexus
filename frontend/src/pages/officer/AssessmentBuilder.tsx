@@ -99,7 +99,10 @@ export default function AssessmentBuilder() {
 
   useEffect(() => {
     if (!isNew && id) {
-      fetchAssessmentData(id);
+      const timer = setTimeout(() => {
+        fetchAssessmentData(id);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [id, isNew, fetchAssessmentData]);
 

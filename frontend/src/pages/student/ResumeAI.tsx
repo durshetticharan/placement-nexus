@@ -12,6 +12,7 @@ const CONF_COLOR: Record<string, 'success' | 'warning' | 'default'> = {
 
 export default function ResumeAI() {
   const [resumeText, setResumeText] = useState('');
+  const [jobDescription, setJobDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ResumeAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +25,7 @@ export default function ResumeAI() {
     setLoading(true);
     setError(null);
     try {
-      const res = await analyzeResume(resumeText);
+      const res = await analyzeResume(resumeText, jobDescription.trim() ? jobDescription : undefined);
       setResult(res);
     } catch (e: any) {
       setError(e?.response?.data?.error?.message || 'AI analysis failed. Please try again.');
@@ -70,6 +71,26 @@ export default function ResumeAI() {
                   outlineColor: 'var(--brand)'
                 }}
                 placeholder="Paste your resume content here (plain text)..."
+              />
+            </div>
+            <div className="relative mt-4">
+              <label className="block text-sm font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+                Target Job Description (Optional)
+              </label>
+              <textarea
+                id="job-desc-input"
+                value={jobDescription}
+                onChange={e => setJobDescription(e.target.value)}
+                rows={4}
+                className="w-full rounded-xl text-sm focus:outline-none focus:ring-2"
+                style={{
+                  background: 'var(--surface-1)',
+                  border: '1px solid var(--border-subtle)',
+                  color: 'var(--text-primary)',
+                  padding: '1rem',
+                  outlineColor: 'var(--brand)'
+                }}
+                placeholder="Paste the target job description here to calculate ATS relevance..."
               />
             </div>
             

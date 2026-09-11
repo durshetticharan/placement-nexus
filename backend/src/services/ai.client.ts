@@ -96,6 +96,7 @@ export interface AIResumeResponse {
 export async function analyzeResume(payload: {
   resume_text: string;
   student_id: string;
+  job_description?: string;
 }): Promise<AIResumeResponse> {
   return aiRequest<AIResumeResponse>({ path: '/ai/resume/analyze', body: payload });
 }

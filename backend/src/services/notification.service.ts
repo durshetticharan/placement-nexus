@@ -129,7 +129,7 @@ export class NotificationService {
             metadata: metadata || {},
           },
         });
-      } catch (err) {
+      } catch {
          // Ignore
       }
     }

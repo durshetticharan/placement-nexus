@@ -1,6 +1,5 @@
 import * as readinessRepo from '../repositories/readiness.repository';
 import * as readinessEngine from './readinessEngine.service';
-import { ServiceError } from './careerPath.service';
 
 /**
  * Computes readiness for a student, saving it to the database,

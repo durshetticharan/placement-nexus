@@ -80,8 +80,7 @@ export async function updateCompany(req: Request, res: Response): Promise<void> 
     const updated = await companyService.updateCompany(
       id,
       req.body,
-      userId,
-      userRole === 'PLACEMENT_OFFICER'
+      userId
     );
     res.json({ success: true, data: updated });
   } catch (err: any) {

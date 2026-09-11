@@ -122,21 +122,44 @@ export async function withdrawApplication(studentUserId: string, applicationId: 
   return updated;
 }
 
+import * as jobMatchService from './job-match.service';
+
 export async function getStudentApplications(studentUserId: string) {
   const student = await prisma.student.findUnique({ where: { userId: studentUserId } });
   if (!student) throw new ApplicationServiceError(404, 'NOT_FOUND', 'Student not found');
 
-  return prisma.application.findMany({
+  const applications = await prisma.application.findMany({
     where: { studentId: student.id },
     include: {
       placementDrive: {
-        select: { id: true, title: true, company: { select: { id: true, name: true, logoUrl: true } } }
+        select: { id: true, title: true, company: { select: { id: true, name: true, logoUrl: true } }, requirements: true }
       },
       interviews: { orderBy: { roundNumber: 'asc' } },
       selection: true
     },
     orderBy: { appliedAt: 'desc' }
   });
+
+  const readinessScores = await prisma.readinessScore.findMany({
+    where: { studentId: student.id }
+  });
+
+  return Promise.all(applications.map(async (app) => {
+    let dynamicJobMatch = app.jobMatchPct;
+    if (app.placementDrive.requirements) {
+      const matchResult = await jobMatchService.JobMatchService.calculateJobMatch(student.id, app.placementDrive.id);
+      dynamicJobMatch = matchResult.normalizedScore;
+    }
+
+    const readiness = readinessScores.find(r => r.placementDriveId === app.placementDrive.id) || 
+                      readinessScores.find(r => !r.placementDriveId && !r.careerPathId); // fallback to overall
+
+    return {
+      ...app,
+      dynamicJobMatch,
+      readinessScore: readiness ? readiness.overallScore : null
+    };
+  }));
 }
 
 export async function getDriveApplications(userId: string, userRole: string, driveId: string) {
@@ -186,7 +209,7 @@ export async function getDriveApplications(userId: string, userRole: string, dri
         ...app,
         dynamicJobMatch: match.normalizedScore
       };
-    } catch (e) {
+    } catch {
       return { ...app, dynamicJobMatch: app.jobMatchPct }; // fallback to snapshot
     }
   }));

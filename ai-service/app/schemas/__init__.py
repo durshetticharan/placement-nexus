@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 class ResumeAnalysisRequest(BaseModel):
     resume_text: str = Field(..., max_length=50_000, description="Extracted plain-text content of the resume")
     student_id: str = Field(..., description="Student ID (used for context, not stored in prompt)")
+    job_description: Optional[str] = Field(None, max_length=10_000, description="Optional target job description to analyze against")
 
 
 class CareerGuidanceRequest(BaseModel):

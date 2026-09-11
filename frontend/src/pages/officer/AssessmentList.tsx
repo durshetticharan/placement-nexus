@@ -56,7 +56,10 @@ export default function AssessmentList() {
   }, [selectedCategory, selectedStatus, searchTopic]);
 
   useEffect(() => {
-    fetchAssessments();
+    const timer = setTimeout(() => {
+      fetchAssessments();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [fetchAssessments]);
 
   const handleDelete = async (id: string, title: string) => {

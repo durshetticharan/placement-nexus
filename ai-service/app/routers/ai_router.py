@@ -63,7 +63,7 @@ async def resume_analyze(
         raise HTTPException(status_code=400, detail="Resume text too short to analyze.")
     safe_text = truncate_text(payload.resume_text, max_chars=20_000)
     try:
-        result = await analyze_resume(safe_text)
+        result = await analyze_resume(safe_text, payload.job_description)
         return ResumeAnalysisResponse(
             summary=result.get("summary", "No summary available."),
             atsScore=result.get("atsScore") or result.get("ats_score"),

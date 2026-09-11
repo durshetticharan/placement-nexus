@@ -1,7 +1,6 @@
 import { Prisma } from '@prisma/client';
 import * as companyRepo from '../repositories/company.repository';
 import * as recruiterRepo from '../repositories/recruiter.repository';
-import * as membershipRepo from '../repositories/membership.repository';
 
 export class ServiceError extends Error {
   constructor(message: string, public code: string, public statusCode: number) {
@@ -85,8 +84,7 @@ export async function createCompany(
 export async function updateCompany(
   id: string,
   data: Prisma.CompanyUpdateInput,
-  actorUserId: string,
-  isOfficer: boolean = false
+  actorUserId: string
 ) {
   const company = await companyRepo.findCompanyById(id);
   if (!company) {

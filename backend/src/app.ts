@@ -24,6 +24,7 @@ import preparationRoutes from './routes/preparation.routes';
 import aiRoutes from './routes/ai.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import notificationRoutes from './routes/notification.routes';
+import resumeBuilderRoutes from './routes/resumeBuilder.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 const app = express();
@@ -166,6 +167,7 @@ app.use('/api/v1/preparation', preparationRoutes);
 app.use('/api/v1/ai', aiLimiter, aiRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/student/resume-builder', resumeBuilderRoutes);
 
 // ─── Global Error Handler ─────────────────────────────────────────────────────
 app.use(errorHandler);

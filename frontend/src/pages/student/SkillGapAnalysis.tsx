@@ -755,14 +755,30 @@ export default function SkillGapAnalysis() {
               borderRadius: '24px',
             }}>
               <div style={{ fontSize: '56px', marginBottom: '20px' }}>🧭</div>
-              <h2 style={{ margin: '0 0 12px', fontSize: '22px', fontWeight: 700, color: '#f8fafc' }}>No Analysis Yet</h2>
+              <h2 style={{ margin: '0 0 12px', fontSize: '22px', fontWeight: 700, color: '#f8fafc' }}>
+                {error?.includes('career goal') ? 'No Career Goal Selected' : 'No Analysis Yet'}
+              </h2>
               <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.45)', maxWidth: '400px', margin: '0 auto 24px' }}>
-                Click "Analyze My Skill Gaps" to generate an evidence-based breakdown of your skills vs. your career path requirements.
+                Select a target career to generate your personalized skill gap.
               </p>
-              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.30)' }}>
-                Make sure you have a career goal set first. <br />
-                Add skills, take assessments, and link coding profiles for richer results.
-              </p>
+              <button
+                onClick={() => navigate('/student/career')}
+                style={{
+                  padding: '12px 24px',
+                  background: 'rgba(99,102,241,0.15)',
+                  border: '1px solid rgba(99,102,241,0.3)',
+                  borderRadius: '10px',
+                  color: '#a5b4fc',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => { (e.currentTarget).style.background = 'rgba(99,102,241,0.25)'; }}
+                onMouseLeave={(e) => { (e.currentTarget).style.background = 'rgba(99,102,241,0.15)'; }}
+              >
+                Choose Career
+              </button>
             </div>
           )}
         </div>

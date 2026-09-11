@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DriveStatus } from '@prisma/client';
+
 
 const baseDriveSchema = z.object({
   title: z.string().trim().min(1, 'Title is required').max(150, 'Title is too long'),

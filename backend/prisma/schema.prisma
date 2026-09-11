@@ -114,6 +114,9 @@ model Student {
   profileCompletionPct Int             @default(0)
   placementStatus      PlacementStatus @default(NOT_PLACED)
 
+  hobbies              String[]
+  languages            String[]
+
   academics            StudentAcademic?
   skills               StudentSkill[]
   projects             Project[]
@@ -123,6 +126,7 @@ model Student {
   codingProfiles       CodingProfile[]
   professionalProfiles ProfessionalProfile[]
   resumes              Resume[]
+  builtResume          BuiltResume?
 
   assessmentAttempts AssessmentAttempt[]
   careerGoals        StudentCareerGoal[]
@@ -370,6 +374,153 @@ model Resume {
 
   @@index([studentId])
   @@map("resumes")
+}
+
+// ============================================================================
+// MANUAL RESUME BUILDER (Isolated from general profiles)
+// ============================================================================
+
+model BuiltResume {
+  id        String  @id @default(cuid())
+  studentId String  @unique // One active manual resume per student for now
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  personalInfo   Json?  // { fullName, email, phone, location, linkedinUrl, githubUrl, portfolioUrl }
+  careerObjective String?
+  template       String @default("CLASSIC_ATS") // "CLASSIC_ATS" | "MODERN_ATS"
+
+  // Config for toggling optional sections
+  sectionConfig  Json? // e.g. { showProjects: true, showAchievements: false }
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  educations     ResumeEducation[]
+  skills         ResumeSkill[]
+  projects       ResumeProject[]
+  experiences    ResumeExperience[]
+  certifications ResumeCertification[]
+  achievements   ResumeAchievement[]
+  languages      ResumeLanguage[]
+
+  @@map("built_resumes")
+}
+
+model ResumeEducation {
+  id             String  @id @default(cuid())
+  resumeId       String
+  resume         BuiltResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  
+  institution    String
+  degree         String
+  fieldOfStudy   String
+  startDate      String
+  endDate        String?
+  grade          String?
+  description    String?
+  
+  orderIndex     Int @default(0)
+
+  @@index([resumeId])
+  @@map("resume_educations")
+}
+
+model ResumeSkill {
+  id             String  @id @default(cuid())
+  resumeId       String
+  resume         BuiltResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  
+  name           String
+  category       String?
+  
+  orderIndex     Int @default(0)
+
+  @@index([resumeId])
+  @@map("resume_skills")
+}
+
+model ResumeProject {
+  id             String  @id @default(cuid())
+  resumeId       String
+  resume         BuiltResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  
+  name           String
+  description    String
+  technologies   String
+  projectUrl     String?
+  githubUrl      String?
+  startDate      String?
+  endDate        String?
+  
+  orderIndex     Int @default(0)
+
+  @@index([resumeId])
+  @@map("resume_projects")
+}
+
+model ResumeExperience {
+  id             String  @id @default(cuid())
+  resumeId       String
+  resume         BuiltResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  
+  company        String
+  role           String
+  location       String?
+  startDate      String
+  endDate        String?
+  description    String
+  
+  orderIndex     Int @default(0)
+
+  @@index([resumeId])
+  @@map("resume_experiences")
+}
+
+model ResumeCertification {
+  id             String  @id @default(cuid())
+  resumeId       String
+  resume         BuiltResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  
+  name           String
+  issuingOrg     String
+  issueDate      String
+  expiryDate     String?
+  credentialId   String?
+  credentialUrl  String?
+  
+  orderIndex     Int @default(0)
+
+  @@index([resumeId])
+  @@map("resume_certifications")
+}
+
+model ResumeAchievement {
+  id             String  @id @default(cuid())
+  resumeId       String
+  resume         BuiltResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  
+  title          String
+  description    String?
+  date           String?
+  
+  orderIndex     Int @default(0)
+
+  @@index([resumeId])
+  @@map("resume_achievements")
+}
+
+model ResumeLanguage {
+  id             String  @id @default(cuid())
+  resumeId       String
+  resume         BuiltResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  
+  name           String
+  proficiency    String
+  
+  orderIndex     Int @default(0)
+
+  @@index([resumeId])
+  @@map("resume_languages")
 }
 
 // ============================================================================

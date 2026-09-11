@@ -111,7 +111,7 @@ export async function approveMembership(membershipId: string, officerUserId: str
     throw new ServiceError('Membership is already approved.', 'CONFLICT', 409);
   }
 
-  const updated = await membershipRepo.updateMembershipStatus(membershipId, {
+  await membershipRepo.updateMembershipStatus(membershipId, {
     status: 'APPROVED',
     approvedById: officerUserId,
   });

@@ -1,9 +1,9 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, User, ClipboardList, Target, BarChart2,
-  Activity, Briefcase, Send, Users, BookOpen, Sparkles, BarChart,
+  Activity, Briefcase, Send, Users, BookOpen, BarChart,
   Bell, Building2, CheckCircle, Shield, Library, ChevronRight,
-  LogOut, X,
+  LogOut, X, FileText, Settings
 } from 'lucide-react';
 import { useAuth, type UserRole } from '../../context/AuthContext';
 
@@ -24,13 +24,14 @@ const NAV_CONFIG: Record<UserRole, NavGroup[]> = {
     {
       items: [
         { icon: LayoutDashboard, label: 'Dashboard', to: '/dashboard/student', end: true },
-        { icon: Activity, label: 'Readiness', to: '/student/readiness' },
-        { icon: Briefcase, label: 'Drives', to: '/student/drives' },
-        { icon: Send, label: 'Applications', to: '/student/applications' },
+        { icon: FileText, label: 'Resume Builder', to: '/student/resume-builder' },
+        { icon: Activity, label: 'ATS Score', to: '/student/readiness' },
+        { icon: Briefcase, label: 'Placement Drives', to: '/student/drives' },
+        { icon: Send, label: 'My Applications', to: '/student/applications' },
       ],
     },
     {
-      section: 'Academics',
+      section: 'ACADEMICS',
       items: [
         { icon: ClipboardList, label: 'Assessments', to: '/student/assessments' },
         { icon: Target, label: 'Career', to: '/student/career' },
@@ -39,7 +40,7 @@ const NAV_CONFIG: Record<UserRole, NavGroup[]> = {
       ],
     },
     {
-      section: 'Network',
+      section: 'NETWORK',
       items: [
         { icon: Users, label: 'Alumni & Mentors', to: '/student/alumni' },
         { icon: BookOpen, label: 'Experiences', to: '/student/experiences' },
@@ -47,17 +48,9 @@ const NAV_CONFIG: Record<UserRole, NavGroup[]> = {
       ],
     },
     {
-      section: 'AI',
-      items: [
-        { icon: Sparkles, label: 'Resume AI', to: '/student/ai/resume' },
-        { icon: Sparkles, label: 'Career AI', to: '/student/ai/career' },
-        { icon: Sparkles, label: 'Interview AI', to: '/student/ai/interview' },
-      ],
-    },
-    {
-      section: 'Settings',
       items: [
         { icon: Bell, label: 'Notifications', to: '/preferences' },
+        { icon: Settings, label: 'Settings', to: '/settings' },
       ],
     },
   ],
@@ -184,7 +177,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 <ChevronRight size={14} color="white" />
               </div>
               <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                Placement Nexus
+                OPTIO
               </span>
             </div>
             <button

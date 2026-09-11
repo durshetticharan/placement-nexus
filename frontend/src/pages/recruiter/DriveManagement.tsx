@@ -16,10 +16,6 @@ export default function DriveManagement() {
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchDrives();
-  }, []);
-
   const fetchDrives = async () => {
     try {
       setLoading(true);
@@ -32,6 +28,12 @@ export default function DriveManagement() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchDrives();
+  }, []);
+
+
 
   const handleCreate = async () => {
     try {

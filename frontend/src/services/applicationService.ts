@@ -33,6 +33,7 @@ export interface Application {
   appliedAt: string;
   jobMatchPct?: number; // Snapshot
   dynamicJobMatch?: number; // Live score
+  readinessScore?: number | null; // Live score
   eligibleAtApply?: boolean;
   student?: any; // For recruiter view
   placementDrive?: PlacementDrive;
