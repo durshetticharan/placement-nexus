@@ -105,24 +105,26 @@ export default function ResumeBuilder() {
 
     const pi = resume.personalInfo || {} as any;
     
-    let codingProfilesText = pi.codingProfiles || '';
-    if (!codingProfilesText && profile.codingProfiles?.length > 0) {
+    let codingProfilesText = pi.codingProfiles;
+    if (codingProfilesText == null && profile.codingProfiles?.length > 0) {
       codingProfilesText = profile.codingProfiles.map((c: any) => `${c.platform} - ${c.profileUrl || c.handle}`).join('\n');
     }
+    codingProfilesText = codingProfilesText ?? '';
 
-    let hobbiesText = pi.hobbies || '';
-    if (!hobbiesText && profile.hobbies?.length > 0) {
+    let hobbiesText = pi.hobbies;
+    if (hobbiesText == null && profile.hobbies?.length > 0) {
       hobbiesText = profile.hobbies.join(', ');
     }
+    hobbiesText = hobbiesText ?? '';
 
     const personalInfo = {
-      fullName: pi.fullName || profile.fullName || '',
-      email: pi.email || profile.user?.email || '',
-      phone: pi.phone || profile.phone || '',
-      location: pi.location || profile.address || '',
-      linkedinUrl: pi.linkedinUrl || '',
-      githubUrl: pi.githubUrl || '',
-      portfolioUrl: pi.portfolioUrl || '',
+      fullName: pi.fullName ?? profile.fullName ?? '',
+      email: pi.email ?? profile.user?.email ?? '',
+      phone: pi.phone ?? profile.phone ?? '',
+      location: pi.location ?? profile.address ?? '',
+      linkedinUrl: pi.linkedinUrl ?? '',
+      githubUrl: pi.githubUrl ?? '',
+      portfolioUrl: pi.portfolioUrl ?? '',
       codingProfiles: codingProfilesText,
       hobbies: hobbiesText
     };
@@ -134,7 +136,7 @@ export default function ResumeBuilder() {
       projects: resume.projects?.length > 0 ? resume.projects : profileProjects,
       educations: resume.educations?.length > 0 ? resume.educations : profileEducations,
       certifications: resume.certifications?.length > 0 ? resume.certifications : profile.certifications?.map((c: any, i: number) => ({
-         id: c.id, name: c.title, issuingOrg: c.issuingOrg, issueDate: c.issueDate ? new Date(c.issueDate).toISOString().slice(0,10) : '', expiryDate: c.expiryDate ? new Date(c.expiryDate).toISOString().slice(0,10) : '', credentialUrl: c.credentialUrl, orderIndex: i
+         id: c.id, name: c.title, description: c.description || '', orderIndex: i
       })) || [],
       experiences: resume.experiences?.length > 0 ? resume.experiences : profile.internships?.map((c: any, i: number) => ({
          id: c.id, company: c.company, role: c.role, description: c.description, startDate: c.startDate ? new Date(c.startDate).toISOString().slice(0,10) : '', endDate: c.endDate ? new Date(c.endDate).toISOString().slice(0,10) : '', orderIndex: i

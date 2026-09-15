@@ -126,7 +126,7 @@ export default function ResumeEditor({ resume, onChange }: ResumeEditorProps) {
           onChange={(experiences: any) => onChange({ experiences })} 
           defaultItem={{ company: '', role: '', startDate: '', description: '' }}
           renderForm={(item: any, update: any) => <ExperienceForm data={item} onChange={update} />}
-          renderSummary={(item: any) => item.role ? `${item.role} at ${item.company || 'Unknown'}` : 'New Experience'}
+          renderSummary={(item: any) => item.role ? `${item.role} at ${item.company || 'Not provided'}` : 'New Experience'}
         />
       </Accordion>
 
@@ -134,7 +134,7 @@ export default function ResumeEditor({ resume, onChange }: ResumeEditorProps) {
         <ArrayEditor 
           items={resume.certifications || []} 
           onChange={(certifications: any) => onChange({ certifications })} 
-          defaultItem={{ name: '', issuingOrg: '', issueDate: '', expiryDate: '', credentialId: '', credentialUrl: '' }}
+          defaultItem={{ name: '', description: '' }}
           renderForm={(item: any, update: any) => <CertificationForm data={item} onChange={update} />}
           renderSummary={(item: any) => item.name || 'New Certification'}
         />
@@ -281,17 +281,13 @@ function ExperienceForm({ data, onChange }: { data: any, onChange: (v: any) => v
 }
 
 function CertificationForm({ data, onChange }: { data: any, onChange: (v: any) => void }) {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     onChange({ ...data, [e.target.name]: e.target.value });
   };
   return (
     <div className="grid grid-cols-2 gap-3">
       <Input label="Certification Name" name="name" value={data.name} onChange={handleChange} />
-      <Input label="Issuer" name="issuingOrg" value={data.issuingOrg} onChange={handleChange} />
-      <Input label="Issue Date" name="issueDate" value={data.issueDate} onChange={handleChange} />
-      <Input label="Expiration Date" name="expiryDate" value={data.expiryDate} onChange={handleChange} />
-      <Input label="Credential ID" name="credentialId" value={data.credentialId} onChange={handleChange} />
-      <Input label="Credential URL" name="credentialUrl" value={data.credentialUrl} onChange={handleChange} />
+      <Input label="Description" name="description" value={data.description} onChange={handleChange} />
     </div>
   );
 }

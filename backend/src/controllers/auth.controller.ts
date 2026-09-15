@@ -52,10 +52,30 @@ export async function register(req: Request, res: Response): Promise<void> {
   }
 }
 
-export async function verifyOtp(req: Request, res: Response): Promise<void> {
+export async function verifyEmail(req: Request, res: Response): Promise<void> {
   try {
-    const { email, otpCode } = req.body;
-    const result = await authService.verifyOtp(email, otpCode);
+    const token = req.query.token as string;
+    if (!token) {
+      res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Verification token is required.' },
+      });
+      return;
+    }
+    const result = await authService.verifyEmailToken(token);
+    res.json({ success: true, data: result });
+  } catch (err: any) {
+    res.status(err.statusCode || 500).json({
+      success: false,
+      error: { code: err.code || 'INTERNAL_ERROR', message: err.message },
+    });
+  }
+}
+
+export async function resendVerification(req: Request, res: Response): Promise<void> {
+  try {
+    const { email } = req.body;
+    const result = await authService.resendVerification(email);
     res.json({ success: true, data: result });
   } catch (err: any) {
     res.status(err.statusCode || 500).json({

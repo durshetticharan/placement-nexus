@@ -25,7 +25,7 @@ const NAV_CONFIG: Record<UserRole, NavGroup[]> = {
       items: [
         { icon: LayoutDashboard, label: 'Dashboard', to: '/dashboard/student', end: true },
         { icon: FileText, label: 'Resume Builder', to: '/student/resume-builder' },
-        { icon: Activity, label: 'ATS Score', to: '/student/readiness' },
+        { icon: Activity, label: 'ATS Score', to: '/student/ats-score' },
         { icon: Briefcase, label: 'Placement Drives', to: '/student/drives' },
         { icon: Send, label: 'My Applications', to: '/student/applications' },
       ],

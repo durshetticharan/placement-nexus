@@ -73,7 +73,7 @@ export default function DriveExperienceDetail() {
     </div>
   );
 
-  const authorName = exp.isAnonymous ? 'Anonymous' : (exp.alumniProfile?.fullName || exp.student?.fullName || 'Unknown');
+  const authorName = exp.isAnonymous ? 'Anonymous' : (exp.alumniProfile?.fullName || exp.student?.fullName || 'Not provided');
 
   return (
     <div className="min-h-screen bg-slate-900 p-4 md:p-6">

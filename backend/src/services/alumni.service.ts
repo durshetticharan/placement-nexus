@@ -113,18 +113,17 @@ export async function createOrUpdateProfile(userId: string, data: any) {
     if (student) studentId = student.id;
   }
 
-  const profileData = {
-    fullName: data.fullName,
-    degree: data.degree,
-    branch: data.branch,
-    graduationYear: Number(data.graduationYear),
-    collegeName: data.collegeName,
-    currentCompany: data.currentCompany || null,
-    currentRole: data.currentRole || null,
-    yearsExperience: data.yearsExperience ? Number(data.yearsExperience) : null,
-    skills: data.skills || [],
-    linkedinUrl: data.linkedinUrl || null,
-  };
+  const profileData: any = {};
+  if (data.fullName !== undefined) profileData.fullName = data.fullName;
+  if (data.degree !== undefined) profileData.degree = data.degree;
+  if (data.branch !== undefined) profileData.branch = data.branch;
+  if (data.graduationYear !== undefined) profileData.graduationYear = Number(data.graduationYear);
+  if (data.collegeName !== undefined) profileData.collegeName = data.collegeName;
+  if (data.currentCompany !== undefined) profileData.currentCompany = data.currentCompany || null;
+  if (data.currentRole !== undefined) profileData.currentRole = data.currentRole || null;
+  if (data.yearsExperience !== undefined) profileData.yearsExperience = data.yearsExperience ? Number(data.yearsExperience) : null;
+  if (data.skills !== undefined) profileData.skills = data.skills || [];
+  if (data.linkedinUrl !== undefined) profileData.linkedinUrl = data.linkedinUrl || null;
 
   if (existing) {
     return alumniRepo.updateAlumniProfile(existing.id, profileData);

@@ -4,7 +4,7 @@ import type { PlacementDrive } from '../../services/driveService';
 import { officerDriveApi } from '../../services/driveService';
 import AppLayout from '../../components/layout/AppLayout';
 import { PageHeader, Card, Button, Badge, LoadingState } from '../../components/ui';
-import { Briefcase, CheckCircle, XCircle, Search, RefreshCw, X as CloseIcon, Building2, MapPin, Calendar, DollarSign } from 'lucide-react';
+import { Briefcase, CheckCircle, XCircle, Search, RefreshCw, X as CloseIcon, Building2, MapPin, Calendar, DollarSign, Eye } from 'lucide-react';
 
 interface Toast {
   id: number;
@@ -193,7 +193,7 @@ export default function DriveDirectory() {
                       <h3 className="font-bold text-lg text-white group-hover:text-brand transition-colors line-clamp-1" title={drive.title}>{drive.title}</h3>
                       <div className="flex items-center gap-2 mt-1 text-sm font-medium text-slate-300">
                         <Building2 size={14} className="text-slate-500" />
-                        <span className="line-clamp-1">{drive.company?.name || 'Unknown Company'}</span>
+                        <span className="line-clamp-1">{drive.company?.name || 'Not provided'}</span>
                       </div>
                     </div>
                   </div>
@@ -246,28 +246,39 @@ export default function DriveDirectory() {
                   </p>
                 </div>
                 
-                {drive.status === 'PENDING_APPROVAL' && (
-                  <div className="flex gap-3 pt-4 border-t mt-auto" style={{ borderColor: 'var(--border-subtle)' }}>
-                    <Button 
-                      onClick={() => handleApprove(drive.id)} 
-                      variant="success" 
-                      className="flex-1 justify-center"
-                      leftIcon={<CheckCircle size={16} />}
-                      disabled={actionLoading}
-                    >
-                      Approve Drive
-                    </Button>
-                    <Button 
-                      onClick={() => setRejectTarget(drive.id)} 
-                      variant="error" 
-                      className="flex-1 justify-center"
-                      leftIcon={<XCircle size={16} />}
-                      disabled={actionLoading}
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                )}
+                <div className="flex gap-3 pt-4 border-t mt-auto flex-wrap" style={{ borderColor: 'var(--border-subtle)' }}>
+                  <Button 
+                    onClick={() => navigate(`/officer/drives/${drive.id}`)} 
+                    variant="outline" 
+                    className="flex-1 justify-center min-w-[120px]"
+                    leftIcon={<Eye size={16} />}
+                  >
+                    View Details
+                  </Button>
+                  
+                  {drive.status === 'PENDING_APPROVAL' && (
+                    <>
+                      <Button 
+                        onClick={() => handleApprove(drive.id)} 
+                        variant="success" 
+                        className="flex-1 justify-center min-w-[120px]"
+                        leftIcon={<CheckCircle size={16} />}
+                        disabled={actionLoading}
+                      >
+                        Approve
+                      </Button>
+                      <Button 
+                        onClick={() => setRejectTarget(drive.id)} 
+                        variant="error" 
+                        className="flex-1 justify-center min-w-[120px]"
+                        leftIcon={<XCircle size={16} />}
+                        disabled={actionLoading}
+                      >
+                        Reject
+                      </Button>
+                    </>
+                  )}
+                </div>
               </Card>
             ))}
           </div>

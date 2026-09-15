@@ -30,3 +30,20 @@ export async function findUserByResetToken(token: string) {
     },
   });
 }
+
+/**
+ * Looks up a user by the stored email-verification token hash.
+ * Returns null if no matching, unexpired, EMAIL_VERIFY record exists.
+ * NOTE: The caller must hash the raw token before passing it here.
+ */
+export async function findUserByVerificationTokenHash(tokenHash: string) {
+  return prisma.user.findFirst({
+    where: {
+      otpCode: tokenHash,
+      otpPurpose: 'EMAIL_VERIFY',
+      otpExpiresAt: { gt: new Date() },
+      emailVerified: false,
+    },
+  });
+}
+

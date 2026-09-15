@@ -50,7 +50,7 @@ export default function Register() {
         ...(role === 'RECRUITER' && { fullName, designation: designation || undefined, companyName }),
         ...(role === 'ALUMNI' && { fullName, degree, branch, graduationYear: gradYear ? parseInt(gradYear, 10) : undefined, collegeName: college }),
       });
-      navigate('/verify-otp', { state: { email } });
+      navigate('/check-email', { state: { email } });
     } catch (err: any) {
       setError(getErrorMessage(err, 'Registration failed. Please try again.'));
     } finally {

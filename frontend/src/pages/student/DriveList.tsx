@@ -40,8 +40,81 @@ export default function DriveList() {
         {loading ? (
           <LoadingState rows={3} />
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
-            {drives.map(drive => (
+          <div className="space-y-12">
+            <div>
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                <Briefcase size={20} style={{ color: 'var(--brand)' }} /> Active Opportunities
+              </h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
+                {drives.filter(d => new Date(d.applicationEndAt) >= new Date()).map(drive => {
+                  const now = new Date();
+                  const start = new Date(drive.applicationStartAt);
+                  const end = new Date(drive.applicationEndAt);
+                  const isUpcoming = now < start;
+                  const isOpen = now >= start && now <= end;
+
+                  return (
+                    <Card key={drive.id} style={{ display: 'flex', flexDirection: 'column', padding: '1.25rem' }}>
+                      <div style={{ paddingBottom: '0.875rem', borderBottom: '1px solid var(--border-subtle)', marginBottom: '0.875rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.625rem' }}>
+                          <div className="flex gap-2">
+                            <Badge variant="brand">{(drive.employmentType || '').replace(/_/g, ' ')}</Badge>
+                            {isUpcoming && <Badge variant="warning">UPCOMING</Badge>}
+                            {isOpen && <Badge variant="success">OPEN</Badge>}
+                          </div>
+                          {drive.salaryMin && drive.salaryMax && (
+                            <Badge variant="neutral">₹{drive.salaryMin} - ₹{drive.salaryMax} LPA</Badge>
+                          )}
+                        </div>
+                        <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                          {drive.title}
+                        </h3>
+                      </div>
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '1rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Building2 size={16} style={{ color: 'var(--text-muted)' }} />
+                            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{drive.company?.name || 'Not provided'}</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Briefcase size={16} style={{ color: 'var(--text-muted)' }} />
+                            <span>{drive.jobTitle}</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <MapPin size={16} style={{ color: 'var(--text-muted)' }} />
+                            <span>{drive.location} ({drive.workMode})</span>
+                          </div>
+                        </div>
+                        
+                        <div style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
+                          <Link to={`/student/drives/${drive.id}`} className={isOpen ? "btn btn-primary" : "btn btn-secondary"} style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                            {isOpen ? 'Apply Now' : 'Applications Not Open'} <ExternalLink size={16} style={{ marginLeft: '0.375rem' }} />
+                          </Link>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+                
+                {drives.filter(d => new Date(d.applicationEndAt) >= new Date()).length === 0 && (
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <Card style={{ padding: '3rem', textAlign: 'center' }}>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>No Active Drives</h3>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>There are currently no active placement drives available.</p>
+                    </Card>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {drives.filter(d => new Date(d.applicationEndAt) < new Date()).length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                  <Briefcase size={20} style={{ color: 'var(--text-muted)' }} /> Past Drives
+                </h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem', opacity: 0.8 }}>
+                  {drives.filter(d => new Date(d.applicationEndAt) < new Date()).map(drive => (
               <Card key={drive.id} style={{ display: 'flex', flexDirection: 'column', padding: '1.25rem' }}>
                 <div style={{ paddingBottom: '0.875rem', borderBottom: '1px solid var(--border-subtle)', marginBottom: '0.875rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.625rem' }}>
@@ -59,7 +132,7 @@ export default function DriveList() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <Building2 size={16} style={{ color: 'var(--text-muted)' }} />
-                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{drive.company?.name || 'Unknown Company'}</span>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{drive.company?.name || 'Not provided'}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <Briefcase size={16} style={{ color: 'var(--text-muted)' }} />
@@ -72,20 +145,14 @@ export default function DriveList() {
                   </div>
                   
                   <div style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
-                    <Link to={`/student/drives/${drive.id}`} className="btn btn-secondary" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                      View Details <ExternalLink size={16} style={{ marginLeft: '0.375rem' }} />
+                    <Link to={`/student/drives/${drive.id}`} className="btn btn-outline" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                      View Details
                     </Link>
                   </div>
                 </div>
               </Card>
             ))}
-            
-            {drives.length === 0 && (
-              <div style={{ gridColumn: '1 / -1' }}>
-                <Card style={{ padding: '3rem', textAlign: 'center' }}>
-                  <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>No Active Drives</h3>
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>There are currently no placement drives available for application.</p>
-                </Card>
+                </div>
               </div>
             )}
           </div>

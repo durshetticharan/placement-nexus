@@ -356,7 +356,7 @@ export default function DriveExperiences() {
                   <div className="pt-4 border-t flex flex-wrap items-center gap-4 text-xs font-medium" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}>
                     <span className="flex items-center gap-1">
                       <UserCircle size={14} />
-                      {exp.isAnonymous ? 'Anonymous' : (exp.alumniProfile?.fullName || exp.student?.fullName || 'Unknown')}
+                      {exp.isAnonymous ? 'Anonymous' : (exp.alumniProfile?.fullName || exp.student?.fullName || 'Not provided')}
                     </span>
                     <span className="flex items-center gap-1">
                       <BookOpen size={14} />

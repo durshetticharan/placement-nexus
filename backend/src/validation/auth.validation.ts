@@ -58,12 +58,8 @@ export const registerSchema = z
     }
   });
 
-export const verifyOtpSchema = z.object({
+export const resendVerificationSchema = z.object({
   email: z.string().email('Must be a valid email address.'),
-  otpCode: z
-    .string()
-    .length(6, 'OTP must be exactly 6 digits.')
-    .regex(/^\d{6}$/, 'OTP must contain only digits.'),
 });
 
 export const loginSchema = z.object({

@@ -4,7 +4,8 @@ import { useAuth, type UserRole } from '../context/AuthContext';
 
 // Auth pages
 import Register from '../pages/auth/Register';
-import VerifyOtp from '../pages/auth/VerifyOtp';
+import CheckEmail from '../pages/auth/CheckEmail';
+import VerifyEmail from '../pages/auth/VerifyEmail';
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
@@ -41,6 +42,7 @@ import SkillGapAnalysis from '../pages/student/SkillGapAnalysis';
 
 // Phase 9 — Placement Readiness
 import PlacementReadiness from '../pages/student/PlacementReadiness';
+import AtsScore from '../pages/student/AtsScore';
 
 // Phase 10 — Companies + Recruiters
 import RecruiterProfilePage from '../pages/recruiter/RecruiterProfile';
@@ -122,7 +124,8 @@ export default function AppRoutes() {
       {/* Public */}
       <Route path="/"                element={<Navigate to="/login" replace />} />
       <Route path="/register"        element={<Register />} />
-      <Route path="/verify-otp"      element={<VerifyOtp />} />
+      <Route path="/check-email"     element={<CheckEmail />} />
+      <Route path="/verify-email"    element={<VerifyEmail />} />
       <Route path="/login"           element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password"  element={<ResetPassword />} />
@@ -316,6 +319,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <PlacementReadiness />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/ats-score"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <AtsScore />
           </ProtectedRoute>
         }
       />

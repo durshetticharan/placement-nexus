@@ -314,7 +314,7 @@ export default function DriveResources() {
                     <div className="pt-4 border-t flex items-center justify-between" style={{ borderColor: 'var(--border-subtle)' }}>
                       <span className="text-xs font-medium flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
                         <UserCircle size={14} />
-                        {res.alumniProfile?.fullName || res.student?.fullName || 'Unknown'}
+                        {res.alumniProfile?.fullName || res.student?.fullName || 'Not provided'}
                       </span>
                       {(res.externalUrl || res.fileUrl) && (
                         <Button

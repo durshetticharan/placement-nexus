@@ -283,7 +283,7 @@ export default function ContentModeration() {
                         
                         <div className="flex items-center gap-3 text-xs text-slate-400 font-medium">
                           <span className="flex items-center gap-1.5 bg-slate-800 px-2 py-1 rounded-md">
-                            Submitted by: {exp.isAnonymous ? 'Anonymous' : (exp.alumniProfile?.fullName || exp.student?.fullName || 'Unknown')}
+                            Submitted by: {exp.isAnonymous ? 'Anonymous' : (exp.alumniProfile?.fullName || exp.student?.fullName || 'Not provided')}
                           </span>
                           <span>•</span>
                           <span>{new Date(exp.createdAt).toLocaleDateString()}</span>
@@ -355,7 +355,7 @@ export default function ContentModeration() {
 
                         <div className="text-xs text-slate-400 font-medium mt-3 flex items-center gap-2">
                           <span className="bg-slate-800 px-2 py-1 rounded-md">
-                            Submitted by: {res.alumniProfile?.fullName || res.student?.fullName || 'Unknown'}
+                            Submitted by: {res.alumniProfile?.fullName || res.student?.fullName || 'Not provided'}
                           </span>
                           <span>•</span>
                           <span>{new Date(res.createdAt).toLocaleDateString()}</span>

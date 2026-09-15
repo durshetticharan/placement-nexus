@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { getErrorMessage } from '../../utils/error';
 import { Button } from '../../components/ui';
-import { GraduationCap, AlertCircle, CheckCircle } from 'lucide-react';
+import { GraduationCap, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 
 export default function VerifyOtp() {
   const location = useLocation();
@@ -14,6 +14,40 @@ export default function VerifyOtp() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
+
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const handleResend = async () => {
+    if (!email) {
+      setError('Email is missing. Please restart the process.');
+      return;
+    }
+    setError('');
+    setSuccess('');
+    setResending(true);
+    try {
+      await api.post('/auth/resend-otp', { email });
+      setSuccess('A new verification code has been sent to your email.');
+      setTimeLeft(300);
+      setOtpCode('');
+    } catch (err: any) {
+      setError(getErrorMessage(err, 'Failed to resend code.'));
+    } finally {
+      setResending(false);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -46,7 +80,7 @@ export default function VerifyOtp() {
             </div>
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight mb-1">Verify your email</h1>
-          <p className="text-sm text-slate-400">Check the backend console for your OTP</p>
+          <p className="text-sm text-slate-400">We've sent a 6-digit code to your email.</p>
         </div>
 
         {/* Card */}
@@ -102,11 +136,31 @@ export default function VerifyOtp() {
             </div>
           </form>
 
-          <p className="mt-8 text-center text-sm text-slate-400">
-            <Link to="/register" className="font-semibold text-brand hover:text-brand-light transition-colors">
-              Back to register
-            </Link>
-          </p>
+          <div className="mt-6 text-center space-y-4">
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-sm text-slate-400">
+                Code expires in: <span className="font-mono text-white font-medium">{formatTime(timeLeft)}</span>
+              </p>
+              <div className="flex items-center gap-2 text-sm text-slate-400">
+                Didn't receive the code?
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resending || timeLeft > 240} // Allow resend after 60 seconds
+                  className="text-brand hover:text-brand/80 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                >
+                  {resending && <RefreshCw className="animate-spin" size={14} />}
+                  Resend Code
+                </button>
+              </div>
+            </div>
+            
+            <p className="text-sm text-slate-400">
+              <Link to="/login" className="text-brand hover:text-brand/80 font-semibold transition-colors">
+                Back to Login
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

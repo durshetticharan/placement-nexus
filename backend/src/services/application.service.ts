@@ -31,6 +31,14 @@ export async function applyToDrive(studentUserId: string, driveId: string) {
     throw new ApplicationServiceError(400, 'BAD_REQUEST', 'Cannot apply to a drive that is not published');
   }
 
+  const now = new Date();
+  if (now < drive.applicationStartAt) {
+    throw new ApplicationServiceError(403, 'FORBIDDEN', 'Applications for this drive have not opened yet.');
+  }
+  if (now > drive.applicationEndAt) {
+    throw new ApplicationServiceError(403, 'FORBIDDEN', 'Applications for this drive are closed.');
+  }
+
   // Check if already applied
   const existingApp = await prisma.application.findUnique({
     where: { studentId_placementDriveId: { studentId: student.id, placementDriveId: driveId } }

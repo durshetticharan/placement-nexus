@@ -23,6 +23,11 @@ export default function StudentDriveDetails() {
     }
   }, [id]);
 
+  const now = new Date();
+  const isUpcoming = drive ? now < new Date(drive.applicationStartAt) : false;
+  const isClosed = drive ? now > new Date(drive.applicationEndAt) : false;
+
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -105,6 +110,16 @@ export default function StudentDriveDetails() {
                   <p style={{ fontSize: '0.6875rem', color: 'var(--brand-light)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Application Status</p>
                   <p style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--brand-light)' }}>{application.status.replace('_', ' ')}</p>
                 </div>
+              ) : isClosed ? (
+                <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', padding: '0.75rem 1.5rem', borderRadius: '0.5rem', textAlign: 'center' }}>
+                  <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Applications Closed</p>
+                  <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Deadline has passed</p>
+                </div>
+              ) : isUpcoming ? (
+                <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', padding: '0.75rem 1.5rem', borderRadius: '0.5rem', textAlign: 'center' }}>
+                  <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>Applications Not Open</p>
+                  <p style={{ fontSize: '0.6875rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Opens {new Date(drive.applicationStartAt).toLocaleDateString()}</p>
+                </div>
               ) : eligibility?.eligible ? (
                 <Button 
                   onClick={handleApply}
@@ -185,7 +200,13 @@ export default function StudentDriveDetails() {
                         <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{drive.requirements.minCgpa}</span>
                       </li>
                     )}
-                    {drive.requirements.maxActiveBacklogs !== undefined && (
+                    {drive.requirements.minGraduationYear && (
+                      <li style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Graduation Year (Min)</span>
+                        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{drive.requirements.minGraduationYear}</span>
+                      </li>
+                    )}
+                    {drive.requirements.maxActiveBacklogs !== undefined && drive.requirements.maxActiveBacklogs !== null && (
                       <li style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ color: 'var(--text-muted)' }}>Max Backlogs</span>
                         <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{drive.requirements.maxActiveBacklogs}</span>
@@ -197,6 +218,16 @@ export default function StudentDriveDetails() {
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                           {drive.requirements.allowedBranches.map((b: string) => (
                             <Badge key={b} variant="neutral">{b}</Badge>
+                          ))}
+                        </div>
+                      </li>
+                    )}
+                    {drive.requirements.requiredSkills?.length > 0 && (
+                      <li style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Required Skills</span>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+                          {drive.requirements.requiredSkills.map((s: any) => (
+                            <Badge key={s.id || s} variant="brand">{s.name || s}</Badge>
                           ))}
                         </div>
                       </li>

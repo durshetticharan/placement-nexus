@@ -168,7 +168,66 @@ export default function DriveDetails() {
         <PageHeader
           title={drive.title}
           subtitle={`${applications.length} Applications Received`}
-          />
+        />
+
+        <Card className="p-6">
+          <div className="flex flex-col md:flex-row gap-6 justify-between items-start">
+            <div className="space-y-4 flex-1">
+              <div className="flex items-center gap-3">
+                <Badge variant={
+                  drive.status === 'PUBLISHED' && new Date() >= new Date(drive.applicationStartAt) && new Date() <= new Date(drive.applicationEndAt) ? 'success' :
+                  drive.status === 'PUBLISHED' && new Date() < new Date(drive.applicationStartAt) ? 'warning' :
+                  'default'
+                }>
+                  {drive.status === 'PUBLISHED' && new Date() >= new Date(drive.applicationStartAt) && new Date() <= new Date(drive.applicationEndAt) ? 'OPEN' :
+                   drive.status === 'PUBLISHED' && new Date() < new Date(drive.applicationStartAt) ? 'UPCOMING' :
+                   drive.status === 'PUBLISHED' && new Date() > new Date(drive.applicationEndAt) ? 'CLOSED' :
+                   drive.status}
+                </Badge>
+                <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  {drive.company?.name} • {drive.location} ({drive.workMode})
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm" style={{ color: 'var(--text-primary)' }}>
+                <div>
+                  <span className="block text-xs font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Job Title</span>
+                  {drive.jobTitle} ({(drive.employmentType || '').replace(/_/g, ' ')})
+                </div>
+                <div>
+                  <span className="block text-xs font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Package</span>
+                  {drive.salaryMin && drive.salaryMax ? `₹${drive.salaryMin} - ₹${drive.salaryMax} LPA` : 'Not specified'}
+                </div>
+                <div>
+                  <span className="block text-xs font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Application Starts</span>
+                  {new Date(drive.applicationStartAt).toLocaleString()}
+                </div>
+                <div>
+                  <span className="block text-xs font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Application Ends</span>
+                  {new Date(drive.applicationEndAt).toLocaleString()}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 p-4 rounded-xl border" style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)' }}>
+              <h4 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>Eligibility Criteria</h4>
+              {drive.requirements ? (
+                <ul className="space-y-2 text-sm" style={{ color: 'var(--text-primary)' }}>
+                  {drive.requirements.minCgpa && <li><span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>Min CGPA:</span> {drive.requirements.minCgpa}</li>}
+                  {drive.requirements.minGraduationYear && <li><span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>Grad Year:</span> {drive.requirements.minGraduationYear}</li>}
+                  {drive.requirements.maxActiveBacklogs !== undefined && drive.requirements.maxActiveBacklogs !== null && <li><span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>Max Backlogs:</span> {drive.requirements.maxActiveBacklogs}</li>}
+                  {drive.requirements.allowedBranches?.length > 0 && <li><span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>Branches:</span> {drive.requirements.allowedBranches.join(', ')}</li>}
+                  {drive.requirements.requiredSkills?.length > 0 && <li><span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>Skills:</span> {drive.requirements.requiredSkills.map(s => s.name || s).join(', ')}</li>}
+                  {!drive.requirements.minCgpa && !drive.requirements.minGraduationYear && drive.requirements.maxActiveBacklogs === undefined && (!drive.requirements.allowedBranches || drive.requirements.allowedBranches.length === 0) && (!drive.requirements.requiredSkills || drive.requirements.requiredSkills.length === 0) && (
+                    <li className="italic text-slate-500">No specific criteria set</li>
+                  )}
+                </ul>
+              ) : (
+                <p className="text-sm italic" style={{ color: 'var(--text-muted)' }}>No eligibility criteria configured.</p>
+              )}
+            </div>
+          </div>
+        </Card>
 
         <Card className="p-0 overflow-hidden">
           <div className="overflow-x-auto">
@@ -201,7 +260,7 @@ export default function DriveDetails() {
                           {app.student?.user?.fullName?.charAt(0) || 'U'}
                         </div>
                         <div>
-                          <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{app.student?.user?.fullName || 'Unknown'}</p>
+                          <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{app.student?.user?.fullName || 'Not provided'}</p>
                           <p className="text-xs font-mono mt-0.5" style={{ color: 'var(--text-muted)' }}>{app.student?.rollNumber}</p>
                         </div>
                       </div>

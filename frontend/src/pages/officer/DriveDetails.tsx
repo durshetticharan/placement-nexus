@@ -81,7 +81,7 @@ export default function OfficerDriveDetails() {
               {applications.map(app => (
                 <tr key={app.id} className="hover:bg-slate-700/30 transition-colors">
                   <td className="p-4">
-                    <p className="text-white font-medium">{app.student?.user?.fullName || 'Unknown'}</p>
+                    <p className="text-white font-medium">{app.student?.user?.fullName || 'Not provided'}</p>
                     <p className="text-slate-400 text-xs text-mono">{app.student?.rollNumber}</p>
                   </td>
                   <td className="p-4">

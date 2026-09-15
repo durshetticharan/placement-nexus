@@ -2,8 +2,8 @@ import api from './api';
 import type { PlacementDrive } from './driveService';
 
 export type ApplicationStatus = 'APPLIED' | 'UNDER_REVIEW' | 'SHORTLISTED' | 'ASSESSMENT_STAGE' | 'INTERVIEW_STAGE' | 'SELECTED' | 'REJECTED' | 'WITHDRAWN';
-export type InterviewOutcome = 'PENDING' | 'PASSED' | 'FAILED';
-export type InterviewType = 'HR' | 'TECHNICAL' | 'MANAGERIAL' | 'ASSIGNMENT';
+export type InterviewOutcome = 'PENDING' | 'PASSED' | 'FAILED' | 'NO_SHOW';
+export type InterviewType = 'APTITUDE' | 'TECHNICAL' | 'CODING' | 'HR' | 'MANAGERIAL' | 'OTHER';
 export type SelectionDecision = 'SELECTED' | 'REJECTED';
 
 export interface Interview {

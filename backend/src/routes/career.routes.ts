@@ -27,7 +27,7 @@ router.post('/me/readiness', requireRole('STUDENT'), readinessController.compute
 router.get('/me/readiness', requireRole('STUDENT'), readinessController.getReadiness);
 
 // ── Skills Catalog (Both Officer and Student) ────────────────────────────────
-router.get('/skills', requireRole('PLACEMENT_OFFICER', 'STUDENT'), careerPathController.listSkills);
+router.get('/skills', requireRole('PLACEMENT_OFFICER', 'STUDENT', 'RECRUITER'), careerPathController.listSkills);
 
 // ── Career Paths ─────────────────────────────────────────────────────────────
 router.get('/paths', requireRole('PLACEMENT_OFFICER', 'STUDENT'), careerPathController.listCareerPaths);

@@ -51,6 +51,7 @@ model User {
   otpCode      String?
   otpExpiresAt DateTime?
   otpPurpose   String? // "EMAIL_VERIFY" | "PASSWORD_RESET" | "LOGIN_2FA"
+  otpAttempts  Int       @default(0)
 
   refreshTokenHash   String? // current valid refresh token (hashed), rotated on use
   refreshTokenExpiry DateTime?
@@ -482,8 +483,9 @@ model ResumeCertification {
   resume         BuiltResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   
   name           String
-  issuingOrg     String
-  issueDate      String
+  description    String?
+  issuingOrg     String?
+  issueDate      String?
   expiryDate     String?
   credentialId   String?
   credentialUrl  String?

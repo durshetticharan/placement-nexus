@@ -5,8 +5,8 @@ import { UserRole, PrismaClient } from '@prisma/client';
 import * as userRepo from '../repositories/user.repository';
 import * as recruiterRepo from '../repositories/recruiter.repository';
 import * as alumniRepo from '../repositories/alumni.repository';
-import { generateOtp, generateSecureToken } from '../utils/otp';
-import { sendOtpEmail, sendPasswordResetEmail } from './emailService';
+import { generateSecureToken } from '../utils/otp';
+import { sendVerificationEmail, sendPasswordResetEmail } from './emailService';
 
 const prisma = new PrismaClient();
 const SALT_ROUNDS = 10;
@@ -53,17 +53,25 @@ export async function register(
   }
 
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-  const { code: otpCode, expiresAt: otpExpiresAt } = generateOtp();
 
   await userRepo.createUser({ email, passwordHash, role });
 
   const user = await userRepo.findUserByEmail(email);
   if (!user) throw new Error('User creation failed.');
 
+  // Generate a secure random verification token (raw never stored)
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto
+    .createHmac('sha256', getEnv('EMAIL_VERIFICATION_SECRET'))
+    .update(rawToken)
+    .digest('hex');
+  const tokenExpiry = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+
   await userRepo.updateUser(user.id, {
-    otpCode,
-    otpExpiresAt,
+    otpCode: tokenHash,
+    otpExpiresAt: tokenExpiry,
     otpPurpose: 'EMAIL_VERIFY',
+    otpAttempts: 0,
   });
 
   // ── Role-specific profile creation ────────────────────────────────────────
@@ -115,7 +123,11 @@ export async function register(
     });
   }
 
-  await sendOtpEmail(email, otpCode, 'Email Verification');
+  // Build verification URL — raw token is only ever in the email, never stored
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const verificationUrl = `${frontendUrl}/verify-email?token=${rawToken}`;
+
+  await sendVerificationEmail(email, verificationUrl);
 
   const pendingApprovalRoles: UserRole[] = ['RECRUITER', 'ALUMNI'];
   const extraNote = pendingApprovalRoles.includes(role)
@@ -123,33 +135,37 @@ export async function register(
     : '';
 
   return {
-    message: `Registration successful. Please check your email (console) for the OTP.${extraNote}`,
-    ...(process.env.NODE_ENV === 'test' && { otpCode }),
+    message: `Registration submitted successfully. Please check your email and click the verification link to verify your account.${extraNote}`,
   };
 }
 
-// ─── Verify OTP ──────────────────────────────────────────────────────────────
+// ─── Verify Email Token ───────────────────────────────────────────────────────
 
-export async function verifyOtp(email: string, otpCode: string) {
-  const user = await userRepo.findUserByEmail(email);
-  if (!user) {
-    throw Object.assign(new Error('User not found.'), { code: 'NOT_FOUND', statusCode: 404 });
-  }
-
-  if (!user.otpCode || !user.otpExpiresAt) {
-    throw Object.assign(new Error('No pending OTP for this account.'), {
+export async function verifyEmailToken(rawToken: string) {
+  if (!rawToken || rawToken.length < 10) {
+    throw Object.assign(new Error('Invalid verification link.'), {
       code: 'VALIDATION_ERROR',
       statusCode: 400,
     });
   }
 
-  if (user.otpCode !== otpCode) {
-    throw Object.assign(new Error('Invalid OTP code.'), { code: 'VALIDATION_ERROR', statusCode: 400 });
+  // Hash the incoming raw token to compare against stored hash
+  const tokenHash = crypto
+    .createHmac('sha256', getEnv('EMAIL_VERIFICATION_SECRET'))
+    .update(rawToken)
+    .digest('hex');
+
+  const user = await userRepo.findUserByVerificationTokenHash(tokenHash);
+  if (!user) {
+    throw Object.assign(
+      new Error('This verification link is invalid or has expired. Please request a new one.'),
+      { code: 'VALIDATION_ERROR', statusCode: 400 }
+    );
   }
 
-  if (user.otpExpiresAt < new Date()) {
-    throw Object.assign(new Error('OTP has expired. Please request a new one.'), {
-      code: 'VALIDATION_ERROR',
+  if (user.emailVerified) {
+    throw Object.assign(new Error('Your email is already verified.'), {
+      code: 'ALREADY_VERIFIED',
       statusCode: 400,
     });
   }
@@ -158,22 +174,83 @@ export async function verifyOtp(email: string, otpCode: string) {
   // STUDENT and PLACEMENT_OFFICER become ACTIVE immediately after email verification.
   // RECRUITER and ALUMNI must also pass officer approval — they stay PENDING_VERIFICATION
   // until a Placement Officer explicitly approves them (which then sets status=ACTIVE).
-  const activateOnOtp = user.role === 'STUDENT' || user.role === 'PLACEMENT_OFFICER';
+  const activateOnVerify = user.role === 'STUDENT' || user.role === 'PLACEMENT_OFFICER';
 
   await userRepo.updateUser(user.id, {
     emailVerified: true,
     emailVerifiedAt: new Date(),
-    status: activateOnOtp ? 'ACTIVE' : 'PENDING_VERIFICATION',
+    status: activateOnVerify ? 'ACTIVE' : 'PENDING_VERIFICATION',
+    // Clear verification token fields — token is now single-use
     otpCode: null,
     otpExpiresAt: null,
     otpPurpose: null,
+    otpAttempts: 0,
   });
 
-  const message = activateOnOtp
+  const message = activateOnVerify
     ? 'Email verified successfully. You can now log in.'
     : 'Email verified successfully. Your account is now pending approval by a Placement Officer.';
 
   return { message };
+}
+
+// ─── Resend Verification Email ────────────────────────────────────────────────
+
+export async function resendVerification(email: string) {
+  const user = await userRepo.findUserByEmail(email);
+  if (!user) {
+    // Return safe generic message — do not leak whether email is registered
+    return { message: 'If this email is registered and unverified, a new verification link has been sent.' };
+  }
+
+  if (user.emailVerified) {
+    throw Object.assign(new Error('Email is already verified.'), {
+      code: 'VALIDATION_ERROR',
+      statusCode: 400,
+    });
+  }
+
+  // Generate new token
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto
+    .createHmac('sha256', getEnv('EMAIL_VERIFICATION_SECRET'))
+    .update(rawToken)
+    .digest('hex');
+  const tokenExpiry = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+
+  // Atomic rate limiting: only update if the current token is null or was generated > 60s ago
+  // (i.e. its expiry is at most 29 minutes from now, meaning it was created >= 60s ago).
+  const updateResult = await prisma.user.updateMany({
+    where: {
+      id: user.id,
+      OR: [
+        { otpExpiresAt: null },
+        { otpExpiresAt: { lte: new Date(Date.now() + 29 * 60 * 1000) } },
+      ],
+    },
+    data: {
+      otpCode: tokenHash,
+      otpExpiresAt: tokenExpiry,
+      otpPurpose: 'EMAIL_VERIFY',
+      otpAttempts: 0,
+    },
+  });
+
+  if (updateResult.count === 0) {
+    throw Object.assign(new Error('Please wait 60 seconds before requesting a new verification email.'), {
+      code: 'RATE_LIMIT_EXCEEDED',
+      statusCode: 429,
+    });
+  }
+
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const verificationUrl = `${frontendUrl}/verify-email?token=${rawToken}`;
+
+  await sendVerificationEmail(email, verificationUrl);
+
+  return {
+    message: 'A new verification link has been sent to your email. Please check your inbox.',
+  };
 }
 
 // ─── Login ───────────────────────────────────────────────────────────────────
@@ -193,7 +270,7 @@ export async function login(email: string, password: string) {
       user.emailVerified && (user.role === 'RECRUITER' || user.role === 'ALUMNI');
     const msg = awaitingOfficer
       ? 'Your account is pending approval by a Placement Officer. You will be able to log in once approved.'
-      : 'Your email has not been verified. Please check your console for the OTP.';
+      : 'Please verify your email before logging in. Check your inbox for the verification code.';
     throw Object.assign(new Error(msg), { code: 'UNAUTHORIZED', statusCode: 401 });
   }
 
@@ -315,7 +392,7 @@ export async function forgotPassword(email: string) {
   const user = await userRepo.findUserByEmail(email);
   // Always return success to avoid user enumeration
   if (!user) {
-    return { message: 'If that email is registered, a reset link has been sent to your console.' };
+    return { message: 'If that email is registered, a reset link has been sent to your inbox.' };
   }
 
   const resetToken = generateSecureToken();
@@ -328,7 +405,7 @@ export async function forgotPassword(email: string) {
 
   await sendPasswordResetEmail(email, resetToken);
 
-  return { message: 'If that email is registered, a reset link has been sent to your console.' };
+  return { message: 'If that email is registered, a reset link has been sent to your inbox.' };
 }
 
 // ─── Reset Password ───────────────────────────────────────────────────────────

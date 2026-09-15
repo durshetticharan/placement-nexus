@@ -93,6 +93,16 @@ export async function listRecruiterDrives(req: Request, res: Response) {
   }
 }
 
+export async function getRecruiterDrive(req: Request, res: Response) {
+  try {
+    const id = req.params['id'] as string;
+    const drive = await driveService.getRecruiterDriveById(req.user!.userId, id);
+    res.json({ success: true, data: drive });
+  } catch (err: any) {
+    handleError(res, err);
+  }
+}
+
 // === OFFICER ACTIONS ===
 
 export async function listOfficerDrives(req: Request, res: Response) {

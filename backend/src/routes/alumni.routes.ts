@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as alumniController from '../controllers/alumni.controller';
 import { requireAuth } from '../middleware/auth.middleware';
-import { requireRole } from '../middleware/rbac.middleware';
+import { requireRole, requireVerifiedAlumni } from '../middleware/rbac.middleware';
 
 const router = Router();
 
@@ -35,6 +35,7 @@ router.post(
   '/me/profile',
   requireAuth,
   requireRole('ALUMNI'),
+  requireVerifiedAlumni,
   alumniController.createOrUpdateProfile,
 );
 
@@ -42,6 +43,7 @@ router.get(
   '/me/profile',
   requireAuth,
   requireRole('ALUMNI'),
+  requireVerifiedAlumni,
   alumniController.getMyProfile,
 );
 

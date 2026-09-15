@@ -288,13 +288,51 @@ export async function listRecruiterDrives(userId: string) {
   if (!recruiter) return [];
 
   const companyIds = recruiter.memberships.map(m => m.companyId);
-  companyIds.push(recruiter.companyId);
+  if (recruiter.companyId) {
+    companyIds.push(recruiter.companyId);
+  }
 
   return prisma.placementDrive.findMany({
     where: { companyId: { in: companyIds } },
     include: { company: true },
     orderBy: { createdAt: 'desc' }
   });
+}
+
+export async function getRecruiterDriveById(userId: string, driveId: string) {
+  const recruiter = await prisma.recruiter.findUnique({
+    where: { userId },
+    include: { memberships: true }
+  });
+  if (!recruiter) throw new DriveServiceError(403, 'UNAUTHORIZED', 'Unauthorized');
+
+  const drive = await prisma.placementDrive.findUnique({
+    where: { id: driveId },
+    include: {
+      company: true,
+      requirements: {
+        include: { requiredSkills: true, preferredSkills: true }
+      }
+    }
+  });
+  
+  if (!drive) throw new DriveServiceError(404, 'NOT_FOUND', 'Drive not found');
+
+  const companyIds = recruiter.memberships.map(m => m.companyId);
+  if (recruiter.companyId) {
+    companyIds.push(recruiter.companyId);
+  }
+
+  if (!companyIds.includes(drive.companyId)) {
+    throw new DriveServiceError(403, 'FORBIDDEN', 'Not authorized to view this drive');
+  }
+
+  const auditLogs = await prisma.auditLog.findMany({
+    where: { entityType: 'PlacementDrive', entityId: driveId },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  return { ...drive, auditLogs };
 }
 
 export async function listOfficerDrives() {

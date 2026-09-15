@@ -11,7 +11,7 @@ export default defineConfig({
       // Proxy all /api requests to the Express backend
       // This makes cookies same-origin (5173 → 5173/api → 5000)
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
         secure: false,
         cookieDomainRewrite: 'localhost',

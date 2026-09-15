@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { PlacementDrive } from '../../services/driveService';
 import { recruiterDriveApi } from '../../services/driveService';
 import AppLayout from '../../components/layout/AppLayout';
+import { getSkillsCatalog, type Skill } from '../../services/careerService';
 import { PageHeader, Card, Button, Badge, LoadingState, ErrorState, EmptyState } from '../../components/ui';
 import { Plus, Edit2, CheckCircle, Briefcase, MapPin, Calendar, Clock, X, Building, Users } from 'lucide-react';
 
@@ -10,11 +11,23 @@ export default function DriveManagement() {
   const [drives, setDrives] = useState<PlacementDrive[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [submitLoadingId, setSubmitLoadingId] = useState<string | null>(null);
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formData, setFormData] = useState<any>({});
+  const [requirementsData, setRequirementsData] = useState<any>({
+    allowedBranches: [],
+    requiredSkills: []
+  });
+  const [skills, setSkills] = useState<Skill[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isFormOpen && skills.length === 0) {
+      getSkillsCatalog().then(setSkills).catch(console.error);
+    }
+  }, [isFormOpen]);
 
   const fetchDrives = async () => {
     try {
@@ -38,12 +51,23 @@ export default function DriveManagement() {
   const handleCreate = async () => {
     try {
       setSubmitting(true);
-      await recruiterDriveApi.create(formData);
+      const newDrive = await recruiterDriveApi.create(formData);
+      
+      if (requirementsData.minCgpa || requirementsData.minGraduationYear || requirementsData.allowedBranches.length > 0 || requirementsData.requiredSkills.length > 0) {
+        await recruiterDriveApi.updateRequirements(newDrive.id, requirementsData);
+      }
+      
       setIsFormOpen(false);
       setFormData({});
+      setRequirementsData({ allowedBranches: [], requiredSkills: [] });
       fetchDrives();
     } catch (err: any) {
-      setError(err.message || 'Failed to create drive');
+      // Fix error parsing: handle `{ error: { message: "..." } }` from DriveServiceError
+      const errObj = err.response?.data?.error;
+      const errMsg = Array.isArray(errObj) 
+        ? errObj[0]?.message 
+        : errObj?.message;
+      setError(errMsg || err.response?.data?.message || err.message || 'Failed to create drive');
     } finally {
       setSubmitting(false);
     }
@@ -51,10 +75,18 @@ export default function DriveManagement() {
 
   const handleSubmitDrive = async (id: string) => {
     try {
+      setSubmitLoadingId(id);
       await recruiterDriveApi.submit(id);
       fetchDrives();
     } catch (err: any) {
-      setError(err.message || 'Failed to submit drive');
+      // Fix error parsing: handle `{ error: { message: "..." } }` from DriveServiceError
+      const errObj = err.response?.data?.error;
+      const errMsg = Array.isArray(errObj) 
+        ? errObj[0]?.message 
+        : errObj?.message;
+      setError(errMsg || err.response?.data?.message || err.message || 'Failed to submit drive');
+    } finally {
+      setSubmitLoadingId(null);
     }
   };
 
@@ -163,6 +195,8 @@ export default function DriveManagement() {
                       className="flex-1"
                       leftIcon={<CheckCircle size={16} />}
                       onClick={() => handleSubmitDrive(drive.id)}
+                      isLoading={submitLoadingId === drive.id}
+                      loadingText="Submitting..."
                     >
                       Submit
                     </Button>
@@ -307,6 +341,50 @@ export default function DriveManagement() {
                     <input type="datetime-local" className="w-full rounded-xl text-sm focus:outline-none focus:ring-2" 
                       style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem 0.75rem 2.5rem', outlineColor: 'var(--brand)' }}
                       onChange={(e) => setFormData({...formData, applicationEndAt: new Date(e.target.value).toISOString()})} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 mt-6 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+                <h4 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Eligibility Criteria (Optional)</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Minimum CGPA</label>
+                    <input type="number" step="0.01" min="0" max="10" className="w-full rounded-xl text-sm focus:outline-none focus:ring-2" 
+                      style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}
+                      placeholder="e.g. 7.50"
+                      onChange={(e) => setRequirementsData({...requirementsData, minCgpa: e.target.value ? parseFloat(e.target.value) : null})} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Graduation Year (Minimum)</label>
+                    <input type="number" className="w-full rounded-xl text-sm focus:outline-none focus:ring-2" 
+                      style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}
+                      placeholder="e.g. 2024"
+                      onChange={(e) => setRequirementsData({...requirementsData, minGraduationYear: e.target.value ? parseInt(e.target.value) : null})} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Eligible Branches (Comma separated)</label>
+                    <input type="text" className="w-full rounded-xl text-sm focus:outline-none focus:ring-2" 
+                      style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}
+                      placeholder="e.g. CSE, IT, ECE"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setRequirementsData({...requirementsData, allowedBranches: val ? val.split(',').map(b => b.trim()).filter(Boolean) : []});
+                      }} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Required Skills</label>
+                    <select multiple className="w-full rounded-xl text-sm focus:outline-none focus:ring-2 min-h-[100px]" 
+                      style={{ background: 'var(--surface-2)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '0.75rem 1rem', outlineColor: 'var(--brand)' }}
+                      onChange={(e) => {
+                        const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+                        setRequirementsData({...requirementsData, requiredSkills: selectedOptions});
+                      }}>
+                      {skills.map(skill => (
+                        <option key={skill.id} value={skill.id}>{skill.name}</option>
+                      ))}
+                    </select>
+                    <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Hold Ctrl/Cmd to select multiple skills.</p>
                   </div>
                 </div>
               </div>

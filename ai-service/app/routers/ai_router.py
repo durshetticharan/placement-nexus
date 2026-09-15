@@ -9,6 +9,9 @@ import os
 from fastapi import APIRouter, Depends, HTTPException, Header, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 from app.schemas import (
     ResumeAnalysisRequest,
@@ -72,6 +75,16 @@ async def resume_analyze(
             strengths=result.get("strengths", []),
             improvements=result.get("improvements", []),
             keywordDensity=result.get("keywordDensity"),
+            jdRequiredSkills=result.get("jdRequiredSkills", []),
+            jdPreferredSkills=result.get("jdPreferredSkills", []),
+            jdKeywords=result.get("jdKeywords", []),
+            resumeKeywords=result.get("resumeKeywords", []),
+            resumeExperience=result.get("resumeExperience", []),
+            resumeProjects=result.get("resumeProjects", []),
+            resumeEducation=result.get("resumeEducation", []),
+            resumeSections=result.get("resumeSections", []),
+            jdExperienceRequirements=result.get("jdExperienceRequirements", []),
+            jdEducationRequirements=result.get("jdEducationRequirements", []),
             confidence=result.get("confidence", "LOW"),
             isAiGenerated=True,
             promptVersion=result.get("promptVersion", "1.0"),
@@ -80,15 +93,41 @@ async def resume_analyze(
     except ValueError as exc:
         raise HTTPException(status_code=502, detail=f"AI returned invalid output: {exc}")
     except Exception as exc:
-        raise HTTPException(status_code=503, detail=f"AI service error: {exc}")
+        logger.error(f"AI service error in resume_analyze: {exc}")
+        raise HTTPException(status_code=503, detail="AI service temporarily unavailable. Please try again.")
 
 
 # ── Resume PDF Upload (convenience endpoint) ───────────────────────────────────
+
+@router.post("/resume/extract-text")
+async def resume_extract_text(
+    file: UploadFile = File(...),
+    _=Depends(verify_internal_key),
+):
+    """
+    Accept a PDF file and return its extracted plain text.
+    Does NOT call any AI model. Extremely fast and deterministic.
+    """
+    if file.content_type not in ("application/pdf",):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="PDF exceeds 5 MB limit.")
+
+    text, status = extract_text_from_pdf(content)
+    if status == "image_only":
+        raise HTTPException(status_code=400, detail="Unable to extract readable text from this PDF. Please upload a text-based resume PDF.")
+    if status in ("empty", "error"):
+        raise HTTPException(status_code=400, detail="Unable to extract readable text from this PDF.")
+
+    return JSONResponse(status_code=200, content={"text": text})
+
 
 @router.post("/resume/analyze-pdf")
 async def resume_analyze_pdf(
     file: UploadFile = File(...),
     student_id: str = Form(...),
+    job_description: Optional[str] = Form(None),
     _=Depends(verify_internal_key),
 ):
     """
@@ -117,10 +156,11 @@ async def resume_analyze_pdf(
 
     safe_text = truncate_text(text, max_chars=20_000)
     try:
-        result = await analyze_resume(safe_text)
+        result = await analyze_resume(safe_text, job_description)
         return result
     except Exception as exc:
-        raise HTTPException(status_code=503, detail=str(exc))
+        logger.error(f"AI service error in resume_analyze_pdf: {exc}")
+        raise HTTPException(status_code=503, detail="AI service temporarily unavailable. Please try again.")
 
 
 # ── Career Guidance ────────────────────────────────────────────────────────────
@@ -151,7 +191,8 @@ async def career_guidance_endpoint(
     except ValueError as exc:
         raise HTTPException(status_code=502, detail=str(exc))
     except Exception as exc:
-        raise HTTPException(status_code=503, detail=str(exc))
+        logger.error(f"AI service error in career_guidance: {exc}")
+        raise HTTPException(status_code=503, detail="AI service temporarily unavailable. Please try again.")
 
 
 # ── Interview Practice ─────────────────────────────────────────────────────────
@@ -182,7 +223,8 @@ async def interview_questions(
     except ValueError as exc:
         raise HTTPException(status_code=502, detail=str(exc))
     except Exception as exc:
-        raise HTTPException(status_code=503, detail=str(exc))
+        logger.error(f"AI service error in interview_questions: {exc}")
+        raise HTTPException(status_code=503, detail="AI service temporarily unavailable. Please try again.")
 
 
 @router.post("/interview/evaluate", response_model=InterviewEvaluateResponse)
@@ -219,7 +261,8 @@ async def interview_evaluate(
     except ValueError as exc:
         raise HTTPException(status_code=502, detail=str(exc))
     except Exception as exc:
-        raise HTTPException(status_code=503, detail=str(exc))
+        logger.error(f"AI service error in interview_evaluate: {exc}")
+        raise HTTPException(status_code=503, detail="AI service temporarily unavailable. Please try again.")
 
 
 # ── Drive Preparation ──────────────────────────────────────────────────────────
@@ -249,4 +292,5 @@ async def drive_preparation(
     except ValueError as exc:
         raise HTTPException(status_code=502, detail=str(exc))
     except Exception as exc:
-        raise HTTPException(status_code=503, detail=str(exc))
+        logger.error(f"AI service error in drive_preparation: {exc}")
+        raise HTTPException(status_code=503, detail="AI service temporarily unavailable. Please try again.")
