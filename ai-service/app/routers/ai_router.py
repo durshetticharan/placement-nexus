@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 from app.schemas import (
     ResumeAnalysisRequest,
     ResumeAnalysisResponse,
+    ResumeMatchRequest,
+    ResumeMatchResponse,
     CareerGuidanceRequest,
     CareerGuidanceResponse,
     InterviewQuestionsRequest,
@@ -32,6 +34,7 @@ from app.services.ai_service import (
     evaluate_interview_answer,
     drive_preparation_advice,
 )
+from app.services.resume_matcher import match_resume_to_jd
 from app.utils.pdf import extract_text_from_pdf, truncate_text
 
 router = APIRouter(prefix="/ai", tags=["AI"])
@@ -50,7 +53,48 @@ def verify_internal_key(x_internal_key: str = Header(...)):
         raise HTTPException(status_code=403, detail="Invalid internal service key.")
 
 
-# ── Resume Analysis ────────────────────────────────────────────────────────────
+# ── Resume Analysis & Matching (Resume-Matcher Integrated) ─────────────────────
+
+@router.post("/resume/match", response_model=ResumeMatchResponse)
+async def resume_match(
+    payload: ResumeMatchRequest,
+    _=Depends(verify_internal_key),
+):
+    """
+    Perform deep Resume-to-JD vector matching & gap analysis using Resume-Matcher algorithm:
+    - TF-IDF & N-Gram keyphrase extraction
+    - Vector cosine similarity
+    - Experience & Project relevancy scores
+    - Categorized skill breakdown & missing high-impact keywords
+    - Actionable resume optimization advice
+    """
+    if len(payload.resume_text.strip()) < 30:
+        raise HTTPException(status_code=400, detail="Resume text too short to match.")
+    if len(payload.job_description.strip()) < 20:
+        raise HTTPException(status_code=400, detail="Job description too short to match.")
+
+    try:
+        match_result = match_resume_to_jd(payload.resume_text, payload.job_description)
+        return ResumeMatchResponse(
+            matchPercentage=match_result["matchPercentage"],
+            vectorSimilarity=match_result["vectorSimilarity"],
+            keywordMatchScore=match_result["keywordMatchScore"],
+            experienceRelevanceScore=match_result["experienceRelevanceScore"],
+            projectRelevanceScore=match_result["projectRelevanceScore"],
+            matchedKeywordsCount=match_result["matchedKeywordsCount"],
+            totalJdKeywordsCount=match_result["totalJdKeywordsCount"],
+            matchedKeywords=match_result["matchedKeywords"],
+            missingKeywords=match_result["missingKeywords"],
+            missingKeywordsDetails=match_result["missingKeywordsDetails"],
+            categoryBreakdown=match_result["categoryBreakdown"],
+            suggestions=match_result["suggestions"],
+            methodology=match_result["methodology"],
+            isAiGenerated=True,
+        )
+    except Exception as exc:
+        logger.error(f"Error in resume_match: {exc}")
+        raise HTTPException(status_code=500, detail=f"Resume matching failed: {exc}")
+
 
 @router.post("/resume/analyze", response_model=ResumeAnalysisResponse)
 async def resume_analyze(
@@ -58,7 +102,7 @@ async def resume_analyze(
     _=Depends(verify_internal_key),
 ):
     """
-    Analyze resume text with AI.
+    Analyze resume text with AI and vector semantics.
     Text must already be extracted by the Node backend.
     AI output is advisory; does not alter any profile data automatically.
     """
@@ -85,6 +129,10 @@ async def resume_analyze(
             resumeSections=result.get("resumeSections", []),
             jdExperienceRequirements=result.get("jdExperienceRequirements", []),
             jdEducationRequirements=result.get("jdEducationRequirements", []),
+            vectorSimilarity=result.get("vectorSimilarity"),
+            keywordMatchScore=result.get("keywordMatchScore"),
+            categoryBreakdown=result.get("categoryBreakdown"),
+            missingKeywordsDetails=result.get("missingKeywordsDetails"),
             confidence=result.get("confidence", "LOW"),
             isAiGenerated=True,
             promptVersion=result.get("promptVersion", "1.0"),

@@ -5,3 +5,5 @@ python-multipart
 python-dotenv
 httpx
 PyMuPDF
+scikit-learn
+numpy

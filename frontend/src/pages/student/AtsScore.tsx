@@ -2,7 +2,7 @@ import { useState } from 'react';
 import api from '../../services/api';
 import AppLayout from '../../components/layout/AppLayout';
 import { PageHeader, Card, Button, ErrorState, ProgressRing } from '../../components/ui';
-import { UploadCloud, FileText, CheckCircle2, XCircle, File, Target, Star, TrendingUp, RefreshCw, BarChart2, Briefcase, GraduationCap, LayoutList, Terminal } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle2, XCircle, File, Target, Star, TrendingUp, RefreshCw, BarChart2, Briefcase, GraduationCap, LayoutList, Terminal, Sparkles, Layers, AlertTriangle } from 'lucide-react';
 
 /** Shape of the ATS analysis response from the backend. */
 interface AtsScoreBreakdown {
@@ -13,6 +13,19 @@ interface AtsScoreBreakdown {
   educationScore: number;
   keywordScore: number;
   structureScore: number;
+}
+
+interface CategoryBreakdownItem {
+  category: string;
+  matchedCount: number;
+  totalCount: number;
+  percentage: number;
+}
+
+interface MissingKeywordDetail {
+  name: string;
+  category: string;
+  importance: string;
 }
 
 interface AtsResult {
@@ -38,6 +51,10 @@ interface AtsResult {
   resumeSections: string[];
   jdExperienceRequirements: string[];
   jdEducationRequirements: string[];
+  vectorSimilarity?: number;
+  keywordMatchScore?: number;
+  categoryBreakdown?: CategoryBreakdownItem[];
+  missingKeywordsDetails?: MissingKeywordDetail[];
   strengths?: string[];
   improvements?: string[];
   missingSections?: string[];
@@ -298,9 +315,96 @@ export default function AtsScore() {
                   </div>
                 </Card>
               )}
+
+              {result.vectorSimilarity !== undefined && (
+                <Card className="border border-brand/20 bg-brand/5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles size={16} className="text-brand" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-brand">Resume-Matcher Vector AI</span>
+                  </div>
+                  <div className="space-y-2.5">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-text-secondary">Vector Semantic Fit</span>
+                      <span className="font-bold text-text-primary">{result.vectorSimilarity}%</span>
+                    </div>
+                    <div className="w-full bg-surface-2 rounded-full h-2 overflow-hidden">
+                      <div 
+                        className="bg-brand h-2 rounded-full transition-all duration-500" 
+                        style={{ width: `${Math.min(100, Math.max(0, result.vectorSimilarity))}%` }} 
+                      />
+                    </div>
+                    {result.keywordMatchScore !== undefined && (
+                      <div className="flex justify-between items-center text-xs text-text-muted pt-1">
+                        <span>Keyphrase Hit Rate</span>
+                        <span className="font-medium text-text-secondary">{result.keywordMatchScore}%</span>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              )}
             </div>
 
             <div className="lg:col-span-2 space-y-6">
+
+              {/* CATEGORY TAXONOMY BREAKDOWN (Resume-Matcher) */}
+              {result.categoryBreakdown && result.categoryBreakdown.length > 0 && (
+                <Card>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="flex items-center gap-2 text-lg font-bold text-text-primary">
+                      <Layers size={20} className="text-brand" /> Skill Taxonomy Gap Analysis
+                    </h3>
+                    <span className="text-xs px-2.5 py-1 rounded-full bg-brand/10 text-brand font-medium border border-brand/20">
+                      Resume-Matcher NLP
+                    </span>
+                  </div>
+                  <div className="space-y-3.5">
+                    {result.categoryBreakdown.map((cat, idx) => (
+                      <div key={idx} className="space-y-1">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-medium text-text-primary">{cat.category}</span>
+                          <span className="text-xs font-bold text-text-secondary">
+                            {cat.matchedCount} / {cat.totalCount} ({cat.percentage}%)
+                          </span>
+                        </div>
+                        <div className="w-full bg-surface-2 rounded-full h-2.5 overflow-hidden">
+                          <div 
+                            className={`h-2.5 rounded-full transition-all duration-500 ${
+                              cat.percentage >= 80 ? 'bg-success' :
+                              cat.percentage >= 50 ? 'bg-info' :
+                              cat.percentage >= 25 ? 'bg-warning' : 'bg-error'
+                            }`}
+                            style={{ width: `${Math.min(100, Math.max(0, cat.percentage))}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+              {/* MISSING HIGH-IMPACT KEYWORDS */}
+              {result.missingKeywordsDetails && result.missingKeywordsDetails.length > 0 && (
+                <Card className="border border-warning/30 bg-warning/5">
+                  <div className="flex items-center gap-2 text-md font-bold text-warning mb-2">
+                    <AlertTriangle size={18} /> High-Impact Keywords to Consider Adding
+                  </div>
+                  <p className="text-xs text-text-secondary mb-3">
+                    Adding these skills or keywords from the Job Description into your resume can significantly boost your ATS match score:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {result.missingKeywordsDetails.slice(0, 15).map((kw, idx) => (
+                      <span 
+                        key={idx} 
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-surface-1 border border-warning/30 text-text-primary text-xs font-medium"
+                      >
+                        <span className="text-warning font-bold">+</span>
+                        <span>{kw.name}</span>
+                        <span className="text-[10px] text-text-muted px-1.5 py-0.5 rounded bg-surface-2">{kw.category}</span>
+                      </span>
+                    ))}
+                  </div>
+                </Card>
+              )}
               
               {/* REQUIRED VS PREFERRED SKILLS */}
               <Card>

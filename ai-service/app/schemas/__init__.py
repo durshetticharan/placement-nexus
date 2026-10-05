@@ -74,10 +74,47 @@ class ResumeAnalysisResponse(BaseModel):
     resume_sections: list[str] = Field(default_factory=list, alias="resumeSections")
     jd_experience_requirements: list[str] = Field(default_factory=list, alias="jdExperienceRequirements")
     jd_education_requirements: list[str] = Field(default_factory=list, alias="jdEducationRequirements")
+    vector_similarity: Optional[float] = Field(None, alias="vectorSimilarity")
+    keyword_match_score: Optional[float] = Field(None, alias="keywordMatchScore")
+    category_breakdown: Optional[list[dict[str, Any]]] = Field(None, alias="categoryBreakdown")
+    missing_keywords_details: Optional[list[dict[str, Any]]] = Field(None, alias="missingKeywordsDetails")
     confidence: str = "LOW"
     is_ai_generated: bool = Field(True, alias="isAiGenerated")
     prompt_version: str = Field("1.0", alias="promptVersion")
     model: Optional[str] = None
+
+    class Config:
+        populate_by_name = True
+
+
+class ResumeMatchRequest(BaseModel):
+    resume_text: str = Field(..., max_length=50_000, description="Extracted plain-text resume content")
+    job_description: str = Field(..., max_length=20_000, description="Target job description")
+    student_id: Optional[str] = Field(None, description="Optional student identifier")
+
+
+class CategoryScore(BaseModel):
+    category: str
+    matchedCount: int
+    totalCount: int
+    percentage: int
+
+
+class ResumeMatchResponse(BaseModel):
+    match_percentage: int = Field(..., alias="matchPercentage")
+    vector_similarity: int = Field(..., alias="vectorSimilarity")
+    keyword_match_score: int = Field(..., alias="keywordMatchScore")
+    experience_relevance_score: int = Field(..., alias="experienceRelevanceScore")
+    project_relevance_score: int = Field(..., alias="projectRelevanceScore")
+    matched_keywords_count: int = Field(..., alias="matchedKeywordsCount")
+    total_jd_keywords_count: int = Field(..., alias="totalJdKeywordsCount")
+    matched_keywords: list[str] = Field(default_factory=list, alias="matchedKeywords")
+    missing_keywords: list[str] = Field(default_factory=list, alias="missingKeywords")
+    missing_keywords_details: list[dict[str, Any]] = Field(default_factory=list, alias="missingKeywordsDetails")
+    category_breakdown: list[CategoryScore] = Field(default_factory=list, alias="categoryBreakdown")
+    suggestions: list[str] = Field(default_factory=list)
+    methodology: str = "Resume-Matcher Vector Embedding (TF-IDF) + N-Gram Skill Taxonomy Gap Analysis"
+    is_ai_generated: bool = Field(True, alias="isAiGenerated")
 
     class Config:
         populate_by_name = True

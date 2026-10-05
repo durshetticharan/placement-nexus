@@ -103,6 +103,35 @@ export interface AIResumeResponse {
   resumeSections?: string[];
   jdExperienceRequirements?: string[];
   jdEducationRequirements?: string[];
+  vectorSimilarity?: number;
+  keywordMatchScore?: number;
+  categoryBreakdown?: any[];
+  missingKeywordsDetails?: any[];
+}
+
+export interface AIResumeMatchResponse {
+  matchPercentage: number;
+  vectorSimilarity: number;
+  keywordMatchScore: number;
+  experienceRelevanceScore: number;
+  projectRelevanceScore: number;
+  matchedKeywordsCount: number;
+  totalJdKeywordsCount: number;
+  matchedKeywords: string[];
+  missingKeywords: string[];
+  missingKeywordsDetails: Array<{ name: string; category: string; importance: string }>;
+  categoryBreakdown: Array<{ category: string; matchedCount: number; totalCount: number; percentage: number }>;
+  suggestions: string[];
+  methodology: string;
+  isAiGenerated: boolean;
+}
+
+export async function matchResumeToJd(payload: {
+  resume_text: string;
+  job_description: string;
+  student_id?: string;
+}): Promise<AIResumeMatchResponse> {
+  return aiRequest<AIResumeMatchResponse>({ path: '/ai/resume/match', body: payload });
 }
 
 export async function analyzeResume(payload: {

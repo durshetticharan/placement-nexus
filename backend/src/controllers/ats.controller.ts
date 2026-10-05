@@ -145,3 +145,54 @@ export const analyzeResume = async (
     next(error);
   }
 };
+
+export const matchResume = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    if (!req.user || req.user.role !== 'STUDENT') {
+      const err: any = new Error('Unauthorized');
+      err.statusCode = 403;
+      err.code = 'FORBIDDEN';
+      throw err;
+    }
+
+    const { jobDescription, resumeText: rawResumeText, resume_text } = req.body;
+    if (!jobDescription || jobDescription.trim().length === 0) {
+      const err: any = new Error('Job description is required.');
+      err.statusCode = 400;
+      err.code = 'VALIDATION_ERROR';
+      throw err;
+    }
+
+    let resumeText = (rawResumeText || resume_text || '').trim();
+
+    // Extract from PDF if uploaded
+    if (req.file && req.file.buffer) {
+      try {
+        const extraction = await extractTextFromPdf(req.file.buffer);
+        if (extraction.success && extraction.text.trim().length >= 10) {
+          resumeText = extraction.text;
+        }
+      } catch (e) {
+        console.warn('PDF extraction notice:', e);
+      }
+    }
+
+    if (!resumeText || resumeText.trim().length === 0) {
+      const err: any = new Error('Unable to extract readable text from resume. Please enter text or upload a valid PDF.');
+      err.statusCode = 400;
+      err.code = 'VALIDATION_ERROR';
+      throw err;
+    }
+
+    const userId = (req.user as any).userId || (req.user as any).id || 'unknown';
+    const data = await atsService.matchResumeToJd(resumeText, jobDescription, userId);
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+

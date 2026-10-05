@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { requireAuth, requireRole } from '../middleware/auth.middleware';
-import { analyzeResume } from '../controllers/ats.controller';
+import { analyzeResume, matchResume } from '../controllers/ats.controller';
 import multer from 'multer';
 
 const router = Router();
@@ -22,6 +22,14 @@ router.post(
   requireRole(['STUDENT']),
   upload.single('resume'),
   analyzeResume
+);
+
+router.post(
+  '/match',
+  requireAuth,
+  requireRole(['STUDENT']),
+  upload.single('resume'),
+  matchResume
 );
 
 export default router;

@@ -180,6 +180,19 @@ export interface AtsMatchDetails {
   resumeAtsStructure: number;
 }
 
+export interface CategoryBreakdownItem {
+  category: string;
+  matchedCount: number;
+  totalCount: number;
+  percentage: number;
+}
+
+export interface MissingKeywordDetail {
+  name: string;
+  category: string;
+  importance: string;
+}
+
 /** Full result returned by `analyzeResume`. */
 export interface AtsAnalysisResult extends AtsMatchDetails {
   atsScore: number;
@@ -192,6 +205,10 @@ export interface AtsAnalysisResult extends AtsMatchDetails {
   resumeSections: string[];
   jdExperienceRequirements: string[];
   jdEducationRequirements: string[];
+  vectorSimilarity?: number;
+  keywordMatchScore?: number;
+  categoryBreakdown?: CategoryBreakdownItem[];
+  missingKeywordsDetails?: MissingKeywordDetail[];
   summary?: string;
   strengths?: string[];
   improvements?: string[];
@@ -985,5 +1002,67 @@ export async function analyzeResume(
     improvements: aiPassthrough.improvements,
     missingSections: aiPassthrough.missingSections || aiPassthrough.missing_sections,
     confidence: aiPassthrough.confidence,
+    vectorSimilarity: aiPassthrough.vectorSimilarity,
+    keywordMatchScore: aiPassthrough.keywordMatchScore,
+    categoryBreakdown: aiPassthrough.categoryBreakdown,
+    missingKeywordsDetails: aiPassthrough.missingKeywordsDetails,
   };
 }
+
+/**
+ * Deep Resume-to-JD vector matching & gap analysis (Resume-Matcher).
+ */
+export async function matchResumeToJd(
+  resumeText: string,
+  jobDescription: string,
+  userId?: string,
+) {
+  try {
+    const payload = {
+      resume_text: resumeText,
+      job_description: jobDescription,
+      student_id: userId,
+    };
+    const res = await fetch(`${AI_SERVICE_URL}/ai/resume/match`, {
+      method: 'POST',
+      headers: {
+        'X-Internal-Key': AI_INTERNAL_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(30000),
+    });
+
+    if (res.ok) {
+      return await res.json();
+    }
+    const errData: any = await res.json().catch(() => ({}));
+    throw new Error(errData.detail || 'Resume matching failed');
+  } catch (error: any) {
+    console.warn('AI service /ai/resume/match error:', error.message);
+    // Fallback: run deterministic analysis to return standard structure
+    const extraction = deterministicExtract(resumeText, jobDescription);
+    const { atsScore, matchDetails } = calculateAtsScore(extraction);
+    return {
+      matchPercentage: atsScore,
+      vectorSimilarity: Math.round(matchDetails.experienceRelevance * 100),
+      keywordMatchScore: Math.round((matchDetails.matchedKeywords.length / Math.max(matchDetails.jdKeywords.length, 1)) * 100),
+      experienceRelevanceScore: Math.round(matchDetails.experienceRelevance * 100),
+      projectRelevanceScore: Math.round(matchDetails.projectRelevance * 100),
+      matchedKeywordsCount: matchDetails.matchedKeywords.length,
+      totalJdKeywordsCount: matchDetails.jdKeywords.length,
+      matchedKeywords: matchDetails.matchedKeywords,
+      missingKeywords: matchDetails.missingRequiredSkills,
+      missingKeywordsDetails: matchDetails.missingRequiredSkills.map(s => ({ name: s, category: 'Required Skills', importance: 'high' })),
+      categoryBreakdown: [
+        { category: 'Required Skills', matchedCount: matchDetails.matchedRequiredSkills.length, totalCount: matchDetails.jdRequiredSkills.length, percentage: Math.round((matchDetails.matchedRequiredSkills.length / Math.max(matchDetails.jdRequiredSkills.length, 1)) * 100) },
+      ],
+      suggestions: matchDetails.missingRequiredSkills.length > 0
+        ? [`Consider adding required skills: ${matchDetails.missingRequiredSkills.slice(0, 5).join(', ')}`]
+        : ['Solid alignment with the job description!'],
+      methodology: 'Deterministic Keyword & Skill Gap Matching',
+      isAiGenerated: false,
+    };
+  }
+}
+

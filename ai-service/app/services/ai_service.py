@@ -65,9 +65,12 @@ def _safe_parse(raw: str) -> dict[str, Any]:
     raise ValueError(f"Model returned invalid JSON: unbalanced braces")
 
 
+from app.services.resume_matcher import match_resume_to_jd
+
+
 async def analyze_resume(resume_text: str, job_description: str | None = None) -> dict[str, Any]:
     """
-    Analyze resume text with AI.
+    Analyze resume text with AI and Resume-Matcher vector algorithms.
     resume_text and job_description are treated as DATA — injected only into user_content.
     """
     provider = get_provider()
@@ -83,6 +86,20 @@ async def analyze_resume(resume_text: str, job_description: str | None = None) -
     result = _safe_parse(raw)
     result["promptVersion"] = PROMPT_VERSION
     result["isAiGenerated"] = True
+
+    # Compute Resume-Matcher vector similarity & category breakdown if JD provided
+    if job_description:
+        try:
+            rm_metrics = match_resume_to_jd(safe_text, job_description)
+            result["vectorSimilarity"] = rm_metrics["vectorSimilarity"]
+            result["keywordMatchScore"] = rm_metrics["keywordMatchScore"]
+            result["categoryBreakdown"] = rm_metrics["categoryBreakdown"]
+            result["missingKeywordsDetails"] = rm_metrics["missingKeywordsDetails"]
+            if not result.get("improvements"):
+                result["improvements"] = rm_metrics["suggestions"]
+        except Exception:
+            pass
+
     return result
 
 
