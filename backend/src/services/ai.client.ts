@@ -90,7 +90,19 @@ export interface AIResumeResponse {
   missingSections?: string[];
   missing_sections?: string[];
   improvements?: string[];
-  [key: string]: any;
+  strengths?: string[];
+  summary?: string;
+  confidence?: string;
+  jdRequiredSkills?: string[];
+  jdPreferredSkills?: string[];
+  jdKeywords?: string[];
+  resumeKeywords?: string[];
+  resumeExperience?: any[];
+  resumeProjects?: any[];
+  resumeEducation?: any[];
+  resumeSections?: string[];
+  jdExperienceRequirements?: string[];
+  jdEducationRequirements?: string[];
 }
 
 export async function analyzeResume(payload: {
@@ -102,7 +114,16 @@ export async function analyzeResume(payload: {
 }
 
 export interface AICareerResponse {
-  [key: string]: any;
+  summary?: string;
+  strengths?: string[];
+  gaps?: string[];
+  recommendations?: string[];
+  shortTermActions?: string[];
+  short_term_actions?: string[];
+  longTermActions?: string[];
+  long_term_actions?: string[];
+  confidence?: string;
+  promptVersion?: string;
 }
 
 export async function getCareerGuidance(payload: {
@@ -135,7 +156,18 @@ export async function generateInterviewQuestions(payload: {
 }
 
 export interface AIInterviewEvaluateResponse {
-  [key: string]: any;
+  evaluation?: {
+    relevance?: number;
+    clarity?: number;
+    technicalDepth?: number;
+    technical_depth?: number;
+    completeness?: number;
+    overall?: number;
+    feedback?: string;
+    improvements?: string[];
+    strengths?: string[];
+  };
+  promptVersion?: string;
 }
 
 export async function evaluateInterviewAnswer(payload: {
@@ -148,7 +180,17 @@ export async function evaluateInterviewAnswer(payload: {
 }
 
 export interface AIDrivePrepResponse {
-  [key: string]: any;
+  summary?: string;
+  readinessAssessment?: string;
+  readiness_assessment?: string;
+  priorities?: string[];
+  suggestedTopics?: string[];
+  suggested_topics?: string[];
+  interviewFocus?: string[];
+  interview_focus?: string[];
+  timelineAdvice?: string;
+  timeline_advice?: string;
+  promptVersion?: string;
 }
 
 export async function getDrivePreparationAdvice(payload: {

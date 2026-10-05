@@ -3,7 +3,7 @@ import {
   LayoutDashboard, User, ClipboardList, Target, BarChart2,
   Activity, Briefcase, Send, Users, BookOpen, BarChart,
   Bell, Building2, CheckCircle, Shield, Library, ChevronRight,
-  LogOut, X, FileText, Settings
+  LogOut, X, FileText, Settings, Code2
 } from 'lucide-react';
 import { useAuth, type UserRole } from '../../context/AuthContext';
 
@@ -35,6 +35,7 @@ const NAV_CONFIG: Record<UserRole, NavGroup[]> = {
       items: [
         { icon: ClipboardList, label: 'Assessments', to: '/student/assessments' },
         { icon: Target, label: 'Career', to: '/student/career' },
+        { icon: Code2, label: 'Coding Profiles', to: '/student/coding-profiles' },
         { icon: BarChart2, label: 'Skill Gap', to: '/student/skill-gap' },
         { icon: BarChart, label: 'Analytics', to: '/student/analytics' },
       ],

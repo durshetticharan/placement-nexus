@@ -1506,24 +1506,40 @@ function ProfilesAndResumesSection({
 
       {/* ── Section 3: Coding Profiles ──────────────────────────── */}
       <div className="space-y-4 pt-4 border-t border-slate-700">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <span>💻</span> Coding Profiles
+              <span>💻</span> Coding Profiles & History Tracker
             </h2>
-            <p className="text-xs text-slate-400">Showcase your GitHub, LeetCode, or competitive coding profiles.</p>
+            <p className="text-xs text-slate-400">
+              Live synchronized stats from LeetCode, Codeforces, GitHub, CodeChef, HackerRank, and GFG.
+            </p>
           </div>
-          <button
-            onClick={onAddCoding}
-            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition-colors"
-          >
-            + Add Coding Profile
-          </button>
+          <div className="flex items-center gap-2">
+            <a
+              href="/student/coding-profiles"
+              className="px-3 py-1.5 bg-indigo-950/80 hover:bg-indigo-900/90 text-indigo-300 border border-indigo-500/40 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
+            >
+              <span>📊 Open Coding Dashboard</span>
+            </a>
+            <button
+              onClick={onAddCoding}
+              className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition-colors"
+            >
+              + Add Profile
+            </button>
+          </div>
         </div>
 
         {codingProfiles.length === 0 ? (
-          <div className="text-center py-6 bg-slate-800/40 rounded-xl border border-dashed border-slate-700 text-slate-400 text-xs">
-            No coding profiles added yet.
+          <div className="text-center py-8 bg-slate-800/40 rounded-xl border border-dashed border-slate-700 text-slate-400 text-xs space-y-3">
+            <p>No coding profiles added yet.</p>
+            <a
+              href="/student/coding-profiles"
+              className="inline-block px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition-all"
+            >
+              Connect & Track Profiles
+            </a>
           </div>
         ) : (
           <div className="space-y-3">
@@ -1535,13 +1551,27 @@ function ProfilesAndResumesSection({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className="text-xl">
-                      {cp.platform === 'GITHUB' ? '🐙' : cp.platform === 'LEETCODE' ? '🧩' : '💻'}
+                      {cp.platform === 'GITHUB'
+                        ? '🐙'
+                        : cp.platform === 'LEETCODE'
+                        ? '🧩'
+                        : cp.platform === 'CODEFORCES'
+                        ? '⚔️'
+                        : cp.platform === 'CODECHEF'
+                        ? '👨‍🍳'
+                        : '💻'}
                     </span>
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-sm text-white">{cp.platform}</span>
                         <span className="text-xs text-indigo-300 font-mono">@{cp.username}</span>
-                        <span className="px-2 py-0.5 text-[10px] bg-slate-800 text-slate-400 rounded-full border border-slate-600">
+                        <span
+                          className={`px-2 py-0.5 text-[10px] rounded-full border ${
+                            cp.syncStatus === 'SYNCED'
+                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                              : 'bg-slate-800 text-slate-400 border-slate-600'
+                          }`}
+                        >
                           {cp.syncStatus}
                         </span>
                       </div>
@@ -1557,6 +1587,13 @@ function ProfilesAndResumesSection({
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <a
+                      href="/student/coding-profiles"
+                      className="px-2.5 py-1 text-xs bg-indigo-950/60 hover:bg-indigo-900/60 text-indigo-300 rounded-lg border border-indigo-500/30 transition-colors"
+                      title="View historical graphs"
+                    >
+                      📈 History
+                    </a>
                     <button
                       onClick={() => onEditCoding(cp)}
                       className="px-2.5 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-indigo-300 rounded-lg transition-colors"

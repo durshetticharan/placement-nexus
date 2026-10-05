@@ -172,8 +172,28 @@ browser-audit-report.json
 browser-audit.js
 query.sql
 phase7-backend.log
+scratch*.js
+backend/scratch*.js
+backend/test-*.js
+backend/test_*.js
+backend/ats_*_test.mjs
+backend/prompt10.txt
+backend/count-apps.js
+backend/db-audit.js
+backend/delete-user.js
+backend/delete-user.ts
+backend/diag-drives.js
+backend/final-verification.js
+backend/get_recruiter.js
+backend/phase12-verify-browser.js
+backend/playwright-click.js
+backend/playwright-debug.js
+backend/system-audit.js
+backend/verify-env.js
+backend/approve_recruiter.js
 
 # Coverage
 coverage/
 *.lcov
 .nyc_output/
+

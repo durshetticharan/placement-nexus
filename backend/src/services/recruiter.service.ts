@@ -94,14 +94,37 @@ export async function approveRecruiter(recruiterId: string, officerUserId: strin
   // Second gate: activate the linked user account so they can log in
   await recruiterRepo.setUserActive(recruiter.user.id);
 
-  // Auto-approve primary membership if pending
-  const primaryMembership = recruiter.memberships.find(m => m.companyId === recruiter.companyId);
-  if (primaryMembership && primaryMembership.status === 'PENDING') {
+  // Auto-approve primary membership if pending or create if missing
+  const primaryMembership = recruiter.memberships?.find(m => m.companyId === recruiter.companyId);
+  if (primaryMembership) {
+    if (primaryMembership.status === 'PENDING') {
+      await recruiterRepo.updateRecruiterMembershipStatus(primaryMembership.id, {
+        status: 'APPROVED',
+        approvedById: officerUserId,
+        approvedAt: new Date(),
+      });
+      await recruiterRepo.createAuditLog({
+        actorUserId: officerUserId,
+        action: 'COMPANY_MEMBERSHIP_APPROVED',
+        entityType: 'RecruiterCompanyMembership',
+        entityId: primaryMembership.id,
+        metadata: { autoApprovedOnRecruiterApproval: true } as Prisma.InputJsonValue,
+      });
+    }
+  } else if (recruiter.companyId) {
+    const newMembership = await recruiterRepo.createRecruiterMembership({
+      recruiterId: recruiter.id,
+      companyId: recruiter.companyId,
+      role: 'COMPANY_ADMIN',
+      status: 'APPROVED',
+      approvedById: officerUserId,
+      approvedAt: new Date(),
+    });
     await recruiterRepo.createAuditLog({
       actorUserId: officerUserId,
       action: 'COMPANY_MEMBERSHIP_APPROVED',
       entityType: 'RecruiterCompanyMembership',
-      entityId: primaryMembership.id,
+      entityId: newMembership.id,
       metadata: { autoApprovedOnRecruiterApproval: true } as Prisma.InputJsonValue,
     });
   }

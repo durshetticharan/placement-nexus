@@ -163,6 +163,42 @@ export async function setUserStatus(userId: string, status: any) {
   return prisma.user.update({ where: { id: userId }, data: { status } });
 }
 
+// ─── Membership helpers ───────────────────────────────────────────────────────
+
+export async function updateRecruiterMembershipStatus(
+  id: string,
+  data: {
+    status: any;
+    approvedById?: string | null;
+    approvedAt?: Date | null;
+  }
+) {
+  return prisma.recruiterCompanyMembership.update({
+    where: { id },
+    data,
+  });
+}
+
+export async function createRecruiterMembership(data: {
+  recruiterId: string;
+  companyId: string;
+  role?: any;
+  status?: any;
+  approvedById?: string | null;
+  approvedAt?: Date | null;
+}) {
+  return prisma.recruiterCompanyMembership.create({
+    data: {
+      recruiterId: data.recruiterId,
+      companyId: data.companyId,
+      role: data.role || 'COMPANY_ADMIN',
+      status: data.status || 'APPROVED',
+      approvedById: data.approvedById || null,
+      approvedAt: data.approvedAt || null,
+    },
+  });
+}
+
 // ─── Shared: Audit Log ────────────────────────────────────────────────────────
 
 /** Creates an AuditLog row. Shared between recruiter and alumni services. */
@@ -175,3 +211,4 @@ export async function createAuditLog(data: {
 }) {
   return prisma.auditLog.create({ data });
 }
+

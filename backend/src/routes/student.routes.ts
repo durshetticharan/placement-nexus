@@ -81,6 +81,11 @@ router.delete('/me/professional-profiles/:id', profController.deleteProfile);
 // Coding Profiles
 router.post('/me/coding-profiles', validate(codingProfileSchema), codingController.addCodingProfile);
 router.get('/me/coding-profiles', codingController.listCodingProfiles);
+router.get('/me/coding-profiles/dashboard', codingController.getCodingDashboard);
+router.get('/me/coding-profiles/history', codingController.getCodingHistory);
+router.post('/me/coding-profiles/sync-all', codingController.syncAllCodingProfiles);
+router.post('/me/coding-profiles/seed-demo', codingController.seedDemoCodingProfiles);
+router.post('/me/coding-profiles/:id/sync', codingController.syncCodingProfile);
 router.patch('/me/coding-profiles/:id', validate(updateCodingProfileSchema), codingController.updateCodingProfile);
 router.delete('/me/coding-profiles/:id', codingController.deleteCodingProfile);
 

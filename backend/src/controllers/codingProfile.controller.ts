@@ -62,3 +62,71 @@ export async function deleteCodingProfile(req: Request, res: Response): Promise<
     });
   }
 }
+
+export async function syncCodingProfile(req: Request, res: Response): Promise<void> {
+  try {
+    const userId = req.user!.userId;
+    const id = getParamId(req);
+    const result = await codingService.syncCodingProfile(userId, id);
+    res.json({ success: true, data: result });
+  } catch (err: any) {
+    res.status(err.statusCode || 500).json({
+      success: false,
+      error: { code: err.code || 'INTERNAL_ERROR', message: err.message },
+    });
+  }
+}
+
+export async function syncAllCodingProfiles(req: Request, res: Response): Promise<void> {
+  try {
+    const userId = req.user!.userId;
+    const result = await codingService.syncAllCodingProfiles(userId);
+    res.json({ success: true, data: result });
+  } catch (err: any) {
+    res.status(err.statusCode || 500).json({
+      success: false,
+      error: { code: err.code || 'INTERNAL_ERROR', message: err.message },
+    });
+  }
+}
+
+export async function getCodingDashboard(req: Request, res: Response): Promise<void> {
+  try {
+    const userId = req.user!.userId;
+    const result = await codingService.getCodingDashboard(userId);
+    res.json({ success: true, data: result });
+  } catch (err: any) {
+    res.status(err.statusCode || 500).json({
+      success: false,
+      error: { code: err.code || 'INTERNAL_ERROR', message: err.message },
+    });
+  }
+}
+
+export async function getCodingHistory(req: Request, res: Response): Promise<void> {
+  try {
+    const userId = req.user!.userId;
+    const platform = req.query.platform as string | undefined;
+    const limit = req.query.limit ? Number(req.query.limit) : undefined;
+    const result = await codingService.getCodingHistory(userId, { platform, limit });
+    res.json({ success: true, data: result });
+  } catch (err: any) {
+    res.status(err.statusCode || 500).json({
+      success: false,
+      error: { code: err.code || 'INTERNAL_ERROR', message: err.message },
+    });
+  }
+}
+
+export async function seedDemoCodingProfiles(req: Request, res: Response): Promise<void> {
+  try {
+    const userId = req.user!.userId;
+    const result = await codingService.seedDemoProfiles(userId);
+    res.json({ success: true, data: result });
+  } catch (err: any) {
+    res.status(err.statusCode || 500).json({
+      success: false,
+      error: { code: err.code || 'INTERNAL_ERROR', message: err.message },
+    });
+  }
+}

@@ -25,16 +25,20 @@ export async function createDrive(userId: string, data: any) {
     throw new DriveServiceError(403, 'UNAUTHORIZED', 'Only approved recruiters can create drives');
   }
 
-  // Use the company from the recruiter's approved membership
-  if (!recruiter.memberships || recruiter.memberships.length === 0) {
+  const allowedCompanyIds = new Set<string>();
+  if (recruiter.companyId) {
+    allowedCompanyIds.add(recruiter.companyId);
+  }
+  for (const m of recruiter.memberships || []) {
+    allowedCompanyIds.add(m.companyId);
+  }
+
+  if (allowedCompanyIds.size === 0) {
     throw new DriveServiceError(403, 'UNAUTHORIZED', 'Recruiter does not belong to any approved company');
   }
 
-  // Default to the first approved company they belong to (assuming one for now, or passing companyId)
-  const companyId = data.companyId || recruiter.memberships[0].companyId;
-  const isMember = recruiter.memberships.some(m => m.companyId === companyId);
-  
-  if (!isMember) {
+  const companyId = data.companyId || recruiter.companyId || (recruiter.memberships && recruiter.memberships[0]?.companyId);
+  if (!companyId || !allowedCompanyIds.has(companyId)) {
     throw new DriveServiceError(403, 'FORBIDDEN', 'You do not have access to create drives for this company');
   }
 
@@ -46,16 +50,16 @@ export async function createDrive(userId: string, data: any) {
     jobType: data.jobType,
     location: data.location,
     workMode: data.workMode,
-    salaryMin: data.salaryMin,
-    salaryMax: data.salaryMax,
-    salaryCurrency: data.salaryCurrency,
-    salaryPeriod: data.salaryPeriod,
-    openingCount: data.openingCount,
-    graduationYear: data.graduationYear,
+    salaryMin: data.salaryMin ?? null,
+    salaryMax: data.salaryMax ?? null,
+    salaryCurrency: data.salaryCurrency || 'INR',
+    salaryPeriod: data.salaryPeriod || 'YEARLY',
+    openingCount: data.openingCount ?? null,
+    graduationYear: data.graduationYear ?? null,
     applicationStartAt: new Date(data.applicationStartAt),
     applicationEndAt: new Date(data.applicationEndAt),
     driveDate: data.driveDate ? new Date(data.driveDate) : null,
-    selectionProcess: data.selectionProcess,
+    selectionProcess: data.selectionProcess || null,
     companyId: companyId,
     createdByRecruiterId: recruiter.id,
     status: DriveStatus.DRAFT,
@@ -91,7 +95,11 @@ export async function updateDrive(userId: string, driveId: string, data: any) {
     throw new DriveServiceError(404, 'NOT_FOUND', 'Drive not found');
   }
 
-  if (drive.companyId !== recruiter.companyId && !recruiter.memberships.some(m => m.companyId === drive.companyId)) {
+  const allowedCompanyIds = new Set<string>();
+  if (recruiter.companyId) allowedCompanyIds.add(recruiter.companyId);
+  for (const m of recruiter.memberships || []) allowedCompanyIds.add(m.companyId);
+
+  if (!allowedCompanyIds.has(drive.companyId)) {
     throw new DriveServiceError(403, 'FORBIDDEN', 'Not authorized to edit this drive');
   }
 
@@ -135,7 +143,11 @@ export async function updateDriveRequirements(userId: string, driveId: string, d
     throw new DriveServiceError(404, 'NOT_FOUND', 'Drive not found');
   }
 
-  if (drive.companyId !== recruiter.companyId && !recruiter.memberships.some(m => m.companyId === drive.companyId)) {
+  const allowedCompanyIds = new Set<string>();
+  if (recruiter.companyId) allowedCompanyIds.add(recruiter.companyId);
+  for (const m of recruiter.memberships || []) allowedCompanyIds.add(m.companyId);
+
+  if (!allowedCompanyIds.has(drive.companyId)) {
     throw new DriveServiceError(403, 'FORBIDDEN', 'Not authorized to edit this drive');
   }
 
@@ -157,13 +169,19 @@ export async function updateDriveRequirements(userId: string, driveId: string, d
     reqData.preferredSkills = { connect: preferredSkills.map((id: string) => ({ id })) };
   }
 
+  const updateData: Prisma.DriveRequirementUpdateInput = {
+    ...rest,
+  };
+  if (requiredSkills !== undefined) {
+    updateData.requiredSkills = { set: requiredSkills.map((id: string) => ({ id })) };
+  }
+  if (preferredSkills !== undefined) {
+    updateData.preferredSkills = { set: preferredSkills.map((id: string) => ({ id })) };
+  }
+
   const updated = await prisma.driveRequirement.upsert({
     where: { placementDriveId: driveId },
-    update: {
-      ...rest,
-      requiredSkills: reqData.requiredSkills,
-      preferredSkills: reqData.preferredSkills
-    },
+    update: updateData,
     create: reqData,
   });
 

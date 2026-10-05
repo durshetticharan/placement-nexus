@@ -39,6 +39,7 @@ import CareerManagement from '../pages/officer/CareerManagement';
 
 // Phase 8 — Skill Gap Analysis
 import SkillGapAnalysis from '../pages/student/SkillGapAnalysis';
+import CodingProfilesDashboard from '../pages/student/CodingProfilesDashboard';
 
 // Phase 9 — Placement Readiness
 import PlacementReadiness from '../pages/student/PlacementReadiness';
@@ -309,6 +310,16 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <SkillGapAnalysis />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Phase 8 — Skill Gap & Coding Profiles */}
+      <Route
+        path="/student/coding-profiles"
+        element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <CodingProfilesDashboard />
           </ProtectedRoute>
         }
       />

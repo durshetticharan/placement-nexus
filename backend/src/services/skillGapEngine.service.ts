@@ -397,6 +397,47 @@ export function classifyGapLevel(score: number, hasAnyEvidence: boolean): GapLev
   return GapLevel.STRONG;
 }
 
+export function isSkillRelevantToCoding(skillName: string, skillCategory?: string | null): boolean {
+  const nameLower = skillName.trim().toLowerCase();
+  const catLower = (skillCategory || '').trim().toLowerCase();
+
+  if (
+    catLower.includes('programming') ||
+    catLower.includes('language') ||
+    catLower.includes('dsa') ||
+    catLower.includes('algorithm') ||
+    catLower.includes('problem solving')
+  ) {
+    return true;
+  }
+
+  const codingKeywords = [
+    'dsa',
+    'data structures',
+    'algorithms',
+    'problem solving',
+    'competitive programming',
+    'python',
+    'java',
+    'c++',
+    'javascript',
+    'typescript',
+    'c#',
+    'golang',
+    'go',
+    'c programming',
+    'rust',
+    'ruby',
+    'php',
+    'swift',
+    'kotlin',
+  ];
+
+  return codingKeywords.some(
+    (k) => nameLower === k || nameLower.includes(k) || k.includes(nameLower),
+  );
+}
+
 // ── Main Engine Entry Point ───────────────────────────────────────────────────
 
 /**
@@ -435,22 +476,40 @@ export function computeAllGaps(
       : null;
     const selfRatingLevel = studentSkill ? studentSkill.selfRating : null;
 
-    // ── Source 3: Coding activity ──
-    // Only relevant for technical/programming skills, but we compute for all
-    // skills — the engine doesn't know the domain, and a coding signal is
-    // still valid evidence even for broad technical skills.
-    const { score: codingScore, details: codingDetails } = extractCodingScore(codingProfiles);
+    // ── Source 3: Coding activity (relevant for programming/DSA skills only) ──
+    const isRelevant = isSkillRelevantToCoding(required.skillName, required.skillCategory);
+    let codingScore: number | null = null;
+    let codingDetails: CodingEvidence[] = [];
 
-    // ── Weighted composition ──
-    const { finalScore, weightsUsed } = computeWeightedScore(
-      assessmentScore,
-      selfRatingScore,
-      codingScore,
-    );
+    if (isRelevant) {
+      const extracted = extractCodingScore(codingProfiles);
+      codingScore = extracted.score;
+      codingDetails = extracted.details;
+    }
 
-    const hasAnyEvidence =
-      assessmentScore !== null || selfRatingScore !== null || codingScore !== null;
+    // Direct skill evidence: does student have direct rating or assessment for THIS skill?
+    const hasDirectEvidence = assessmentScore !== null || selfRatingScore !== null;
 
+    let finalScore = 0;
+    let weightsUsed = { assessment: 0, selfRating: 0, coding: 0 };
+
+    if (hasDirectEvidence) {
+      const weighted = computeWeightedScore(
+        assessmentScore,
+        selfRatingScore,
+        codingScore,
+      );
+      finalScore = weighted.finalScore;
+      weightsUsed = weighted.weightsUsed;
+    } else if (codingScore !== null && isRelevant) {
+      // If student has NO direct rating and NO assessment for this skill,
+      // general coding score provides base evidence (capped at 20%), keeping it MISSING (< 25)
+      // until they actually rate or test the skill.
+      finalScore = Math.round(codingScore * BASE_WEIGHTS.coding);
+      weightsUsed = { assessment: 0, selfRating: 0, coding: BASE_WEIGHTS.coding };
+    }
+
+    const hasAnyEvidence = hasDirectEvidence || (codingScore !== null && isRelevant);
     const gapLevel = classifyGapLevel(finalScore, hasAnyEvidence);
 
     const evidence: SkillEvidence = {

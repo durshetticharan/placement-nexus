@@ -107,6 +107,61 @@ export interface CodingProfileItem {
   updatedAt: string;
 }
 
+export interface CodingProfileHistoryItem {
+  id: string;
+  codingProfileId: string;
+  studentId: string;
+  platform: string;
+  username: string;
+  problemsSolved: number;
+  easySolved: number;
+  mediumSolved: number;
+  hardSolved: number;
+  rating?: number | null;
+  globalRank?: number | null;
+  streak: number;
+  statistics?: Record<string, any> | null;
+  snapshotDate: string;
+  createdAt: string;
+}
+
+export interface CodingDashboardSummary {
+  totalProfiles: number;
+  totalProblemsSolved: number;
+  totalEasy: number;
+  totalMedium: number;
+  totalHard: number;
+  maxRating: number | null;
+  maxStreak: number;
+  totalRepos: number;
+  totalStars: number;
+}
+
+export interface CodingDashboardData {
+  summary: CodingDashboardSummary;
+  platformBreakdown: Array<{
+    platform: string;
+    username: string;
+    problemsSolved: number;
+    rating?: number;
+    streak?: number;
+    syncStatus: string;
+    lastSyncedAt?: string | null;
+  }>;
+  profiles: CodingProfileItem[];
+  timeline: Array<{
+    date: string;
+    solved: number;
+    rating: number;
+    count: number;
+  }>;
+  ratingTimeline: Array<{
+    platform: string;
+    points: Array<{ date: string; rating: number }>;
+  }>;
+  recentHistory: CodingProfileHistoryItem[];
+}
+
 export interface StudentProfile {
   id: string;
   userId: string;
@@ -358,3 +413,35 @@ export async function updateCodingProfile(
 export async function deleteCodingProfile(id: string): Promise<void> {
   await api.delete(`/students/me/coding-profiles/${id}`);
 }
+
+export async function syncCodingProfile(id: string): Promise<CodingProfileItem> {
+  const res = await api.post(`/students/me/coding-profiles/${id}/sync`);
+  return res.data.data;
+}
+
+export async function syncAllCodingProfiles(): Promise<any[]> {
+  const res = await api.post('/students/me/coding-profiles/sync-all');
+  return res.data.data;
+}
+
+export async function getCodingDashboard(): Promise<CodingDashboardData> {
+  const res = await api.get('/students/me/coding-profiles/dashboard');
+  return res.data.data;
+}
+
+export async function getCodingHistory(options?: {
+  platform?: string;
+  limit?: number;
+}): Promise<CodingProfileHistoryItem[]> {
+  const params = new URLSearchParams();
+  if (options?.platform) params.append('platform', options.platform);
+  if (options?.limit) params.append('limit', String(options.limit));
+  const res = await api.get(`/students/me/coding-profiles/history?${params.toString()}`);
+  return res.data.data;
+}
+
+export async function seedDemoCodingProfiles(): Promise<{ message: string; createdProfiles: CodingProfileItem[] }> {
+  const res = await api.post('/students/me/coding-profiles/seed-demo');
+  return res.data.data;
+}
+

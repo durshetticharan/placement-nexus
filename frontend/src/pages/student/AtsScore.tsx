@@ -4,12 +4,55 @@ import AppLayout from '../../components/layout/AppLayout';
 import { PageHeader, Card, Button, ErrorState, ProgressRing } from '../../components/ui';
 import { UploadCloud, FileText, CheckCircle2, XCircle, File, Target, Star, TrendingUp, RefreshCw, BarChart2, Briefcase, GraduationCap, LayoutList, Terminal } from 'lucide-react';
 
+/** Shape of the ATS analysis response from the backend. */
+interface AtsScoreBreakdown {
+  requiredScore: number;
+  preferredScore: number;
+  experienceScore: number;
+  projectScore: number;
+  educationScore: number;
+  keywordScore: number;
+  structureScore: number;
+}
+
+interface AtsResult {
+  atsScore: number;
+  scoreBreakdown: AtsScoreBreakdown;
+  extractedSkills: string[];
+  jdRequiredSkills: string[];
+  jdPreferredSkills: string[];
+  matchedRequiredSkills: string[];
+  missingRequiredSkills: string[];
+  matchedPreferredSkills: string[];
+  missingPreferredSkills: string[];
+  jdKeywords: string[];
+  matchedKeywords: string[];
+  resumeKeywords: string[];
+  experienceRelevance: number;
+  projectRelevance: number;
+  educationMatch: number;
+  resumeAtsStructure: number;
+  resumeExperience: Array<{ title: string; description?: string; technologies?: string[] }>;
+  resumeProjects: Array<{ title: string; description?: string; technologies?: string[] }>;
+  resumeEducation: Array<{ degree: string; field: string }>;
+  resumeSections: string[];
+  jdExperienceRequirements: string[];
+  jdEducationRequirements: string[];
+  strengths?: string[];
+  improvements?: string[];
+  missingSections?: string[];
+  ai?: { used: boolean; available: boolean };
+  isAiGenerated?: boolean;
+  warning?: string;
+}
+
 export default function AtsScore() {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState<string>('');
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<any | null>(null);
+  const [result, setResult] = useState<AtsResult | null>(null);
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -485,13 +528,13 @@ export default function AtsScore() {
               )}
 
               {/* STRENGTHS */}
-              {(result.strengths?.length > 0) && (
+              {Boolean(result.strengths && result.strengths.length > 0) && (
                 <Card>
                   <h3 className="flex items-center gap-2 text-lg font-bold text-success mb-4">
                     <Star size={20} /> Resume Strengths
                   </h3>
                   <ul className="space-y-3">
-                    {result.strengths.map((s: string, i: number) => (
+                    {result.strengths?.map((s: string, i: number) => (
                       <li key={i} className="flex gap-3 text-sm text-text-secondary">
                         <span className="text-success flex-shrink-0 mt-0.5">✓</span>
                         <span>{s}</span>
@@ -502,7 +545,7 @@ export default function AtsScore() {
               )}
 
               {/* IMPROVEMENTS */}
-              {(result.improvements?.length > 0 || result.missingSections?.length > 0) && (
+              {Boolean((result.improvements && result.improvements.length > 0) || (result.missingSections && result.missingSections.length > 0)) && (
                 <Card>
                   <h3 className="flex items-center gap-2 text-lg font-bold text-warning mb-4">
                     <TrendingUp size={20} /> Improvement Suggestions

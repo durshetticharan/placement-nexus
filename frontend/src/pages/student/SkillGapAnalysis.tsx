@@ -686,12 +686,33 @@ export default function SkillGapAnalysis() {
               )}
 
               {/* Summary cards */}
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '28px' }}>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '20px' }}>
                 <SummaryCard label="Strong" count={displaySummary.STRONG} level="STRONG" />
                 <SummaryCard label="Moderate" count={displaySummary.MODERATE} level="MODERATE" />
                 <SummaryCard label="Weak" count={displaySummary.WEAK} level="WEAK" />
                 <SummaryCard label="Missing" count={displaySummary.MISSING} level="MISSING" />
               </div>
+
+              {/* Info banner when most skills are MODERATE and few assessments/coding profiles */}
+              {displaySummary.MODERATE > 0 && displaySummary.STRONG === 0 && displaySummary.WEAK === 0 && displaySummary.MISSING === 0 && (
+                <div style={{
+                  background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)',
+                  borderRadius: '14px', padding: '14px 18px', marginBottom: '24px',
+                  display: 'flex', alignItems: 'flex-start', gap: '12px',
+                }}>
+                  <span style={{ fontSize: '18px', flexShrink: 0 }}>💡</span>
+                  <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.6 }}>
+                    <strong style={{ color: '#fbbf24' }}>Why are all skills showing as Moderate?</strong><br />
+                    Your self-ratings (set to <em>Intermediate</em>) are the only evidence available, giving a score of 50 → MODERATE.
+                    To get more accurate results:
+                    <ol style={{ margin: '6px 0 0 16px', padding: 0, color: 'rgba(255,255,255,0.55)' }}>
+                      <li>Take assessments to validate your knowledge objectively.</li>
+                      <li>Link coding profiles (LeetCode, Codeforces, etc.) to show real problem-solving stats.</li>
+                      <li>Update your self-ratings honestly (Beginner/Advanced/Expert) in your profile.</li>
+                    </ol>
+                  </div>
+                </div>
+              )}
 
               {/* Radar chart */}
               {radarGaps.length >= 3 && (
